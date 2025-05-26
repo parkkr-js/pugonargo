@@ -20,7 +20,7 @@ export const UserDashboardPage = () => {
 					<Text strong>차량번호:</Text> {user.vehicleNumber}
 				</div>
 				<div style={{ marginBottom: "16px" }}>
-					<Text strong>그룹번호:</Text> #{user.groupNumber}
+					<Text strong>그룹번호:</Text> #{user.group}
 				</div>
 				<div style={{ marginBottom: "16px" }}>
 					<Text strong>덤프중량:</Text> {user.dumpWeight}톤

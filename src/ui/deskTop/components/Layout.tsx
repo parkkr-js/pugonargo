@@ -1,6 +1,7 @@
 // src/ui/deskTop/components/Layout.tsx
 import {
-	CarOutlined,
+	BarChartOutlined,
+	FileExcelOutlined,
 	HomeOutlined,
 	LogoutOutlined,
 	UserOutlined,
@@ -30,7 +31,12 @@ export const Layout = () => {
 				{
 					key: "/admin",
 					icon: <HomeOutlined />,
-					label: "홈",
+					label: "대시보드",
+				},
+				{
+					key: "/admin/transaction-statement",
+					icon: <BarChartOutlined />,
+					label: "거래 내역",
 				},
 				{
 					key: "/admin/manage-drivers",
@@ -38,9 +44,9 @@ export const Layout = () => {
 					label: "기사님 관리",
 				},
 				{
-					key: "/admin/vehicles",
-					icon: <CarOutlined />,
-					label: "차량 관리",
+					key: "/admin/manage-google-sheets",
+					icon: <FileExcelOutlined />,
+					label: "연동 시트 관리",
 				},
 				{
 					key: "logout",

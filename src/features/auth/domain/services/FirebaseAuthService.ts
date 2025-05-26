@@ -10,7 +10,6 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../../../firebase/firebaseConfig";
-import { verifyPassword } from "../../../../utils/password";
 import type {
 	AdminUser,
 	AuthUser,
@@ -42,7 +41,7 @@ export class FirebaseAuthService implements IAuthRepository {
 		const driverUser = await this.findDriverUserByUserId(email);
 		if (driverUser) {
 			// 비밀번호 검증
-			if (!verifyPassword(password, driverUser.passwordHash)) {
+			if (password !== driverUser.password) {
 				throw new Error("비밀번호가 일치하지 않습니다.");
 			}
 			await this.updateLastLoginAt(driverUser.id);
@@ -125,16 +124,14 @@ export class FirebaseAuthService implements IAuthRepository {
 
 		return {
 			id: driverDoc.id,
-			email: driverData.email,
+			email: driverData.userId,
 			userType: "driver",
 			dumpWeight: driverData.dumpWeight,
-			groupNumber: driverData.groupNumber,
+			group: driverData.group,
 			vehicleNumber: driverData.vehicleNumber,
 			createdAt: driverData.createdAt.toDate().toISOString(),
-			lastLoginAt:
-				driverData.lastLoginAt?.toDate().toISOString() ||
-				new Date().toISOString(),
-			passwordHash: driverData.passwordHash,
+			lastLoginAt: new Date().toISOString(),
+			password: driverData.password,
 		};
 	}
 
@@ -169,13 +166,13 @@ export class FirebaseAuthService implements IAuthRepository {
 			email: driverData.email,
 			userType: "driver",
 			dumpWeight: driverData.dumpWeight,
-			groupNumber: driverData.groupNumber,
+			group: driverData.group,
 			vehicleNumber: driverData.vehicleNumber,
 			createdAt: driverData.createdAt.toDate().toISOString(),
 			lastLoginAt:
 				driverData.lastLoginAt?.toDate().toISOString() ||
 				new Date().toISOString(),
-			passwordHash: driverData.passwordHash,
+			password: driverData.password,
 		};
 	}
 

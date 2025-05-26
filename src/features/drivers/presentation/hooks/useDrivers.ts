@@ -1,11 +1,18 @@
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 // src/features/drivers/presentation/hooks/useDrivers.ts
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
 	useCreateDriverMutation,
 	useDeleteDriverMutation,
 	useGetDriversQuery,
 	useUpdateDriverMutation,
 } from "../../application/api/driver.api";
+import {
+	selectDriverById,
+	selectDriversByGroup,
+	selectDriversSortedByGroup,
+	selectDriversSortedByVehicleNumber,
+} from "../../application/selectors/driverSelectors";
 import type {
 	CreateDriverRequest,
 	UpdateDriverRequest,
@@ -24,63 +31,112 @@ export const useDrivers = () => {
 	const [updateDriverMutation] = useUpdateDriverMutation();
 	const [deleteDriverMutation] = useDeleteDriverMutation();
 
-	// 🔥 생성된 비밀번호 상태 (RTK Query는 서버 상태만 관리하므로 클라이언트 상태는 별도 관리)
+	// 🔥 생성된 비밀번호 상태
 	const [lastCreatedPassword, setLastCreatedPassword] = useState<string | null>(
 		null,
 	);
 
-	// 기사 생성
-	const handleCreateDriver = async (
-		data: CreateDriverRequest,
-	): Promise<boolean> => {
-		try {
-			const result = await createDriverMutation(data).unwrap();
-			setLastCreatedPassword(result.password); // 🔥 비밀번호 상태 저장
-			return true;
-		} catch (error) {
-			// 에러는 RTK Query에서 자동 처리됨
-			return false;
-		}
-	};
+	// 🔥 셀렉터 결과 메모이제이션
+	const driversByGroup = useMemo(
+		() => (group: string) => selectDriversByGroup(drivers, group),
+		[drivers],
+	);
 
-	// 기사 수정
-	const handleUpdateDriver = async (
-		data: UpdateDriverRequest,
-	): Promise<boolean> => {
-		try {
-			await updateDriverMutation(data).unwrap();
-			return true;
-		} catch (error) {
-			// 에러는 RTK Query에서 자동 처리됨
-			return false;
-		}
-	};
+	const driverById = useMemo(
+		() => (id: string) => selectDriverById(drivers, id),
+		[drivers],
+	);
 
-	// 기사 삭제
-	const handleDeleteDriver = async (driverId: string): Promise<boolean> => {
-		try {
-			await deleteDriverMutation(driverId).unwrap();
-			return true;
-		} catch (error) {
-			// 에러는 RTK Query에서 자동 처리됨
-			return false;
-		}
-	};
+	const sortedDriversByGroup = useMemo(
+		() => selectDriversSortedByGroup(drivers),
+		[drivers],
+	);
+
+	const sortedDriversByVehicleNumber = useMemo(
+		() => selectDriversSortedByVehicleNumber(drivers),
+		[drivers],
+	);
+
+	// 🎯 기사 생성 - RTK Query 사용 (UseCase 로직은 API 레이어에서 처리)
+	const handleCreateDriver = useCallback(
+		async (data: CreateDriverRequest) => {
+			try {
+				const result = await createDriverMutation(data).unwrap();
+				setLastCreatedPassword(result.password);
+				return { success: true, data: result };
+			} catch (error: unknown) {
+				if ("data" in (error as FetchBaseQueryError)) {
+					const err = error as FetchBaseQueryError;
+					throw new Error(
+						(err.data as { error?: string })?.error ||
+							"기사 생성에 실패했습니다.",
+					);
+				}
+				throw new Error("기사 생성에 실패했습니다.");
+			}
+		},
+		[createDriverMutation],
+	);
+
+	// 🎯 기사 수정
+	const handleUpdateDriver = useCallback(
+		async (data: UpdateDriverRequest) => {
+			try {
+				const result = await updateDriverMutation(data).unwrap();
+				return { success: true, data: result };
+			} catch (error: unknown) {
+				if ("data" in (error as FetchBaseQueryError)) {
+					const err = error as FetchBaseQueryError;
+					throw new Error(
+						(err.data as { error?: string })?.error ||
+							"기사 정보 수정에 실패했습니다.",
+					);
+				}
+				throw new Error("기사 정보 수정에 실패했습니다.");
+			}
+		},
+		[updateDriverMutation],
+	);
+
+	// 🎯 기사 삭제
+	const handleDeleteDriver = useCallback(
+		async (driverId: string) => {
+			try {
+				await deleteDriverMutation(driverId).unwrap();
+				return { success: true };
+			} catch (error: unknown) {
+				if ("data" in (error as FetchBaseQueryError)) {
+					const err = error as FetchBaseQueryError;
+					throw new Error(
+						(err.data as { error?: string })?.error ||
+							"기사 삭제에 실패했습니다.",
+					);
+				}
+				throw new Error("기사 삭제에 실패했습니다.");
+			}
+		},
+		[deleteDriverMutation],
+	);
 
 	// 마지막 생성된 비밀번호 초기화
-	const handleClearLastPassword = () => {
+	const handleClearLastPassword = useCallback(() => {
 		setLastCreatedPassword(null);
-	};
+	}, []);
 
 	return {
 		drivers,
 		isLoading,
-		error: error ? "error" : null,
+		error,
 		lastCreatedPassword,
 		loadDrivers,
 		handleCreateDriver,
 		handleUpdateDriver,
 		handleDeleteDriver,
 		handleClearLastPassword,
+		// 셀렉터 결과
+		driversByGroup,
+		driverById,
+		sortedDriversByGroup,
+		sortedDriversByVehicleNumber,
 	};
 };

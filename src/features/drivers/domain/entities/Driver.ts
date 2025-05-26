@@ -2,22 +2,23 @@ export interface Driver {
 	id: string;
 	userId: string;
 	vehicleNumber: string;
-	groupNumber: number;
+	group: string;
 	dumpWeight: number;
-	passwordHash: string;
+	password: string;
 	createdAt: string;
 	updatedAt?: string;
 }
 
 export interface CreateDriverRequest {
 	vehicleNumber: string;
-	groupNumber: number;
+	group: string;
 	dumpWeight: number;
 }
 
 export interface UpdateDriverRequest {
 	id: string;
-	groupNumber?: number;
+	vehicleNumber?: string;
+	group?: string;
 	dumpWeight?: number;
 }
 

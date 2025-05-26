@@ -16,10 +16,10 @@ export interface AdminUser extends BaseUser {
 export interface DriverUser extends BaseUser {
 	userType: "driver";
 	dumpWeight: number;
-	groupNumber: string;
+	group: string;
 	vehicleNumber: string;
 	createdAt: string;
-	passwordHash: string;
+	password: string;
 }
 
 export type AuthUser = AdminUser | DriverUser;

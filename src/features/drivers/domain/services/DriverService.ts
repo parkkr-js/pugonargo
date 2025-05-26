@@ -13,11 +13,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../../../firebase/firebaseConfig";
-import {
-	generatePassword,
-	generateUserId,
-	hashPassword,
-} from "../../../../utils/password";
+import { generatePassword, generateUserId } from "../../../../utils/password";
 import type {
 	CreateDriverRequest,
 	CreateDriverResponse,
@@ -30,14 +26,13 @@ import type { DriverRepository } from "../interfaces/DriverRepository";
 interface FirebaseDriverDoc {
 	userId: string;
 	vehicleNumber: string;
-	groupNumber: number;
+	group: string;
 	dumpWeight: number;
-	passwordHash: string;
+	password: string;
 	createdAt: Timestamp;
 	updatedAt?: Timestamp;
 }
 
-// 🔥 Date 직렬화 헬퍼 함수
 const serializeTimestamp = (
 	timestamp: Timestamp | undefined,
 ): string | undefined => {
@@ -68,9 +63,9 @@ export class DriverService implements DriverRepository {
 					id: docSnapshot.id,
 					userId: data.userId,
 					vehicleNumber: data.vehicleNumber,
-					groupNumber: data.groupNumber,
+					group: data.group,
 					dumpWeight: data.dumpWeight,
-					passwordHash: data.passwordHash,
+					password: data.password,
 					createdAt: serializeTimestampRequired(data.createdAt),
 					updatedAt: serializeTimestamp(data.updatedAt),
 				} satisfies Driver;
@@ -99,12 +94,11 @@ export class DriverService implements DriverRepository {
 		try {
 			const exists = await this.checkVehicleNumberExists(data.vehicleNumber);
 			if (exists) {
-				throw new Error("이미 존재하는 차량번호입니다.");
+				throw new Error(`이미 등록된 차량번호(${data.vehicleNumber})입니다.`);
 			}
 
 			const userId = generateUserId(data.vehicleNumber);
 			const password = generatePassword();
-			const passwordHash = hashPassword(password);
 			const now = new Date();
 
 			// 🔥 Firebase에 저장할 데이터 (Timestamp 사용)
@@ -114,9 +108,9 @@ export class DriverService implements DriverRepository {
 			> = {
 				userId,
 				vehicleNumber: data.vehicleNumber,
-				groupNumber: data.groupNumber,
+				group: data.group,
 				dumpWeight: data.dumpWeight,
-				passwordHash,
+				password,
 				createdAt: Timestamp.fromDate(now),
 			};
 
@@ -125,23 +119,26 @@ export class DriverService implements DriverRepository {
 				newDriverData,
 			);
 
-			// 🔥 반환할 데이터 (string 타입으로 직렬화)
 			const driver: Driver = {
 				id: docRef.id,
 				userId,
 				vehicleNumber: data.vehicleNumber,
-				groupNumber: data.groupNumber,
+				group: data.group,
 				dumpWeight: data.dumpWeight,
-				passwordHash,
+				password,
 				createdAt: now.toISOString(),
 			};
 
 			return { driver, password };
 		} catch (error: unknown) {
 			console.error("기사 생성 실패:", error);
-			throw error instanceof Error
-				? error
-				: new Error("기사를 추가하는데 실패했습니다.");
+			if (
+				error instanceof Error &&
+				error.message.includes("이미 등록된 차량번호")
+			) {
+				throw error;
+			}
+			throw new Error("기사 생성 중 오류가 발생했습니다.");
 		}
 	}
 
@@ -152,8 +149,11 @@ export class DriverService implements DriverRepository {
 			// 🔥 업데이트할 데이터 준비
 			const updateData: Partial<FirebaseDriverDoc> = {};
 
-			if (data.groupNumber !== undefined) {
-				updateData.groupNumber = data.groupNumber;
+			if (data.vehicleNumber !== undefined) {
+				updateData.vehicleNumber = data.vehicleNumber;
+			}
+			if (data.group !== undefined) {
+				updateData.group = data.group;
 			}
 			if (data.dumpWeight !== undefined) {
 				updateData.dumpWeight = data.dumpWeight;
@@ -175,17 +175,21 @@ export class DriverService implements DriverRepository {
 				id: data.id,
 				userId: updatedData.userId,
 				vehicleNumber: updatedData.vehicleNumber,
-				groupNumber: updatedData.groupNumber,
+				group: updatedData.group,
 				dumpWeight: updatedData.dumpWeight,
-				passwordHash: updatedData.passwordHash,
+				password: updatedData.password,
 				createdAt: serializeTimestampRequired(updatedData.createdAt),
 				updatedAt: serializeTimestamp(updatedData.updatedAt),
 			} satisfies Driver;
 		} catch (error: unknown) {
 			console.error("기사 수정 실패:", error);
-			throw error instanceof Error
-				? error
-				: new Error("기사 정보를 수정하는데 실패했습니다.");
+			if (
+				error instanceof Error &&
+				error.message.includes("이미 등록된 차량번호")
+			) {
+				throw error; // 중복 차량번호 에러는 그대로 전달
+			}
+			throw new Error("기사 정보 수정 중 오류가 발생했습니다.");
 		}
 	}
 

@@ -1,43 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isAdmin() {
-      return request.auth != null 
-             && exists(/databases/$(database)/documents/adminUser/$(request.auth.uid));
-    }
-    
-    // 관리자 사용자 컬렉션
-    match /adminUser/{adminId} {
-      allow read, write: if isAdmin();
-    }
-    
-    // 일반 사용자 컬렉션 (기사님들)
-    match /users/{userId} {
-      // 관리자는 모든 사용자 읽기/쓰기 가능
-      allow read, write: if isAdmin();
-      // 일반 사용자는 자신의 정보만 읽기 가능 (로그인 시 필요)
-      allow read: if true; // 로그인 검증을 위해 모든 사용자 읽기 허용
-    }
-    
-    // 차량 데이터
-    match /vehicles/{document} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    
-    // 정비 기록
-    match /maintenanceRecords/{document} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-    
-    // 월별 집계 (관리자 전용)
-    match /monthlyAggregates/{document} {
-      allow read, write: if isAdmin();
+    match /{document=**} {
+      allow read, write: if true; // 임시로 모든 접근 허용 (테스트용)
     }
   }
 }

@@ -1,13 +1,14 @@
-import { Button, Pagination, Table } from "antd";
-import type React from "react";
+// src/routes/ManageDriversPage.tsx
+import { App, Button, Pagination, Table } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Driver } from "../features/drivers/domain/entities/Driver";
 import { useDrivers } from "../features/drivers/presentation/hooks/useDrivers";
 import { AddDriverModal } from "../ui/deskTop/components/manageDrivers/AddDriverModal";
 import { EditDriverModal } from "../ui/deskTop/components/manageDrivers/EditDriverModal";
 
-export const ManageDriversPage: React.FC = () => {
+export const ManageDriversPage = () => {
 	const { drivers, isLoading, loadDrivers } = useDrivers();
+	const { message } = App.useApp();
 
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showEditModal, setShowEditModal] = useState(false);
@@ -28,13 +29,33 @@ export const ManageDriversPage: React.FC = () => {
 	const handleCloseEditModal = useCallback(() => {
 		setShowEditModal(false);
 		setSelectedDriver(null);
-		// loadDrivers(); ← 이 줄 삭제 (자동 캐시 무효화됨)
 	}, []);
 
 	const handleCloseAddModal = useCallback(() => {
 		setShowAddModal(false);
-		// loadDrivers(); ← 이 줄 삭제 (자동 캐시 무효화됨)
 	}, []);
+
+	const handleAddSuccess = useCallback(() => {
+		message.success("기사님이 성공적으로 추가되었습니다.");
+		loadDrivers();
+	}, [loadDrivers, message]);
+
+	const handleUpdateSuccess = useCallback(() => {
+		message.success("기사님 정보가 성공적으로 수정되었습니다.");
+		loadDrivers();
+	}, [loadDrivers, message]);
+
+	const handleDeleteSuccess = useCallback(() => {
+		message.success("기사님이 성공적으로 삭제되었습니다.");
+		loadDrivers();
+	}, [loadDrivers, message]);
+
+	const handleError = useCallback(
+		(errorMessage: string) => {
+			message.error(errorMessage);
+		},
+		[message],
+	);
 
 	const columns = useMemo(
 		() => [
@@ -44,12 +65,6 @@ export const ManageDriversPage: React.FC = () => {
 				width: 60,
 				render: (_: unknown, __: unknown, index: number) =>
 					(currentPage - 1) * pageSize + index + 1,
-			},
-			{
-				title: "사용자 ID",
-				dataIndex: "userId",
-				key: "userId",
-				width: 100,
 			},
 			{
 				title: "차량번호",
@@ -62,27 +77,33 @@ export const ManageDriversPage: React.FC = () => {
 				dataIndex: "dumpWeight",
 				key: "dumpWeight",
 				width: 150,
-				render: (value: number) => `${value}톤`,
+				render: (value: number) => `${value}`,
 			},
 			{
 				title: "그룹",
-				dataIndex: "groupNumber",
-				key: "groupNumber",
+				dataIndex: "group",
+				key: "group",
 				width: 100,
-				render: (value: number) => `#${value}그룹`,
+				render: (value: string) => `${value}`,
 			},
 			{
 				title: "관리",
 				key: "action",
-				width: 80,
+				width: 100,
 				render: (_: unknown, record: Driver) => (
 					<Button
 						size="small"
 						onClick={() => handleManage(record)}
 						style={{
-							border: "1px solid #d9d9d9",
+							backgroundColor: "rgba(153, 153, 153, 0.1)",
+							borderColor: "rgba(153, 153, 153, 0.1)",
+							color: "#000C78",
+							width: 80,
 							borderRadius: 4,
-							backgroundColor: "#fff",
+							padding: "4px 8px",
+							display: "flex",
+							alignItems: "center",
+							gap: 4,
 						}}
 					>
 						관리
@@ -91,11 +112,11 @@ export const ManageDriversPage: React.FC = () => {
 			},
 		],
 		[currentPage, handleManage],
-	); // 🔥 pageSize 제거 (상수이므로 불필요)
+	);
 
 	const paginatedData = useMemo(
 		() => drivers.slice((currentPage - 1) * pageSize, currentPage * pageSize),
-		[drivers, currentPage], // 🔥 pageSize 제거 (상수이므로 불필요)
+		[drivers, currentPage],
 	);
 
 	return (
@@ -112,9 +133,6 @@ export const ManageDriversPage: React.FC = () => {
 				>
 					기사님 관리
 				</h2>
-				<p style={{ margin: 0, color: "#666", fontSize: 14 }}>
-					기사님 계정을 추가하고 관리하세요
-				</p>
 			</div>
 
 			{/* 통계 및 추가 버튼 */}
@@ -138,14 +156,15 @@ export const ManageDriversPage: React.FC = () => {
 					type="primary"
 					onClick={() => setShowAddModal(true)}
 					style={{
-						backgroundColor: "#1890ff",
-						borderColor: "#1890ff",
+						backgroundColor: "rgba(153, 153, 153, 0.1)",
+						borderColor: "rgba(153, 153, 153, 0.1)",
+						color: "#000C78",
 						display: "flex",
 						alignItems: "center",
 						gap: 4,
 					}}
 				>
-					👤 사용자 추가
+					기사님 추가
 				</Button>
 			</div>
 
@@ -175,13 +194,21 @@ export const ManageDriversPage: React.FC = () => {
 				/>
 			</div>
 
-			{/* 모달들 */}
-			<AddDriverModal visible={showAddModal} onCancel={handleCloseAddModal} />
+			{/* 🔥 개선된 모달들 - 성공/에러 콜백 추가 */}
+			<AddDriverModal
+				visible={showAddModal}
+				onCancel={handleCloseAddModal}
+				onSuccess={handleAddSuccess}
+				onError={handleError}
+			/>
 
 			<EditDriverModal
 				visible={showEditModal}
 				driver={selectedDriver}
 				onCancel={handleCloseEditModal}
+				onUpdateSuccess={handleUpdateSuccess}
+				onDeleteSuccess={handleDeleteSuccess}
+				onError={handleError}
 			/>
 		</div>
 	);

@@ -1,10 +1,11 @@
-import { Button, Form, Input, message } from "antd";
+import { App, Button, Form, Input } from "antd";
 import { useCallback } from "react";
 import type { LoginCredentials } from "../../features/auth/domain/entities/AuthTypes";
 import { useAuth } from "../../features/auth/presentation/hooks/useAuth";
 
 export const LoginForm = () => {
 	const { login, isLoading } = useAuth();
+	const { message } = App.useApp();
 
 	const handleSubmit = useCallback(
 		async (values: LoginCredentials) => {
@@ -19,7 +20,7 @@ export const LoginForm = () => {
 				});
 			}
 		},
-		[login],
+		[login, message],
 	);
 
 	return (

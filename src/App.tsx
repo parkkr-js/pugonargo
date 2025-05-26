@@ -1,4 +1,6 @@
+// App.js - AntApp 제거 (Layout에서 처리)
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { App as AntApp, ConfigProvider } from "antd";
 import { Provider } from "react-redux";
 import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
@@ -12,7 +14,17 @@ if (!clientId) {
 const App = () => (
 	<GoogleOAuthProvider clientId={clientId}>
 		<Provider store={store}>
-			<RouterProvider router={router} />
+			<ConfigProvider
+				theme={{
+					token: {
+						colorPrimary: "#1890ff",
+					},
+				}}
+			>
+				<AntApp>
+					<RouterProvider router={router} />
+				</AntApp>
+			</ConfigProvider>
 		</Provider>
 	</GoogleOAuthProvider>
 );
