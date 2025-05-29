@@ -46,7 +46,11 @@ export const AddDriverModal: React.FC<AddDriverModalProps> = ({
 			dumpWeight: number;
 		}) => {
 			try {
-				await handleCreateDriver(values);
+				await handleCreateDriver({
+					...values,
+					password: previewPassword,
+					userId: previewUserId,
+				});
 				form.resetFields();
 				setPreviewUserId("");
 				setPreviewPassword("");
@@ -61,7 +65,15 @@ export const AddDriverModal: React.FC<AddDriverModalProps> = ({
 				}
 			}
 		},
-		[handleCreateDriver, form, onCancel, onSuccess, onError],
+		[
+			handleCreateDriver,
+			form,
+			onCancel,
+			onSuccess,
+			onError,
+			previewPassword,
+			previewUserId,
+		],
 	);
 
 	const handleClose = useCallback(() => {

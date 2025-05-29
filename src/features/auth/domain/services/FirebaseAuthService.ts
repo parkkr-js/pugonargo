@@ -27,24 +27,25 @@ export class FirebaseAuthService implements IAuthRepository {
 		// 관리자 사용자 조회 시도
 		const adminUser = await this.findAdminUserByEmail(email);
 		if (adminUser) {
-			// Firebase 인증
+			// Firebase 인증 (관리자만)
 			const userCredential = await signInWithEmailAndPassword(
 				this.auth,
 				email,
 				password,
 			);
-			await this.updateLastLoginAt(userCredential.user.uid);
+			await this.updateLastLoginAt(userCredential.user.uid, "admin");
 			return adminUser;
 		}
 
 		// 기사 사용자 조회 시도
 		const driverUser = await this.findDriverUserByUserId(email);
 		if (driverUser) {
-			// 비밀번호 검증
+			// 비밀번호 검증 (Firebase 인증 없이)
 			if (password !== driverUser.password) {
 				throw new Error("비밀번호가 일치하지 않습니다.");
 			}
-			await this.updateLastLoginAt(driverUser.id);
+			// 기사는 Firebase 인증 없이 lastLoginAt만 업데이트
+			await this.updateLastLoginAt(driverUser.id, "driver");
 			return driverUser;
 		}
 
@@ -176,30 +177,25 @@ export class FirebaseAuthService implements IAuthRepository {
 		};
 	}
 
-	private async updateLastLoginAt(userId: string): Promise<void> {
-		const currentUser = this.auth.currentUser;
-		if (!currentUser) {
-			throw new Error("인증된 사용자가 없습니다.");
-		}
+	private async updateLastLoginAt(
+		userId: string,
+		userType: "admin" | "driver",
+	): Promise<void> {
+		if (userType === "admin") {
+			// 관리자는 Firebase 인증 사용자 확인
+			const currentUser = this.auth.currentUser;
+			if (!currentUser) {
+				throw new Error("인증된 사용자가 없습니다.");
+			}
 
-		// 관리자 사용자인지 확인
-		const adminDoc = await getDoc(doc(db, "adminUser", userId));
-		if (adminDoc.exists()) {
 			await updateDoc(doc(db, "adminUser", userId), {
 				lastLoginAt: serverTimestamp(),
 			});
-			return;
-		}
-
-		// 기사 사용자인지 확인
-		const driverDoc = await getDoc(doc(db, "drivers", userId));
-		if (driverDoc.exists()) {
+		} else {
+			// 기사는 Firebase 인증 없이 직접 업데이트
 			await updateDoc(doc(db, "drivers", userId), {
 				lastLoginAt: serverTimestamp(),
 			});
-			return;
 		}
-
-		throw new Error("사용자 정보를 찾을 수 없습니다.");
 	}
 }

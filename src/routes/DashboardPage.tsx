@@ -1,14 +1,16 @@
+import { useState } from "react";
+import { PaymentSummaryCards } from "../features/paymentSummary/presentation/components/PaymentSummaryCards";
+import YearMonthSelector from "../features/paymentSummary/presentation/components/YearMonthSelector";
+
 export const DashboardPage = () => {
+	const [selectedYearMonth, setSelectedYearMonth] = useState<string>("");
+
 	return (
-		<div
-			style={{
-				padding: "24px",
-				backgroundColor: "#fff",
-				minHeight: "100vh",
-			}}
-		>
-			<h1>대시보드</h1>
-			<p>여기에 대시보드 내용을 추가하세요.</p>
-		</div>
+		<>
+			<YearMonthSelector onYearMonthChange={setSelectedYearMonth} />
+			{selectedYearMonth && (
+				<PaymentSummaryCards dateRange={selectedYearMonth} />
+			)}
+		</>
 	);
 };

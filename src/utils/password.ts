@@ -20,6 +20,5 @@ export const generatePassword = (): string => {
 };
 
 export const generateUserId = (vehicleNumber: string): string => {
-	// 차량번호 기반 ID 생성 (예: 2412 → D2412)
 	return `D${vehicleNumber}`;
 };

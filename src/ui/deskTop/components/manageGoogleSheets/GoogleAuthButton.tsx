@@ -18,7 +18,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 }) => {
 	const login = useGoogleLogin({
 		scope:
-			"https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets.readonly",
+			"https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets.readonly",
 		onSuccess: (tokenResponse) => {
 			onSuccess(tokenResponse.access_token);
 		},

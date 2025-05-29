@@ -13,6 +13,8 @@ export interface CreateDriverRequest {
 	vehicleNumber: string;
 	group: string;
 	dumpWeight: number;
+	password: string;
+	userId: string;
 }
 
 export interface UpdateDriverRequest {

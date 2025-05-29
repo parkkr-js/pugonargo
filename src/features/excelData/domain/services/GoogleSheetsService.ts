@@ -53,7 +53,25 @@ export class GoogleSheetsService {
 		);
 
 		if (!response.ok) {
-			throw new Error("Excel 파일을 구글 스프레드시트로 변환하지 못했습니다.");
+			let errorInfo = "";
+			try {
+				const errorBody = await response.json();
+				errorInfo = JSON.stringify(errorBody, null, 2);
+				console.error("Google Drive API 에러 상세:", errorInfo);
+			} catch (jsonError) {
+				errorInfo = await response.text();
+				console.error("Google Drive API 에러 응답:", errorInfo);
+			}
+
+			if (response.status === 403) {
+				throw new Error(
+					`Google Drive 파일에 대한 복사 권한이 없습니다. 파일 소유자에게 문의하거나 편집 권한을 요청하세요.\n상세 정보: ${errorInfo || "없음"}`,
+				);
+			}
+
+			throw new Error(
+				`Excel 파일을 구글 스프레드시트로 변환하지 못했습니다 (상태: ${response.status}).\n상세 정보: ${errorInfo || "없음"}`,
+			);
 		}
 
 		const convertedFile = await response.json();
@@ -187,8 +205,10 @@ export class GoogleSheetsService {
 				"L14:L", // 그룹
 				"M14:M", // 지급 중량
 				"N14:N", // 지급 단가
-				"O14:O", // 금액
+				"O14:O", // 금액 (O열)
+				"I14:I", // 금액 (I열)
 				"P14:P", // 비고
+				"Q14:Q", // 금액 (Q열)
 			];
 
 			const response = await fetch(
@@ -234,8 +254,10 @@ export class GoogleSheetsService {
 			const groups = extractColumnData(3); // L열
 			const weights = extractColumnData(4); // M열
 			const unitPrices = extractColumnData(5); // N열
-			const amounts = extractColumnData(6); // O열
-			const memos = extractColumnData(7); // P열
+			const columnOAmount = extractColumnData(6); // O열
+			const columnIAmount = extractColumnData(7); // I열
+			const memos = extractColumnData(8); // P열
+			const columnQAmount = extractColumnData(9); // Q열
 
 			// 데이터 변환
 			const excelData: ExcelData[] = [];
@@ -285,6 +307,13 @@ export class GoogleSheetsService {
 					continue;
 				}
 
+				// I열 금액 파싱 (숫자만 추출)
+				const iAmountStr = columnIAmount[i]?.toString() || "";
+				const iAmountMatch = iAmountStr.match(/[\d,]+/);
+				const parsedIAmount = iAmountMatch
+					? Number(iAmountMatch[0].replace(/,/g, ""))
+					: 0;
+
 				const rowData: ExcelData = {
 					year,
 					month: month.padStart(2, "0"),
@@ -294,8 +323,10 @@ export class GoogleSheetsService {
 					transportRoute: transportRoute || "",
 					chargeableWeight: Number(weights[i]) || 0,
 					unitPrice: unitPrices[i] ? Number(unitPrices[i]) : 0,
-					amount: amounts[i] ? Number(amounts[i]) : 0,
+					columnIAmount: parsedIAmount,
+					columnOAmount: columnOAmount[i] ? Number(columnOAmount[i]) : 0,
 					memo: memos[i]?.trim() || "",
+					columnQAmount: columnQAmount[i] ? Number(columnQAmount[i]) : 0,
 				};
 
 				excelData.push(rowData);

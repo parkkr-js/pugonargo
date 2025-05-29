@@ -13,7 +13,6 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../../../firebase/firebaseConfig";
-import { generatePassword, generateUserId } from "../../../../utils/password";
 import type {
 	CreateDriverRequest,
 	CreateDriverResponse,
@@ -97,8 +96,6 @@ export class DriverService implements DriverRepository {
 				throw new Error(`이미 등록된 차량번호(${data.vehicleNumber})입니다.`);
 			}
 
-			const userId = generateUserId(data.vehicleNumber);
-			const password = generatePassword();
 			const now = new Date();
 
 			// 🔥 Firebase에 저장할 데이터 (Timestamp 사용)
@@ -106,11 +103,11 @@ export class DriverService implements DriverRepository {
 				FirebaseDriverDoc,
 				"updatedAt" | "lastLoginAt"
 			> = {
-				userId,
+				userId: data.userId,
 				vehicleNumber: data.vehicleNumber,
 				group: data.group,
 				dumpWeight: data.dumpWeight,
-				password,
+				password: data.password,
 				createdAt: Timestamp.fromDate(now),
 			};
 
@@ -121,15 +118,15 @@ export class DriverService implements DriverRepository {
 
 			const driver: Driver = {
 				id: docRef.id,
-				userId,
+				userId: data.userId,
 				vehicleNumber: data.vehicleNumber,
 				group: data.group,
 				dumpWeight: data.dumpWeight,
-				password,
+				password: data.password,
 				createdAt: now.toISOString(),
 			};
 
-			return { driver, password };
+			return { driver, password: data.password };
 		} catch (error: unknown) {
 			console.error("기사 생성 실패:", error);
 			if (

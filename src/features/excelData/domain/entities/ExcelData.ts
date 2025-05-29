@@ -20,7 +20,12 @@ export interface ExcelData {
 	unitPrice?: number;
 
 	/** 금액 (O열14행부터 끝까지) */
-	amount?: number;
+	columnOAmount?: number;
+
+	/** 금액 (I열14행부터 끝까지) */
+	columnIAmount?: number;
+
+	columnQAmount?: number;
 
 	/** 비고 (P열14행부터 끝까지) */
 	memo?: string;

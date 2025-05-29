@@ -69,33 +69,47 @@ export const ManageGoogleSheetsPage = () => {
 
 			setProcessing(true);
 
-			try {
-				const sheetsService = new GoogleSheetsService(accessToken);
-				const firebaseService = new FirebaseService();
+			const sheetsService = new GoogleSheetsService(accessToken);
+			const firebaseService = new FirebaseService();
 
-				const { year, month } =
-					await sheetsService.extractYearMonthFromSheet(fileId);
-				const data = await sheetsService.fetchSheetData(fileId);
-
-				if (data.length === 0) {
-					message.warning("해당 시트에서 유효한 데이터를 찾을 수 없습니다.");
-					return;
-				}
-
-				await firebaseService.saveExcelData(data, year, month);
-
-				message.success(
-					`${fileName}의 데이터 ${data.length}개를 ${year}-${month} 컬렉션에 성공적으로 저장했습니다.`,
-				);
-			} catch (error) {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: "시트 데이터 처리에 실패했습니다.";
-				message.error(errorMessage);
-			} finally {
-				setProcessing(false);
-			}
+			sheetsService
+				.extractYearMonthFromSheet(fileId)
+				.then(({ year, month }) =>
+					sheetsService
+						.fetchSheetData(fileId)
+						.then((data) => ({ year, month, data })),
+				)
+				.then(({ year, month, data }) => {
+					if (data.length === 0) {
+						throw new Error("해당 시트에서 유효한 데이터를 찾을 수 없습니다.");
+					}
+					return { year, month, data };
+				})
+				.then(({ year, month, data }) =>
+					firebaseService
+						.saveExcelData(data, year, month)
+						.then(() => ({ year, month, data })),
+				)
+				.then(({ year, month, data }) =>
+					firebaseService
+						.saveYearMonthCollection(year, month)
+						.then(() => ({ year, month, data })),
+				)
+				.then(({ year, month, data }) => {
+					message.success(
+						`${fileName}의 데이터 ${data.length}개를 ${year}-${month} 컬렉션에 성공적으로 저장했습니다.`,
+					);
+				})
+				.catch((error) => {
+					const errorMessage =
+						error instanceof Error
+							? error.message
+							: "시트 데이터 처리에 실패했습니다.";
+					message.error(errorMessage);
+				})
+				.finally(() => {
+					setProcessing(false);
+				});
 		},
 		[accessToken, message],
 	);
