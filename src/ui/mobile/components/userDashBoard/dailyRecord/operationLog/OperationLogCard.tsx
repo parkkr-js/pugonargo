@@ -1,109 +1,90 @@
-import { Card, Col, Divider, Row, Typography } from "antd";
-import type React from "react";
+import { Card, Col, Row, Space, Typography } from "antd";
 import { selectFormattedOperationLog } from "../../../../../../features/operationLog/selectors/operationLog.selectors";
 import type { OperationLogCalculated } from "../../../../../../features/operationLog/types/operationLog.types";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface OperationLogCardProps {
 	operationLog: OperationLogCalculated;
 }
 
-export const OperationLogCard: React.FC<OperationLogCardProps> = ({
-	operationLog,
-}) => {
+export const OperationLogCard = ({ operationLog }: OperationLogCardProps) => {
 	const formatted = selectFormattedOperationLog(operationLog);
 
 	return (
-		<Card
-			style={{
-				marginBottom: 16,
-				borderRadius: 12,
-				boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-			}}
-			bodyStyle={{ padding: 20 }}
-		>
-			<Title level={4} style={{ margin: 0, marginBottom: 16 }}>
-				운행 내역
-			</Title>
+		<Card title="운행 내역">
+			{/* 운행 정보 */}
+			<Space direction="vertical" style={{ width: "100%" }}>
+				{/* 운송구간 */}
+				<Row justify="space-between" align="middle">
+					<Col>
+						<Text type="secondary">운송구간</Text>
+					</Col>
+					<Col>
+						<Text strong>{formatted.transportRoute}</Text>
+					</Col>
+				</Row>
 
-			<Row gutter={[0, 12]}>
-				<Col span={24}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Text type="secondary">운송구간</Text>
-						</Col>
-						<Col>
-							<Text strong style={{ fontSize: 16 }}>
-								{formatted.transportRoute}
-							</Text>
-						</Col>
-					</Row>
-				</Col>
+				{/* 지급중량 */}
+				<Row justify="space-between" align="middle">
+					<Col>
+						<Text type="secondary">지급중량</Text>
+					</Col>
+					<Col>
+						<Text strong>{formatted.chargeableWeight}</Text>
+					</Col>
+				</Row>
 
-				<Col span={24}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Text type="secondary">지급중량</Text>
-						</Col>
-						<Col>
-							<Text strong>{formatted.chargeableWeight}</Text>
-						</Col>
-					</Row>
-				</Col>
+				{/* 총 금액 */}
+				<Row justify="space-between" align="middle">
+					<Col>
+						<Text type="secondary">총 금액</Text>
+					</Col>
+					<Col>
+						<Text
+							style={{
+								color: "#1E266F",
+							}}
+						>
+							{formatted.totalAmount}
+						</Text>
+					</Col>
+				</Row>
 
-				<Col span={24}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Text type="secondary">총 금액</Text>
-						</Col>
-						<Col>
-							<Text strong style={{ fontSize: 18, color: "#1890ff" }}>
-								{formatted.totalAmount}
-							</Text>
-						</Col>
-					</Row>
-				</Col>
+				{/* 지입료 */}
+				<Row justify="space-between" align="middle">
+					<Col>
+						<Text type="secondary">지입료(5%)</Text>
+					</Col>
+					<Col>
+						<Text
+							style={{
+								color: "#1E266F",
+							}}
+						>
+							{formatted.commissionFee}
+						</Text>
+					</Col>
+				</Row>
 
-				<Col span={24}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Text type="secondary">지입료(5%)</Text>
-						</Col>
-						<Col>
-							<Text style={{ color: "#ff4d4f" }}>
-								{formatted.commissionFee}
-							</Text>
-						</Col>
-					</Row>
-				</Col>
-
-				<Col span={24}>
-					<Divider style={{ margin: "12px 0" }} />
-				</Col>
-
-				<Col span={24}>
-					<Row justify="space-between" align="middle">
-						<Col>
-							<Text strong style={{ fontSize: 16 }}>
-								공제 후 금액
-							</Text>
-						</Col>
-						<Col>
-							<Text
-								strong
-								style={{
-									fontSize: 20,
-									color: "#52c41a",
-									fontWeight: 600,
-								}}
-							>
-								{formatted.finalAmount}
-							</Text>
-						</Col>
-					</Row>
-				</Col>
-			</Row>
+				{/* 공제 후 금액 */}
+				<Row justify="space-between" align="middle">
+					<Col>
+						<Text strong>공제 후 금액</Text>
+					</Col>
+					<Col>
+						<Text
+							strong
+							style={{
+								color: "#1E266F",
+								fontWeight: 800,
+							}}
+						>
+							{formatted.finalAmount}
+						</Text>
+					</Col>
+				</Row>
+			</Space>
 		</Card>
 	);
 };

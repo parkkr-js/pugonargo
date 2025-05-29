@@ -1,12 +1,13 @@
-// src/features/fuel/services/fuelService.ts
 import {
 	addDoc,
 	collection,
 	deleteDoc,
 	doc,
+	getDoc,
 	getDocs,
 	orderBy,
 	query,
+	updateDoc,
 	where,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
@@ -15,7 +16,7 @@ import type { Fuel } from "../types/fuel.interface";
 export class FuelService {
 	private readonly collectionName = "fuel";
 
-	// Firebase에서 데이터 조회 (순수한 데이터 접근만)
+	// 기존: 날짜별 조회
 	async getFuelRecords(
 		vehicleNumber: string,
 		year: string,
@@ -35,19 +36,68 @@ export class FuelService {
 		return querySnapshot.docs.map(
 			(doc) =>
 				({
-					id: doc.id, // 🎯 Firebase 자동 생성 ID 사용
+					id: doc.id,
 					...doc.data(),
 				}) as Fuel,
 		);
 	}
 
-	// 🎯 Firebase 자동 ID로 문서 생성 (가장 간단하고 안전한 방식)
+	// 기존: 문서 생성
 	async createFuelRecord(fuelData: Omit<Fuel, "id">): Promise<string> {
 		const docRef = await addDoc(collection(db, this.collectionName), fuelData);
-		return docRef.id; // Firebase가 자동 생성한 고유 ID 반환
+		return docRef.id;
 	}
 
-	// Firebase에서 특정 날짜의 모든 연료 기록 삭제
+	// ✅ 새로 추가: 개별 문서 조회
+	async getFuelRecordById(recordId: string): Promise<Fuel | null> {
+		try {
+			const docRef = doc(db, this.collectionName, recordId);
+			const docSnap = await getDoc(docRef);
+
+			if (docSnap.exists()) {
+				return {
+					id: docSnap.id,
+					...docSnap.data(),
+				} as Fuel;
+			}
+			return null;
+		} catch (error) {
+			console.error("Failed to get fuel record by ID:", error);
+			throw new Error("주유 기록을 찾을 수 없습니다.");
+		}
+	}
+
+	// ✅ 새로 추가: 개별 문서 수정
+	async updateFuelRecord(
+		recordId: string,
+		updateData: Partial<Omit<Fuel, "id" | "createdAt">>,
+	): Promise<void> {
+		try {
+			const docRef = doc(db, this.collectionName, recordId);
+			const updatedData = {
+				...updateData,
+				updatedAt: new Date().toISOString(),
+			};
+
+			await updateDoc(docRef, updatedData);
+		} catch (error) {
+			console.error("Failed to update fuel record:", error);
+			throw new Error("주유 기록 수정에 실패했습니다.");
+		}
+	}
+
+	// ✅ 새로 추가: 개별 문서 삭제
+	async deleteFuelRecord(recordId: string): Promise<void> {
+		try {
+			const docRef = doc(db, this.collectionName, recordId);
+			await deleteDoc(docRef);
+		} catch (error) {
+			console.error("Failed to delete fuel record:", error);
+			throw new Error("주유 기록 삭제에 실패했습니다.");
+		}
+	}
+
+	// 기존: 날짜별 전체 삭제 (유지)
 	async deleteFuelRecordsByDate(
 		vehicleNumber: string,
 		year: string,
@@ -55,11 +105,9 @@ export class FuelService {
 		day: string,
 	): Promise<void> {
 		const records = await this.getFuelRecords(vehicleNumber, year, month, day);
-
 		const deletePromises = records.map((record) =>
 			deleteDoc(doc(db, this.collectionName, record.id)),
 		);
-
 		await Promise.all(deletePromises);
 	}
 }

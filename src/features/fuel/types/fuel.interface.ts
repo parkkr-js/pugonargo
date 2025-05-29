@@ -1,6 +1,6 @@
 // src/features/fuel/types/fuel.interface.ts
 export interface Fuel {
-	id: string; // 중복 불가능하고 나중에 기사차량번호로 필터링 쉽게 'vehicleNumber-uuid' 조합으로 만들고 이게 파이어베이스 docId로 사용되어야함.
+	id: string;
 	vehicleNumber: string;
 	year: string;
 	month: string;

@@ -5,6 +5,7 @@ import { driverApi } from "../features/drivers/application/api/driver.api";
 import { fuelApi } from "../features/fuel/api/fuel.api";
 import { operationLogApi } from "../features/operationLog/api/operationLog.api";
 import { paymentSummaryApi } from "../features/paymentSummary/api/paymentSummary.api";
+import { repairApi } from "../features/repair/api/repair.api";
 
 export const store = configureStore({
 	reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
 		[driverApi.reducerPath]: driverApi.reducer,
 		[paymentSummaryApi.reducerPath]: paymentSummaryApi.reducer,
 		[fuelApi.reducerPath]: fuelApi.reducer,
+		[repairApi.reducerPath]: repairApi.reducer,
 		[operationLogApi.reducerPath]: operationLogApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
@@ -20,6 +22,7 @@ export const store = configureStore({
 			driverApi.middleware,
 			paymentSummaryApi.middleware,
 			fuelApi.middleware,
+			repairApi.middleware,
 			operationLogApi.middleware,
 		),
 });
