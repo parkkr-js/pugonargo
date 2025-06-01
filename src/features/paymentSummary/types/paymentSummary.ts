@@ -11,9 +11,10 @@ export interface PaymentDocument {
 	id: string;
 	columnIAmount: number; // I열 금액 (청구금액)
 	columnOAmount: number; // O열 금액 (지급금액)
-	date: string; // 날짜 (yyyy-mm-dd 형식)
-	createdAt: string;
-	updatedAt?: string;
+	year: string; // "2025"
+	month: string; // "01"
+	day: string; // "18"
+	// createdAt, updatedAt 제거 (실제 Firebase 문서에 없음)
 }
 
 export interface PaymentSummaryRequest {

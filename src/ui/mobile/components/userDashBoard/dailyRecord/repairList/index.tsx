@@ -1,363 +1,215 @@
 import { PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, Col, Input, Row, Typography } from "antd";
-import { useState } from "react";
+import { Button, Card, Space, Typography, message } from "antd";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentUserVehicleNumber } from "../../../../../../features/auth/application/selectors/authSelector";
+import {
+	useCreateRepairRecordMutation,
+	useDeleteRepairRecordMutation,
+	useGetRepairRecordsQuery,
+	useUpdateRepairRecordMutation,
+} from "../../../../../../features/repair/api/repair.api";
+import type { Repair } from "../../../../../../features/repair/types/repair.interface";
+import { RepairForm } from "./RepairForm";
+import { RepairRecordItem } from "./RepairRecordItem";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface RepairListProps {
-	selectedDate: string; // 'yyyy-mm-dd' 형식
-}
-
-interface RepairFormData {
-	repairCost: number;
-	memo: string;
-}
-
-// 임시 수리 기록 타입 (실제 구현 시 적절한 타입으로 교체)
-interface RepairRecord {
-	id: string;
-	repairCost: number;
-	memo: string;
+	selectedDate: string;
 }
 
 export const RepairList = ({ selectedDate }: RepairListProps) => {
-	const { message } = App.useApp();
-	const [isFormVisible, setIsFormVisible] = useState(false);
-	const [isEditing, setIsEditing] = useState(false);
-	const [formData, setFormData] = useState<RepairFormData>({
-		repairCost: 0,
-		memo: "",
-	});
-	const [costInput, setCostInput] = useState("");
+	const [messageApi, contextHolder] = message.useMessage();
+	const [editingRecord, setEditingRecord] = useState<Repair | null>(null);
+	const [showAddForm, setShowAddForm] = useState(false);
 
 	const vehicleNumber = useSelector(selectCurrentUserVehicleNumber);
 
-	// 임시 데이터 (실제로는 API에서 가져올 데이터)
-	const [repairRecords, setRepairRecords] = useState<RepairRecord[]>([]);
-	const hasRepairRecords = repairRecords.length > 0;
+	const { data: repairRecords = [] } = useGetRepairRecordsQuery(
+		{ vehicleNumber, date: selectedDate },
+		{ skip: !vehicleNumber || !selectedDate },
+	);
 
-	const handleCostChange = (value: string) => {
-		const numericValue = Number.parseFloat(value) || 0;
-		if (numericValue < 0) return;
+	useEffect(() => {
+		console.log("Repair records fetched:", repairRecords);
+	}, [repairRecords]);
 
-		setCostInput(value);
-		setFormData((prev) => ({ ...prev, repairCost: numericValue }));
+	const [createRepairRecord, { isLoading: isCreating }] =
+		useCreateRepairRecordMutation();
+	const [updateRepairRecord, { isLoading: isUpdating }] =
+		useUpdateRepairRecordMutation();
+	const [deleteRepairRecord, { isLoading: isDeleting }] =
+		useDeleteRepairRecordMutation();
+
+	const handleAddNew = () => {
+		setEditingRecord(null);
+		setShowAddForm(true);
 	};
 
-	const handleMemoChange = (value: string) => {
-		setFormData((prev) => ({ ...prev, memo: value }));
+	const handleCancelForm = () => {
+		setEditingRecord(null);
+		setShowAddForm(false);
 	};
 
-	const resetForm = () => {
-		setFormData({ repairCost: 0, memo: "" });
-		setCostInput("");
-		setIsFormVisible(false);
-		setIsEditing(false);
+	const handleEditRecord = (record: Repair) => {
+		setEditingRecord(record);
+		setShowAddForm(false);
 	};
 
-	const resetFormData = () => {
-		setFormData({ repairCost: 0, memo: "" });
-		setCostInput("");
-	};
-
-	const handleAdd = () => {
-		setIsFormVisible(true);
-		setIsEditing(false);
-		resetFormData();
-	};
-
-	const handleCancel = () => {
-		resetForm();
-	};
-
-	const handleEdit = () => {
-		if (hasRepairRecords) {
-			const firstRecord = repairRecords[0];
-			setFormData({
-				repairCost: firstRecord.repairCost,
-				memo: firstRecord.memo,
-			});
-			setCostInput(firstRecord.repairCost.toString());
-			setIsFormVisible(true);
-			setIsEditing(true);
+	const handleDeleteRecord = async (recordId: string) => {
+		try {
+			await deleteRepairRecord({ recordId }).unwrap();
+			messageApi.success("정비 내역이 삭제되었습니다.");
+		} catch (error) {
+			console.error("Delete failed:", error);
+			messageApi.error("삭제에 실패했습니다.");
 		}
 	};
 
-	const handleSave = async () => {
+	const handleSaveRecord = async (
+		repairCost: number,
+		repairDescription: string,
+	) => {
 		try {
-			if (formData.repairCost <= 0) {
-				message.error("정비 비용을 입력해주세요.");
-				return;
-			}
+			if (editingRecord) {
+				await updateRepairRecord({
+					recordId: editingRecord.id,
+					repairCost,
+					repairDescription,
+				}).unwrap();
 
-			// 임시 구현 - 실제로는 API 호출
-			const newRecord: RepairRecord = {
-				id: Date.now().toString(),
-				repairCost: formData.repairCost,
-				memo: formData.memo || "",
-			};
-
-			if (isEditing) {
-				setRepairRecords([newRecord]);
-				message.success("수리 내역이 수정되었습니다.");
+				messageApi.success("정비 내역이 수정되었습니다.");
 			} else {
-				setRepairRecords((prev) => [...prev, newRecord]);
-				message.success("수리 내역이 저장되었습니다.");
+				await createRepairRecord({
+					vehicleNumber,
+					date: selectedDate,
+					repairCost,
+					repairDescription,
+				}).unwrap();
+
+				messageApi.success("정비 내역이 추가되었습니다.");
 			}
 
-			resetForm();
-		} catch (error) {
-			console.error("Repair record save error:", error);
-			message.error("저장에 실패했습니다. 다시 시도해주세요.");
+			setEditingRecord(null);
+			setShowAddForm(false);
+		} catch (error: unknown) {
+			console.error("Save failed:", error);
+
+			let errorMessage = "알 수 없는 오류가 발생했습니다.";
+
+			if (typeof error === "object" && error !== null) {
+				if (
+					"data" in error &&
+					typeof error.data === "object" &&
+					error.data !== null &&
+					"message" in error.data &&
+					typeof (error.data as { message: unknown }).message === "string"
+				) {
+					errorMessage = (error.data as { message: string }).message;
+				} else if (
+					"error" in error &&
+					typeof (error as { error: unknown }).error === "string"
+				) {
+					errorMessage = (error as { error: string }).error;
+				} else if (error instanceof Error) {
+					errorMessage = error.message;
+				}
+			}
+
+			if (
+				errorMessage.includes("validation failed") ||
+				errorMessage.includes("invalid input") ||
+				errorMessage.includes("Validation error")
+			) {
+				messageApi.error("저장에 실패했습니다: 입력 값을 확인해주세요.");
+			} else {
+				messageApi.error(`${errorMessage}`);
+			}
 		}
 	};
-
-	const handleDelete = async () => {
-		try {
-			// 임시 구현 - 실제로는 API 호출
-			setRepairRecords([]);
-			message.success("수리 내역이 삭제되었습니다.");
-		} catch (error) {
-			console.error("Repair record deletion error:", error);
-			message.error("삭제에 실패했습니다. 다시 시도해주세요.");
-		}
-	};
-
-	const isFormValid = formData.repairCost > 0;
 
 	if (!vehicleNumber) {
 		return (
-			<Card>
-				<Title level={5} style={{ fontSize: "16px", margin: "0 0 16px 0" }}>
-					수리 내역
-				</Title>
-				<div className="text-center py-8">
+			<Card title="정비 내역">
+				<Space
+					style={{ width: "100%", padding: "40px 0", textAlign: "center" }}
+				>
 					<Text type="secondary">해당 기능은 기사님만 이용 가능합니다.</Text>
-				</div>
+				</Space>
 			</Card>
 		);
 	}
 
+	const hasRecords = repairRecords.length > 0;
+
 	return (
-		<Card
-			styles={{
-				body: { padding: "20px" },
-			}}
-		>
-			<Title level={5} style={{ fontSize: "16px", margin: "0 0 16px 0" }}>
-				수리 내역
-			</Title>
-
-			{/* 기존 수리 내역 표시 */}
-			{!hasRepairRecords ? (
-				<div className="text-center py-6">
-					<Text type="secondary" style={{ fontSize: "14px" }}>
-						아직 입력된 수리 내역이 없습니다.
-					</Text>
-				</div>
-			) : (
-				<div className="space-y-3 mb-6">
-					{repairRecords.map((record, index) => (
-						<div key={record.id}>
-							<Row
-								justify="space-between"
-								align="middle"
-								style={{ marginBottom: "8px" }}
-							>
-								<Col>
-									<Text type="secondary" style={{ fontSize: "14px" }}>
-										정비 비용
-									</Text>
-								</Col>
-								<Col>
-									<Text style={{ fontSize: "14px" }}>
-										{record.repairCost.toLocaleString()} 원
-									</Text>
-								</Col>
-							</Row>
-
-							<Row
-								justify="space-between"
-								align="middle"
-								style={{ marginBottom: "8px" }}
-							>
-								<Col>
-									<Text type="secondary" style={{ fontSize: "14px" }}>
-										메모
-									</Text>
-								</Col>
-								<Col>
-									<Text style={{ fontSize: "14px" }}>{record.memo || "-"}</Text>
-								</Col>
-							</Row>
-
-							<Row
-								justify="space-between"
-								align="middle"
-								style={{
-									marginBottom: index < repairRecords.length - 1 ? "16px" : "0",
-								}}
-							>
-								<Col>
-									<Text strong style={{ fontSize: "14px" }}>
-										정비 비용
-									</Text>
-								</Col>
-								<Col>
-									<Text strong style={{ fontSize: "16px" }}>
-										{record.repairCost.toLocaleString()} 원
-									</Text>
-								</Col>
-							</Row>
-
-							{index < repairRecords.length - 1 && (
-								<div
-									style={{
-										height: "1px",
-										backgroundColor: "#f0f0f0",
-										margin: "12px 0",
-									}}
-								/>
-							)}
-						</div>
-					))}
-				</div>
-			)}
-
-			{/* 입력 폼 */}
-			{isFormVisible && (
-				<div
-					style={{
-						backgroundColor: "#f5f5f5",
-						borderRadius: "8px",
-						padding: "16px",
-						marginBottom: "16px",
-					}}
-				>
-					<div style={{ marginBottom: "16px" }}>
-						<Text
-							style={{
-								display: "block",
-								marginBottom: "8px",
-								fontSize: "14px",
-							}}
-						>
-							정비 비용
-						</Text>
-						<Input
-							type="number"
-							value={costInput}
-							onChange={(e) => handleCostChange(e.target.value)}
-							placeholder="정비 비용을 입력하세요"
-							suffix="원"
-							style={{ textAlign: "right" }}
-						/>
-					</div>
-
-					<div style={{ marginBottom: "16px" }}>
-						<Text
-							style={{
-								display: "block",
-								marginBottom: "8px",
-								fontSize: "14px",
-							}}
-						>
-							메모
-						</Text>
-						<Input
-							value={formData.memo}
-							onChange={(e) => handleMemoChange(e.target.value)}
-							placeholder="정비 내용을 작성해주세요"
-						/>
-					</div>
-
-					<Row
-						justify="space-between"
-						align="middle"
-						style={{ paddingTop: "12px", borderTop: "1px solid #d9d9d9" }}
+		<>
+			{contextHolder}
+			<Card title="정비 내역">
+				{hasRecords ? (
+					<Space
+						direction="vertical"
+						size="middle"
+						style={{ width: "100%", marginBottom: "20px" }}
 					>
-						<Col>
-							<Text strong style={{ fontSize: "14px" }}>
-								정비 비용
-							</Text>
-						</Col>
-						<Col>
-							<Text strong style={{ fontSize: "16px" }}>
-								{formData.repairCost.toLocaleString()} 원
-							</Text>
-						</Col>
-					</Row>
-				</div>
-			)}
-
-			{/* 버튼 영역 */}
-			<div className="space-y-3">
-				{/* 추가하기/취소하기 버튼 */}
-				{!hasRepairRecords && (
-					<Button
-						type="text"
-						icon={<PlusOutlined />}
-						onClick={isFormVisible ? handleCancel : handleAdd}
-						className="w-full border-dashed border"
+						{repairRecords.map((record) => (
+							<div key={record.id}>
+								<RepairRecordItem
+									record={record}
+									onEdit={() => handleEditRecord(record)}
+									onDelete={() => handleDeleteRecord(record.id)}
+									isLoading={isDeleting}
+								/>
+								{editingRecord?.id === record.id && (
+									<RepairForm
+										initialData={{
+											repairCost: editingRecord.repairCost,
+											repairDescription: editingRecord.repairDescription,
+										}}
+										onSave={handleSaveRecord}
+										onCancel={handleCancelForm}
+										isLoading={isUpdating}
+										isEditing={true}
+									/>
+								)}
+							</div>
+						))}
+					</Space>
+				) : (
+					<Space
 						style={{
-							height: "48px",
-							color: "#666",
+							width: "100%",
+							textAlign: "center",
+							justifyContent: "center",
+							padding: "0 0 20px 0",
 						}}
 					>
-						{isFormVisible ? "취소하기" : "추가하기"}
-					</Button>
+						<Text type="secondary">아직 입력된 정비 내역이 없습니다.</Text>
+					</Space>
 				)}
 
-				{/* 저장하기 버튼 (폼이 보일 때만) */}
-				{isFormVisible && (
+				{showAddForm && !editingRecord && (
+					<RepairForm
+						initialData={undefined}
+						onSave={handleSaveRecord}
+						onCancel={handleCancelForm}
+						isLoading={isCreating}
+						isEditing={false}
+					/>
+				)}
+
+				{!showAddForm && !editingRecord && (
 					<Button
 						type="primary"
-						onClick={handleSave}
-						disabled={!isFormValid}
-						className="w-full"
-						style={{
-							backgroundColor: "#1E266F",
-							borderColor: "#1E266F",
-							height: "48px",
-							fontSize: "16px",
-						}}
+						icon={<PlusOutlined />}
+						onClick={handleAddNew}
+						block
 					>
-						저장하기
+						추가하기
 					</Button>
 				)}
-
-				{/* 수정하기/삭제하기 버튼 (데이터가 있을 때) */}
-				{hasRepairRecords && !isFormVisible && (
-					<div style={{ display: "flex", gap: "8px" }}>
-						<Button
-							onClick={handleEdit}
-							style={{
-								flex: 1,
-								height: "48px",
-								fontSize: "16px",
-								border: "1px solid #d9d9d9",
-							}}
-						>
-							수정하기
-						</Button>
-						<Button
-							type="primary"
-							onClick={handleDelete}
-							style={{
-								flex: 1,
-								backgroundColor: "#1E266F",
-								borderColor: "#1E266F",
-								height: "48px",
-								fontSize: "16px",
-							}}
-						>
-							삭제하기
-						</Button>
-					</div>
-				)}
-			</div>
-		</Card>
+			</Card>
+		</>
 	);
 };

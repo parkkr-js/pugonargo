@@ -21,8 +21,8 @@ interface FuelListProps {
 
 export const FuelList = ({ selectedDate }: FuelListProps) => {
 	const [messageApi, contextHolder] = message.useMessage();
-	const [isFormVisible, setIsFormVisible] = useState(false);
 	const [editingRecord, setEditingRecord] = useState<Fuel | null>(null);
+	const [showAddForm, setShowAddForm] = useState(false);
 
 	const vehicleNumber = useSelector(selectCurrentUserVehicleNumber);
 
@@ -39,18 +39,18 @@ export const FuelList = ({ selectedDate }: FuelListProps) => {
 		useDeleteFuelRecordMutation();
 
 	const handleAddNew = () => {
-		setIsFormVisible(true);
 		setEditingRecord(null);
+		setShowAddForm(true);
 	};
 
 	const handleCancelForm = () => {
-		setIsFormVisible(false);
 		setEditingRecord(null);
+		setShowAddForm(false);
 	};
 
 	const handleEditRecord = (record: Fuel) => {
 		setEditingRecord(record);
-		setIsFormVisible(true);
+		setShowAddForm(false);
 	};
 
 	const handleDeleteRecord = async (recordId: string) => {
@@ -84,8 +84,8 @@ export const FuelList = ({ selectedDate }: FuelListProps) => {
 				messageApi.success("주유 내역이 추가되었습니다.");
 			}
 
-			setIsFormVisible(false);
 			setEditingRecord(null);
+			setShowAddForm(false);
 		} catch (error: unknown) {
 			console.error("Save failed:", error);
 
@@ -147,13 +147,27 @@ export const FuelList = ({ selectedDate }: FuelListProps) => {
 						style={{ width: "100%", marginBottom: "20px" }}
 					>
 						{fuelRecords.map((record) => (
-							<FuelRecordItem
-								key={record.id}
-								record={record}
-								onEdit={() => handleEditRecord(record)}
-								onDelete={() => handleDeleteRecord(record.id)}
-								isLoading={isDeleting}
-							/>
+							<div key={record.id}>
+								<FuelRecordItem
+									record={record}
+									onEdit={() => handleEditRecord(record)}
+									onDelete={() => handleDeleteRecord(record.id)}
+									isLoading={isDeleting}
+								/>
+								{editingRecord?.id === record.id && (
+									<FuelForm
+										initialData={{
+											fuelPrice: editingRecord.fuelPrice,
+											fuelAmount: editingRecord.fuelAmount,
+											totalFuelCost: editingRecord.totalFuelCost,
+										}}
+										onSave={handleSaveRecord}
+										onCancel={handleCancelForm}
+										isLoading={isUpdating}
+										isEditing={true}
+									/>
+								)}
+							</div>
 						))}
 					</Space>
 				) : (
@@ -169,24 +183,17 @@ export const FuelList = ({ selectedDate }: FuelListProps) => {
 					</Space>
 				)}
 
-				{isFormVisible && (
+				{showAddForm && !editingRecord && (
 					<FuelForm
-						initialData={
-							editingRecord
-								? {
-										fuelPrice: editingRecord.fuelPrice,
-										fuelAmount: editingRecord.fuelAmount,
-									}
-								: undefined
-						}
+						initialData={undefined}
 						onSave={handleSaveRecord}
 						onCancel={handleCancelForm}
-						isLoading={isCreating || isUpdating}
-						isEditing={!!editingRecord}
+						isLoading={isCreating}
+						isEditing={false}
 					/>
 				)}
 
-				{!isFormVisible && (
+				{!showAddForm && !editingRecord && (
 					<Button
 						type="primary"
 						icon={<PlusOutlined />}

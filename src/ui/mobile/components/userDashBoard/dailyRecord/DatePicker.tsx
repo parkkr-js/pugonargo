@@ -39,7 +39,6 @@ export const DatePicker = ({
 				suffixIcon={<CalendarOutlined />}
 				disabledDate={(current) => current && current > today}
 				allowClear={false}
-				size="large"
 				panelRender={(panel) => (
 					<div className="custom-picker-panel">{panel}</div>
 				)}

@@ -13,6 +13,20 @@ export interface GetRepairRecordsParams {
 	date: string; // 'yyyy-mm-dd' 형식
 }
 
+export interface GetRepairRecordParams {
+	recordId: string;
+}
+
+export interface UpdateRepairRecordParams {
+	recordId: string;
+	repairCost: number;
+	repairDescription: string;
+}
+
+export interface DeleteRepairRecordParams {
+	recordId: string;
+}
+
 export interface DeleteRepairRecordsParams {
 	vehicleNumber: string;
 	date: string; // 'yyyy-mm-dd' 형식
@@ -27,12 +41,16 @@ export class RepairUsecase {
 		month: string;
 		day: string;
 	} {
+		console.log("parseDate input:", dateString);
 		const date = new Date(dateString);
-		return {
+		console.log("parseDate date object:", date);
+		const result = {
 			year: date.getFullYear().toString(),
 			month: String(date.getMonth() + 1).padStart(2, "0"),
 			day: String(date.getDate()).padStart(2, "0"),
 		};
+		console.log("parseDate result:", result);
+		return result;
 	}
 
 	// 비즈니스 로직: 데이터 유효성 검증
@@ -65,6 +83,8 @@ export class RepairUsecase {
 
 	// 수리 내역 조회 (비즈니스 로직 포함)
 	async getRepairRecords(params: GetRepairRecordsParams): Promise<Repair[]> {
+		console.log("Usecase getRepairRecords params:", params);
+
 		if (!params.vehicleNumber?.trim()) {
 			throw new Error("차량번호는 필수입니다.");
 		}
@@ -74,6 +94,8 @@ export class RepairUsecase {
 		}
 
 		const { year, month, day } = this.parseDate(params.date);
+		console.log("Parsed date:", { year, month, day });
+
 		const records = await this.repairService.getRepairRecords(
 			params.vehicleNumber,
 			year,
@@ -81,7 +103,22 @@ export class RepairUsecase {
 			day,
 		);
 
+		console.log("Usecase getRepairRecords result:", records);
 		return records;
+	}
+
+	// 개별 수리 내역 조회
+	async getRepairRecord(params: GetRepairRecordParams): Promise<Repair> {
+		if (!params.recordId) {
+			throw new Error("기록 ID는 필수입니다.");
+		}
+
+		const record = await this.repairService.getRepairRecord(params.recordId);
+		if (!record) {
+			throw new Error("해당 수리 내역을 찾을 수 없습니다.");
+		}
+
+		return record;
 	}
 
 	// 수리 내역 생성
@@ -109,6 +146,53 @@ export class RepairUsecase {
 			await this.repairService.createRepairRecord(repairRecord);
 
 		return { id: firebaseGeneratedId, ...repairRecord };
+	}
+
+	// 개별 수리 내역 수정
+	async updateRepairRecord(params: UpdateRepairRecordParams): Promise<Repair> {
+		if (!params.recordId) {
+			throw new Error("기록 ID는 필수입니다.");
+		}
+
+		if (params.repairCost < 0) {
+			throw new Error("정비비용은 0 이상이어야 합니다.");
+		}
+
+		if (!params.repairDescription?.trim()) {
+			throw new Error("정비내용은 필수입니다.");
+		}
+
+		const existingRecord = await this.repairService.getRepairRecord(
+			params.recordId,
+		);
+		if (!existingRecord) {
+			throw new Error("해당 수리 내역을 찾을 수 없습니다.");
+		}
+
+		const updatedRecord: Repair = {
+			...existingRecord,
+			repairCost: params.repairCost,
+			repairDescription: params.repairDescription.trim(),
+		};
+
+		await this.repairService.updateRepairRecord(params.recordId, updatedRecord);
+		return updatedRecord;
+	}
+
+	// 개별 수리 내역 삭제
+	async deleteRepairRecord(params: DeleteRepairRecordParams): Promise<void> {
+		if (!params.recordId) {
+			throw new Error("기록 ID는 필수입니다.");
+		}
+
+		const existingRecord = await this.repairService.getRepairRecord(
+			params.recordId,
+		);
+		if (!existingRecord) {
+			throw new Error("해당 수리 내역을 찾을 수 없습니다.");
+		}
+
+		await this.repairService.deleteRepairRecord(params.recordId);
 	}
 
 	// 수리 내역 삭제 (비즈니스 로직 포함)

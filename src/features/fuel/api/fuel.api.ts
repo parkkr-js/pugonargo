@@ -17,7 +17,7 @@ export const fuelApi = createApi({
 	baseQuery: fakeBaseQuery(),
 	tagTypes: ["Fuel"],
 	endpoints: (builder) => ({
-		// 기존: 날짜별 조회
+		// 날짜별 조회
 		getFuelRecords: builder.query<Fuel[], GetFuelRecordsParams>({
 			queryFn: async (params) => {
 				try {
@@ -42,7 +42,7 @@ export const fuelApi = createApi({
 			],
 		}),
 
-		// ✅ 새로 추가: 개별 조회
+		// 개별 조회
 		getFuelRecord: builder.query<Fuel, GetFuelRecordParams>({
 			queryFn: async (params) => {
 				try {
@@ -63,7 +63,7 @@ export const fuelApi = createApi({
 			],
 		}),
 
-		// 기존: 생성
+		// 생성
 		createFuelRecord: builder.mutation<Fuel, CreateFuelRecordParams>({
 			queryFn: async (params) => {
 				try {
@@ -85,7 +85,7 @@ export const fuelApi = createApi({
 			],
 		}),
 
-		// ✅ 새로 추가: 개별 수정
+		// 개별 수정
 		updateFuelRecord: builder.mutation<Fuel, UpdateFuelRecordParams>({
 			queryFn: async (params) => {
 				try {
@@ -103,7 +103,6 @@ export const fuelApi = createApi({
 			},
 			invalidatesTags: (result, error, params) => [
 				{ type: "Fuel", id: params.recordId },
-				// 해당 날짜의 전체 목록도 무효화
 				...(result
 					? [
 							{
@@ -115,7 +114,7 @@ export const fuelApi = createApi({
 			],
 		}),
 
-		// ✅ 새로 추가: 개별 삭제
+		// 개별 삭제
 		deleteFuelRecord: builder.mutation<void, DeleteFuelRecordParams>({
 			queryFn: async (params) => {
 				try {
@@ -137,7 +136,7 @@ export const fuelApi = createApi({
 			],
 		}),
 
-		// 기존: 날짜별 전체 삭제 (유지)
+		// 날짜별 전체 삭제
 		deleteFuelRecords: builder.mutation<void, DeleteFuelRecordsParams>({
 			queryFn: async (params) => {
 				try {

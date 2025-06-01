@@ -1,3 +1,4 @@
+// src/features/paymentSummary/selectors/paymentSummary.selectors.ts
 import type { PaymentSummary } from "../types/paymentSummary";
 
 export const formatKoreanCurrency = (amount: number): string => {
@@ -27,26 +28,5 @@ export const selectFormattedPaymentSummary = (
 		totalPaymentAmountSupply: formatKoreanCurrency(
 			summary.totalPaymentAmountSupply,
 		),
-	};
-};
-
-export const selectVatAmount = (summary: PaymentSummary | null) => {
-	if (!summary) return { claimVat: 0, paymentVat: 0 };
-
-	return {
-		claimVat:
-			summary.totalClaimAmountIncluding - summary.totalClaimAmountSupply,
-		paymentVat: summary.totalPaymentAmount - summary.totalPaymentAmountSupply,
-	};
-};
-
-export const selectAmountDifference = (summary: PaymentSummary | null) => {
-	if (!summary) return { supplyDifference: 0, includingDifference: 0 };
-
-	return {
-		supplyDifference:
-			summary.totalClaimAmountSupply - summary.totalPaymentAmountSupply,
-		includingDifference:
-			summary.totalClaimAmountIncluding - summary.totalPaymentAmount,
 	};
 };

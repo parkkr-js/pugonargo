@@ -1,4 +1,5 @@
-import { Button, Spin, Typography } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { Button, Space, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useGetAvailableYearMonthsQuery } from "../../api/paymentSummary.api";
 
@@ -14,68 +15,85 @@ const YearMonthSelector = ({ onYearMonthChange }: YearMonthSelectorProps) => {
 		isLoading,
 		error,
 	} = useGetAvailableYearMonthsQuery();
-	const [selectedYearMonth, setSelectedYearMonth] = useState<string | null>(
-		null,
-	);
+
+	const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
 	useEffect(() => {
 		if (
 			availableYearMonths &&
 			availableYearMonths.length > 0 &&
-			!selectedYearMonth
+			selectedIndex === -1
 		) {
-			const latest = availableYearMonths[availableYearMonths.length - 1];
-			setSelectedYearMonth(latest);
-			onYearMonthChange?.(latest);
+			// 가장 최신 연월(마지막 인덱스)로 초기화
+			const latestIndex = availableYearMonths.length - 1;
+			setSelectedIndex(latestIndex);
+			onYearMonthChange?.(availableYearMonths[latestIndex]);
 		}
-	}, [availableYearMonths, selectedYearMonth, onYearMonthChange]);
+	}, [availableYearMonths, selectedIndex, onYearMonthChange]);
 
-	const handleSelectYearMonth = (yearMonth: string) => {
-		setSelectedYearMonth(yearMonth);
-		onYearMonthChange?.(yearMonth);
+	const handlePrevious = () => {
+		if (selectedIndex > 0) {
+			const newIndex = selectedIndex - 1;
+			setSelectedIndex(newIndex);
+			onYearMonthChange?.(availableYearMonths[newIndex]);
+		}
+	};
+
+	const handleNext = () => {
+		if (selectedIndex < availableYearMonths.length - 1) {
+			const newIndex = selectedIndex + 1;
+			setSelectedIndex(newIndex);
+			onYearMonthChange?.(availableYearMonths[newIndex]);
+		}
 	};
 
 	if (isLoading) {
 		return (
-			<div style={{ textAlign: "center", padding: "20px" }}>
+			<Space align="center">
 				<Spin />
-				<Text style={{ marginLeft: "8px" }}>연월 목록을 불러오는 중...</Text>
-			</div>
+				<Text>연월 목록을 불러오는 중...</Text>
+			</Space>
 		);
 	}
 
 	if (error) {
 		return (
-			<div style={{ textAlign: "center", padding: "20px" }}>
+			<Space>
 				<Text type="danger">연월 목록을 불러오는데 실패했습니다</Text>
-			</div>
+			</Space>
 		);
 	}
 
 	if (!Array.isArray(availableYearMonths) || availableYearMonths.length === 0) {
 		return (
-			<div style={{ textAlign: "center", padding: "20px" }}>
+			<Space>
 				<Text type="secondary">사용 가능한 연월이 없습니다.</Text>
-			</div>
+			</Space>
 		);
 	}
 
+	const currentYearMonth = availableYearMonths[selectedIndex];
+	const isPreviousDisabled = selectedIndex <= 0;
+	const isNextDisabled = selectedIndex >= availableYearMonths.length - 1;
+
 	return (
-		<div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-			{availableYearMonths.map((yearMonth) => (
-				<Button
-					key={yearMonth}
-					type={selectedYearMonth === yearMonth ? "primary" : "default"}
-					onClick={() => handleSelectYearMonth(yearMonth)}
-					style={{
-						minWidth: "100px",
-						textAlign: "center",
-					}}
-				>
-					{yearMonth}
-				</Button>
-			))}
-		</div>
+		<Space align="center" size="middle">
+			<Button
+				icon={<LeftOutlined />}
+				onClick={handlePrevious}
+				disabled={isPreviousDisabled}
+				type="text"
+			/>
+			<Text strong style={{ minWidth: "80px", textAlign: "center" }}>
+				{currentYearMonth}
+			</Text>
+			<Button
+				icon={<RightOutlined />}
+				onClick={handleNext}
+				disabled={isNextDisabled}
+				type="text"
+			/>
+		</Space>
 	);
 };
 

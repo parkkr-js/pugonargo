@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 
 const { Text } = Typography;
 
-interface FuelFormProps {
+export interface FuelFormProps {
 	initialData?: {
 		fuelPrice: number;
 		fuelAmount: number;
+		totalFuelCost: number;
 	};
 	onSave: (fuelPrice: number, fuelAmount: number) => void;
 	onCancel: () => void;

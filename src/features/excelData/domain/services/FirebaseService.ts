@@ -12,7 +12,7 @@ import type { ExcelData } from "../entities/ExcelData";
 export class FirebaseService {
 	private db = getFirestore();
 
-	// 🎯 개선된 구조: operations/{year-month}/records/{docId}
+	// operations/{year-month}/records/{docId}
 	private async clearSubCollection(year: string, month: string): Promise<void> {
 		try {
 			// operations/{year-month}/records 서브컬렉션 정리

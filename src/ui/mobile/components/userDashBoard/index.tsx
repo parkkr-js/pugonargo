@@ -32,7 +32,7 @@ const UserDashboard = () => {
 				},
 			}}
 		>
-			<Tabs defaultActiveKey="daily" items={tabItems} centered />
+			<Tabs defaultActiveKey="statistics" items={tabItems} centered />
 		</ConfigProvider>
 	);
 };

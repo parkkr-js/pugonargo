@@ -6,6 +6,7 @@ import { fuelApi } from "../features/fuel/api/fuel.api";
 import { operationLogApi } from "../features/operationLog/api/operationLog.api";
 import { paymentSummaryApi } from "../features/paymentSummary/api/paymentSummary.api";
 import { repairApi } from "../features/repair/api/repair.api";
+import { statisticsByPeriodApi } from "../features/statisticsByPeriod/api/statisticsByPeriod.api";
 
 export const store = configureStore({
 	reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
 		[fuelApi.reducerPath]: fuelApi.reducer,
 		[repairApi.reducerPath]: repairApi.reducer,
 		[operationLogApi.reducerPath]: operationLogApi.reducer,
+		[statisticsByPeriodApi.reducerPath]: statisticsByPeriodApi.reducer,
 	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(
@@ -24,6 +26,7 @@ export const store = configureStore({
 			fuelApi.middleware,
 			repairApi.middleware,
 			operationLogApi.middleware,
+			statisticsByPeriodApi.middleware,
 		),
 });
 
