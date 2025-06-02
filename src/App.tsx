@@ -1,32 +1,21 @@
-// App.js - AntApp 제거 (Layout에서 처리)
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import { App as AntApp, ConfigProvider } from "antd";
-import { Provider } from "react-redux";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./routes";
-import { store } from "./store";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ConfigProvider } from "antd";
+import koKR from "antd/locale/ko_KR";
+import { queryClient } from "./lib/queryClient";
+import { AppRouter } from "./routes/AppRouter";
 
-const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-if (!clientId) {
-	throw new Error("REACT_APP_GOOGLE_CLIENT_ID is not set");
-}
-
-const App = () => (
-	<GoogleOAuthProvider clientId={clientId}>
-		<Provider store={store}>
-			<ConfigProvider
-				theme={{
-					token: {
-						colorPrimary: "#1890ff",
-					},
-				}}
-			>
-				<AntApp>
-					<RouterProvider router={router} />
-				</AntApp>
+function App() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ConfigProvider locale={koKR}>
+				<AppRouter />
+				{process.env.NODE_ENV === "development" && (
+					<ReactQueryDevtools initialIsOpen={false} />
+				)}
 			</ConfigProvider>
-		</Provider>
-	</GoogleOAuthProvider>
-);
+		</QueryClientProvider>
+	);
+}
 
 export default App;
