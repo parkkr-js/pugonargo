@@ -11,7 +11,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
-import type { Fuel } from "../types/fuel.interface";
+import type { Fuel, FuelWithGroup } from "../types/fuel.interface";
 
 export class FuelService {
 	private readonly collectionName = "fuel";
@@ -95,5 +95,46 @@ export class FuelService {
 			console.error("Failed to delete fuel record:", error);
 			throw new Error("주유 기록 삭제에 실패했습니다.");
 		}
+	}
+
+	// yyyy-mm 형식의 날짜로 조회
+	async getFuelRecordsByDate(
+		year: string,
+		month: string,
+	): Promise<FuelWithGroup[]> {
+		const q = query(
+			collection(db, this.collectionName),
+			where("year", "==", year),
+			where("month", "==", month),
+			orderBy("createdAt", "desc"),
+		);
+
+		const querySnapshot = await getDocs(q);
+		const fuels = querySnapshot.docs.map(
+			(doc) =>
+				({
+					id: doc.id,
+					...doc.data(),
+				}) as Fuel,
+		);
+
+		//2. 각 주유 내역에 대한 운전자 그룹 정보 조회
+		const fuelsWithGroup = await Promise.all(
+			fuels.map(async (fuel) => {
+				const driverQuery = query(
+					collection(db, "drivers"),
+					where("vehicleNumber", "==", fuel.vehicleNumber),
+				);
+				const driverSnapshot = await getDocs(driverQuery);
+				const group = driverSnapshot.docs[0]?.data().group || "unknown";
+
+				return {
+					...fuel,
+					group,
+				} as FuelWithGroup;
+			}),
+		);
+
+		return fuelsWithGroup;
 	}
 }

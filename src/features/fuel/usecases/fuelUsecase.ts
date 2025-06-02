@@ -1,31 +1,14 @@
 import { FuelService } from "../services/fuelService";
 import type { Fuel } from "../types/fuel.interface";
 
-export interface CreateFuelRecordParams {
-	vehicleNumber: string;
-	date: string;
-	fuelPrice: number;
-	fuelAmount: number;
-}
-
-export interface GetFuelRecordsParams {
-	vehicleNumber: string;
-	date: string;
-}
-
-export interface UpdateFuelRecordParams {
-	recordId: string;
-	fuelPrice: number;
-	fuelAmount: number;
-}
-
-export interface DeleteFuelRecordParams {
-	recordId: string;
-}
-
-export interface GetFuelRecordParams {
-	recordId: string;
-}
+import type {
+	CreateFuelRecordParams,
+	DeleteFuelRecordParams,
+	FuelWithGroup,
+	GetFuelRecordParams,
+	GetFuelRecordsParams,
+	UpdateFuelRecordParams,
+} from "../types/fuel.interface";
 
 export class FuelUsecase {
 	constructor(private fuelService: FuelService = new FuelService()) {}
@@ -200,5 +183,26 @@ export class FuelUsecase {
 		}
 
 		await this.fuelService.deleteFuelRecord(params.recordId);
+	}
+
+	// yyyy-mm 형식의 날짜로 조회
+	async getFuelRecordsByDate(date: string): Promise<FuelWithGroup[]> {
+		if (!date) {
+			throw new Error("날짜는 필수입니다.");
+		}
+
+		// 날짜 형식 검증 (YYYY-MM)
+		const dateRegex = /^\d{4}-\d{2}$/;
+		if (!dateRegex.test(date)) {
+			throw new Error("날짜는 YYYY-MM 형식이어야 합니다.");
+		}
+
+		const [year, month] = date.split("-");
+		console.log("Parsed date for group records:", { year, month });
+
+		const records = await this.fuelService.getFuelRecordsByDate(year, month);
+
+		console.log("Usecase getFuelRecordsByDate result:", records);
+		return records;
 	}
 }

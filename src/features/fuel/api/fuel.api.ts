@@ -1,13 +1,13 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Fuel } from "../types/fuel.interface";
-import {
-	type CreateFuelRecordParams,
-	type DeleteFuelRecordParams,
-	FuelUsecase,
-	type GetFuelRecordParams,
-	type GetFuelRecordsParams,
-	type UpdateFuelRecordParams,
-} from "../usecases/fuelUsecase";
+import type { Fuel, FuelWithGroup } from "../types/fuel.interface";
+import type {
+	CreateFuelRecordParams,
+	DeleteFuelRecordParams,
+	GetFuelRecordParams,
+	GetFuelRecordsParams,
+	UpdateFuelRecordParams,
+} from "../types/fuel.interface";
+import { FuelUsecase } from "../usecases/fuelUsecase";
 
 const fuelUsecase = new FuelUsecase();
 
@@ -134,6 +134,31 @@ export const fuelApi = createApi({
 				{ type: "Fuel", id: "LIST" }, // 전체 목록 무효화
 			],
 		}),
+
+		// yyyy-mm 형식의 날짜로 조회
+		getFuelRecordsByDate: builder.query<FuelWithGroup[], string>({
+			queryFn: async (date) => {
+				try {
+					const records = await fuelUsecase.getFuelRecordsByDate(date);
+					return { data: records };
+				} catch (error) {
+					return {
+						error: {
+							status: "CUSTOM_ERROR",
+							error:
+								error instanceof Error ? error.message : "연료 기록 조회 실패",
+						},
+					};
+				}
+			},
+			providesTags: (result, error, date) => [
+				{ type: "Fuel", id: `monthly-${date}` },
+				...(result?.map((record) => ({
+					type: "Fuel" as const,
+					id: record.id,
+				})) || []),
+			],
+		}),
 	}),
 });
 
@@ -143,4 +168,5 @@ export const {
 	useCreateFuelRecordMutation,
 	useUpdateFuelRecordMutation,
 	useDeleteFuelRecordMutation,
+	useGetFuelRecordsByDateQuery,
 } = fuelApi;

@@ -140,6 +140,7 @@ export const repairApi = createApi({
 			queryFn: async (date) => {
 				try {
 					const records = await repairUsecase.getRepairRecordsByDate(date);
+					console.log("getRepairRecordsByDate", records);
 					return { data: records };
 				} catch (error) {
 					return {

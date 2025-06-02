@@ -11,11 +11,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebaseConfig";
-import type { Repair } from "../types/repair.interface";
-
-interface RepairWithGroup extends Repair {
-	group: string;
-}
+import type { Repair, RepairWithGroup } from "../types/repair.interface";
 
 export class RepairService {
 	private readonly collectionName = "repair";
@@ -95,7 +91,6 @@ export class RepairService {
 			collection(db, this.collectionName),
 			where("year", "==", year),
 			where("month", "==", month),
-			orderBy("day", "asc"),
 			orderBy("createdAt", "desc"),
 		);
 

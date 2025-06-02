@@ -14,7 +14,6 @@ export interface Fuel {
 	updatedAt?: string;
 }
 
-// Usecase 파라미터 타입들
 export interface CreateFuelRecordParams {
 	vehicleNumber: string;
 	date: string;
@@ -39,4 +38,8 @@ export interface DeleteFuelRecordParams {
 
 export interface GetFuelRecordParams {
 	recordId: string;
+}
+
+export interface FuelWithGroup extends Fuel {
+	group: string;
 }
