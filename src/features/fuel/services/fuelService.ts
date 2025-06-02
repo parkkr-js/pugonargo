@@ -16,7 +16,7 @@ import type { Fuel } from "../types/fuel.interface";
 export class FuelService {
 	private readonly collectionName = "fuel";
 
-	// 기존: 날짜별 조회
+	// 날짜별 조회
 	async getFuelRecords(
 		vehicleNumber: string,
 		year: string,
@@ -42,13 +42,13 @@ export class FuelService {
 		);
 	}
 
-	// 기존: 문서 생성
+	// 문서 생성
 	async createFuelRecord(fuelData: Omit<Fuel, "id">): Promise<string> {
 		const docRef = await addDoc(collection(db, this.collectionName), fuelData);
 		return docRef.id;
 	}
 
-	// ✅ 새로 추가: 개별 문서 조회
+	// 개별 문서 조회
 	async getFuelRecordById(recordId: string): Promise<Fuel | null> {
 		try {
 			const docRef = doc(db, this.collectionName, recordId);
@@ -67,7 +67,7 @@ export class FuelService {
 		}
 	}
 
-	// ✅ 새로 추가: 개별 문서 수정
+	// 개별 문서 수정
 	async updateFuelRecord(
 		recordId: string,
 		updateData: Partial<Omit<Fuel, "id" | "createdAt">>,
@@ -86,7 +86,7 @@ export class FuelService {
 		}
 	}
 
-	// ✅ 새로 추가: 개별 문서 삭제
+	// 개별 문서 삭제
 	async deleteFuelRecord(recordId: string): Promise<void> {
 		try {
 			const docRef = doc(db, this.collectionName, recordId);
@@ -95,19 +95,5 @@ export class FuelService {
 			console.error("Failed to delete fuel record:", error);
 			throw new Error("주유 기록 삭제에 실패했습니다.");
 		}
-	}
-
-	// 기존: 날짜별 전체 삭제 (유지)
-	async deleteFuelRecordsByDate(
-		vehicleNumber: string,
-		year: string,
-		month: string,
-		day: string,
-	): Promise<void> {
-		const records = await this.getFuelRecords(vehicleNumber, year, month, day);
-		const deletePromises = records.map((record) =>
-			deleteDoc(doc(db, this.collectionName, record.id)),
-		);
-		await Promise.all(deletePromises);
 	}
 }

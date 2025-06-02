@@ -1,13 +1,12 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { Repair } from "../types/repair.interface";
+import type { Repair, RepairWithGroup } from "../types/repair.interface";
 import type {
 	CreateRepairRecordParams,
 	DeleteRepairRecordParams,
-	DeleteRepairRecordsParams,
 	GetRepairRecordParams,
 	GetRepairRecordsParams,
 	UpdateRepairRecordParams,
-} from "../usecases/repairUsecase";
+} from "../types/repair.interface";
 import { RepairUsecase } from "../usecases/repairUsecase";
 
 const repairUsecase = new RepairUsecase();
@@ -136,25 +135,28 @@ export const repairApi = createApi({
 			],
 		}),
 
-		// 날짜별 전체 삭제
-		deleteRepairRecords: builder.mutation<void, DeleteRepairRecordsParams>({
-			queryFn: async (params) => {
+		// yyyy-mm 형식의 날짜로 조회
+		getRepairRecordsByDate: builder.query<RepairWithGroup[], string>({
+			queryFn: async (date) => {
 				try {
-					await repairUsecase.deleteRepairRecords(params);
-					return { data: undefined };
+					const records = await repairUsecase.getRepairRecordsByDate(date);
+					return { data: records };
 				} catch (error) {
 					return {
 						error: {
 							status: "CUSTOM_ERROR",
 							error:
-								error instanceof Error ? error.message : "정비 내역 삭제 실패",
+								error instanceof Error ? error.message : "정비 내역 조회 실패",
 						},
 					};
 				}
 			},
-			invalidatesTags: (result, error, params) => [
-				{ type: "Repair", id: `${params.vehicleNumber}-${params.date}` },
-				{ type: "Repair", id: "LIST" },
+			providesTags: (result, error, date) => [
+				{ type: "Repair", id: `monthly-${date}` },
+				...(result?.map((record) => ({
+					type: "Repair" as const,
+					id: record.id,
+				})) || []),
 			],
 		}),
 	}),
@@ -166,5 +168,5 @@ export const {
 	useCreateRepairRecordMutation,
 	useUpdateRepairRecordMutation,
 	useDeleteRepairRecordMutation,
-	useDeleteRepairRecordsMutation,
+	useGetRepairRecordsByDateQuery,
 } = repairApi;

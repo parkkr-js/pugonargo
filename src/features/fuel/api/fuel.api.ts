@@ -3,7 +3,6 @@ import type { Fuel } from "../types/fuel.interface";
 import {
 	type CreateFuelRecordParams,
 	type DeleteFuelRecordParams,
-	type DeleteFuelRecordsParams,
 	FuelUsecase,
 	type GetFuelRecordParams,
 	type GetFuelRecordsParams,
@@ -135,28 +134,6 @@ export const fuelApi = createApi({
 				{ type: "Fuel", id: "LIST" }, // 전체 목록 무효화
 			],
 		}),
-
-		// 날짜별 전체 삭제
-		deleteFuelRecords: builder.mutation<void, DeleteFuelRecordsParams>({
-			queryFn: async (params) => {
-				try {
-					await fuelUsecase.deleteFuelRecords(params);
-					return { data: undefined };
-				} catch (error) {
-					return {
-						error: {
-							status: "CUSTOM_ERROR",
-							error:
-								error instanceof Error ? error.message : "연료 기록 삭제 실패",
-						},
-					};
-				}
-			},
-			invalidatesTags: (result, error, params) => [
-				{ type: "Fuel", id: `${params.vehicleNumber}-${params.date}` },
-				{ type: "Fuel", id: "LIST" },
-			],
-		}),
 	}),
 });
 
@@ -166,5 +143,4 @@ export const {
 	useCreateFuelRecordMutation,
 	useUpdateFuelRecordMutation,
 	useDeleteFuelRecordMutation,
-	useDeleteFuelRecordsMutation,
 } = fuelApi;

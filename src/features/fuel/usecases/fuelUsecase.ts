@@ -13,12 +13,6 @@ export interface GetFuelRecordsParams {
 	date: string;
 }
 
-export interface DeleteFuelRecordsParams {
-	vehicleNumber: string;
-	date: string;
-}
-
-// ✅ 새로 추가: 개별 관리용 인터페이스들
 export interface UpdateFuelRecordParams {
 	recordId: string;
 	fuelPrice: number;
@@ -36,7 +30,6 @@ export interface GetFuelRecordParams {
 export class FuelUsecase {
 	constructor(private fuelService: FuelService = new FuelService()) {}
 
-	// 기존 메서드들 유지
 	private calculateTotalCost(fuelPrice: number, fuelAmount: number): number {
 		return fuelPrice * fuelAmount;
 	}
@@ -89,7 +82,6 @@ export class FuelUsecase {
 		}
 	}
 
-	// 기존 메서드들 유지
 	async getFuelRecords(params: GetFuelRecordsParams): Promise<Fuel[]> {
 		if (!params.vehicleNumber?.trim()) {
 			throw new Error("차량번호는 필수입니다.");
@@ -138,37 +130,7 @@ export class FuelUsecase {
 		return { id: firebaseGeneratedId, ...fuelRecord };
 	}
 
-	async deleteFuelRecords(params: DeleteFuelRecordsParams): Promise<void> {
-		if (!params.vehicleNumber?.trim()) {
-			throw new Error("차량번호는 필수입니다.");
-		}
-
-		if (!params.date) {
-			throw new Error("날짜는 필수입니다.");
-		}
-
-		const { year, month, day } = this.parseDate(params.date);
-
-		const existingRecords = await this.fuelService.getFuelRecords(
-			params.vehicleNumber,
-			year,
-			month,
-			day,
-		);
-
-		if (existingRecords.length === 0) {
-			throw new Error("삭제할 연료 기록이 없습니다.");
-		}
-
-		await this.fuelService.deleteFuelRecordsByDate(
-			params.vehicleNumber,
-			year,
-			month,
-			day,
-		);
-	}
-
-	// ✅ 새로 추가: 개별 조회
+	// 개별 조회
 	async getFuelRecord(params: GetFuelRecordParams): Promise<Fuel> {
 		if (!params.recordId?.trim()) {
 			throw new Error("기록 ID는 필수입니다.");
@@ -183,7 +145,7 @@ export class FuelUsecase {
 		return record;
 	}
 
-	// ✅ 새로 추가: 개별 수정
+	// 개별 수정
 	async updateFuelRecord(params: UpdateFuelRecordParams): Promise<Fuel> {
 		if (!params.recordId?.trim()) {
 			throw new Error("기록 ID는 필수입니다.");
@@ -223,7 +185,7 @@ export class FuelUsecase {
 		};
 	}
 
-	// ✅ 새로 추가: 개별 삭제
+	// 개별 삭제
 	async deleteFuelRecord(params: DeleteFuelRecordParams): Promise<void> {
 		if (!params.recordId?.trim()) {
 			throw new Error("기록 ID는 필수입니다.");

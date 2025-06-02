@@ -1,4 +1,6 @@
 // src/features/fuel/types/fuel.interface.ts
+
+// 기본 엔티티 타입
 export interface Fuel {
 	id: string;
 	vehicleNumber: string;
@@ -12,36 +14,29 @@ export interface Fuel {
 	updatedAt?: string;
 }
 
-// 연료 기록 생성을 위한 파라미터 타입
-export interface CreateFuelRecordRequest {
+// Usecase 파라미터 타입들
+export interface CreateFuelRecordParams {
 	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
+	date: string;
 	fuelPrice: number;
 	fuelAmount: number;
 }
 
-// 연료 기록 조회를 위한 파라미터 타입
-export interface GetFuelRecordsRequest {
+export interface GetFuelRecordsParams {
 	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
+	date: string;
 }
 
-// 연료 기록 삭제를 위한 파라미터 타입
-export interface DeleteFuelRecordsRequest {
-	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
-}
-
-// 연료 통계 타입
-export interface FuelStatistics {
-	totalCost: number;
-	totalAmount: number;
-	averagePrice: number;
-	recordCount: number;
-}
-
-// 폼 데이터 타입
-export interface FuelFormData {
+export interface UpdateFuelRecordParams {
+	recordId: string;
 	fuelPrice: number;
 	fuelAmount: number;
+}
+
+export interface DeleteFuelRecordParams {
+	recordId: string;
+}
+
+export interface GetFuelRecordParams {
+	recordId: string;
 }

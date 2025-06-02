@@ -1,36 +1,13 @@
 import { RepairService } from "../services/repairService";
-import type { Repair } from "../types/repair.interface";
-
-export interface CreateRepairRecordParams {
-	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
-	repairCost: number;
-	repairDescription: string;
-}
-
-export interface GetRepairRecordsParams {
-	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
-}
-
-export interface GetRepairRecordParams {
-	recordId: string;
-}
-
-export interface UpdateRepairRecordParams {
-	recordId: string;
-	repairCost: number;
-	repairDescription: string;
-}
-
-export interface DeleteRepairRecordParams {
-	recordId: string;
-}
-
-export interface DeleteRepairRecordsParams {
-	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
-}
+import type {
+	CreateRepairRecordParams,
+	DeleteRepairRecordParams,
+	GetRepairRecordParams,
+	GetRepairRecordsParams,
+	Repair,
+	RepairWithGroup,
+	UpdateRepairRecordParams,
+} from "../types/repair.interface";
 
 export class RepairUsecase {
 	constructor(private repairService: RepairService = new RepairService()) {}
@@ -195,35 +172,27 @@ export class RepairUsecase {
 		await this.repairService.deleteRepairRecord(params.recordId);
 	}
 
-	// 수리 내역 삭제 (비즈니스 로직 포함)
-	async deleteRepairRecords(params: DeleteRepairRecordsParams): Promise<void> {
-		if (!params.vehicleNumber?.trim()) {
-			throw new Error("차량번호는 필수입니다.");
-		}
-
-		if (!params.date) {
+	// yyyy-mm 형식의 날짜로 조회
+	async getRepairRecordsByDate(date: string): Promise<RepairWithGroup[]> {
+		if (!date) {
 			throw new Error("날짜는 필수입니다.");
 		}
 
-		const { year, month, day } = this.parseDate(params.date);
-
-		// 삭제 전 기록 존재 여부 확인
-		const existingRecords = await this.repairService.getRepairRecords(
-			params.vehicleNumber,
-			year,
-			month,
-			day,
-		);
-
-		if (existingRecords.length === 0) {
-			throw new Error("삭제할 수리 내역이 없습니다.");
+		// 날짜 형식 검증 (YYYY-MM)
+		const dateRegex = /^\d{4}-\d{2}$/;
+		if (!dateRegex.test(date)) {
+			throw new Error("날짜는 YYYY-MM 형식이어야 합니다.");
 		}
 
-		await this.repairService.deleteRepairRecordsByDate(
-			params.vehicleNumber,
+		const [year, month] = date.split("-");
+		console.log("Parsed date for group records:", { year, month });
+
+		const records = await this.repairService.getRepairRecordsByDate(
 			year,
 			month,
-			day,
 		);
+
+		console.log("Usecase getRepairRecordsByDate result:", records);
+		return records;
 	}
 }

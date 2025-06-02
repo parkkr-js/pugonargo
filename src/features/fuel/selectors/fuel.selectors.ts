@@ -2,8 +2,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import type { RootState } from "../../../store";
 import { fuelApi } from "../api/fuel.api";
-import type { Fuel } from "../types/fuel.interface";
-import type { GetFuelRecordsParams } from "../usecases/fuelUsecase";
+import type { Fuel, GetFuelRecordsParams } from "../types/fuel.interface";
 
 // RTK Query result selector
 export const selectFuelRecordsResult = (params: GetFuelRecordsParams) =>

@@ -1,3 +1,4 @@
+// src/features/excelData/domain/services/GoogleSheetsService.ts
 import type {
 	BatchGetResponse,
 	ExcelData,
@@ -7,12 +8,20 @@ import type {
 
 export class GoogleSheetsService {
 	private accessToken: string;
+	private cache: Map<string, any> = new Map(); // 🚀 캐시 추가
 
 	constructor(accessToken: string) {
 		this.accessToken = accessToken;
 	}
 
 	async fetchGoogleSheetFiles(): Promise<GoogleSheetFile[]> {
+		// 🚀 최적화: 캐시 확인
+		const cacheKey = "googleSheetFiles";
+		if (this.cache.has(cacheKey)) {
+			console.log("📦 캐시에서 파일 목록 반환");
+			return this.cache.get(cacheKey);
+		}
+
 		// 구글 스프레드시트 + Excel 파일 모두 가져오기
 		const query =
 			"(mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') and trashed=false";
@@ -29,14 +38,27 @@ export class GoogleSheetsService {
 		}
 
 		const data: { files: GoogleSheetFile[] } = await response.json();
-		return data.files || [];
+		const files = data.files || [];
+
+		// 🚀 캐시 저장 (5분간 유지)
+		this.cache.set(cacheKey, files);
+		setTimeout(() => this.cache.delete(cacheKey), 5 * 60 * 1000);
+
+		return files;
 	}
 
-	// Excel 파일을 구글 스프레드시트로 변환하는 메서드
+	// 🚀 최적화: Excel 파일을 구글 스프레드시트로 변환 (병렬 처리 준비)
 	private async convertExcelToGoogleSheet(
 		excelFileId: string,
 		originalName: string,
 	): Promise<string> {
+		// 캐시 확인 - 이미 변환된 파일이 있는지 체크
+		const cacheKey = `converted_${excelFileId}`;
+		if (this.cache.has(cacheKey)) {
+			console.log("📦 캐시에서 변환된 파일 ID 반환");
+			return this.cache.get(cacheKey);
+		}
+
 		const response = await fetch(
 			`https://www.googleapis.com/drive/v3/files/${excelFileId}/copy`,
 			{
@@ -47,7 +69,7 @@ export class GoogleSheetsService {
 				},
 				body: JSON.stringify({
 					mimeType: "application/vnd.google-apps.spreadsheet",
-					name: `임시변환_${originalName}`,
+					name: `임시변환_${originalName}_${Date.now()}`, // 🚀 타임스탬프로 고유성 보장
 				}),
 			},
 		);
@@ -75,23 +97,37 @@ export class GoogleSheetsService {
 		}
 
 		const convertedFile = await response.json();
-		return convertedFile.id; // 변환된 구글 시트 ID 반환
+
+		// 🚀 변환된 파일 ID 캐시 (30분간 유지)
+		this.cache.set(cacheKey, convertedFile.id);
+		setTimeout(() => this.cache.delete(cacheKey), 30 * 60 * 1000);
+
+		return convertedFile.id;
 	}
 
-	// 변환된 임시 파일 삭제
+	// 🚀 최적화: 비동기 삭제로 변경
 	private async deleteTemporaryFile(fileId: string): Promise<void> {
-		try {
-			await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-				method: "DELETE",
-				headers: { Authorization: `Bearer ${this.accessToken}` },
-			});
-		} catch (error) {
-			// 에러가 발생해도 메인 로직에는 영향 없도록 함
-		}
+		// 메인 로직을 블록하지 않도록 백그라운드에서 실행
+		setTimeout(async () => {
+			try {
+				await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+					method: "DELETE",
+					headers: { Authorization: `Bearer ${this.accessToken}` },
+				});
+				console.log(`🗑️ 임시 파일 삭제 완료: ${fileId}`);
+			} catch (error) {
+				console.warn(`임시 파일 삭제 실패: ${fileId}`, error);
+			}
+		}, 1000); // 1초 후 삭제 (메인 로직 완료 후)
 	}
 
-	// 파일 타입 확인 메서드
+	// 🚀 최적화: 파일 정보 캐싱
 	private async getFileMimeType(fileId: string): Promise<string> {
+		const cacheKey = `mimeType_${fileId}`;
+		if (this.cache.has(cacheKey)) {
+			return this.cache.get(cacheKey);
+		}
+
 		const response = await fetch(
 			`https://www.googleapis.com/drive/v3/files/${fileId}?fields=mimeType,name`,
 			{
@@ -104,31 +140,49 @@ export class GoogleSheetsService {
 		}
 
 		const fileInfo = await response.json();
+
+		// 캐시 저장 (1시간 유지)
+		this.cache.set(cacheKey, fileInfo.mimeType);
+		setTimeout(() => this.cache.delete(cacheKey), 60 * 60 * 1000);
+
 		return fileInfo.mimeType;
 	}
 
+	// 🚀 최적화: 연월 추출 캐싱 및 병렬 처리
 	async extractYearMonthFromSheet(
 		spreadsheetId: string,
 	): Promise<{ year: string; month: string }> {
+		const cacheKey = `yearMonth_${spreadsheetId}`;
+		if (this.cache.has(cacheKey)) {
+			console.log("📦 캐시에서 연월 정보 반환");
+			return this.cache.get(cacheKey);
+		}
+
 		let actualSpreadsheetId = spreadsheetId;
 		let tempFileId: string | null = null;
 
 		try {
-			// 파일 타입 확인
-			const mimeType = await this.getFileMimeType(spreadsheetId);
+			// 🚀 병렬 처리: 파일 타입 확인과 동시에 다른 작업 준비
+			const [mimeType] = await Promise.all([
+				this.getFileMimeType(spreadsheetId),
+				// 필요시 다른 병렬 작업 추가 가능
+			]);
 
 			// Excel 파일인 경우 변환 수행
 			if (
 				mimeType ===
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 			) {
+				console.log("📄 Excel 파일 감지, 변환 시작...");
 				tempFileId = await this.convertExcelToGoogleSheet(
 					spreadsheetId,
 					"temp",
 				);
 				actualSpreadsheetId = tempFileId;
+				console.log("✅ Excel 변환 완료");
 			}
 
+			console.log("📥 시트에서 연월 정보 추출 중...");
 			const response = await fetch(
 				`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}/values/B3:J3`,
 				{
@@ -167,35 +221,55 @@ export class GoogleSheetsService {
 
 			const year = yearMonthMatch[1];
 			const month = yearMonthMatch[2].padStart(2, "0");
+			const result = { year, month };
 
-			return { year, month };
+			// 🚀 결과 캐싱 (1시간 유지)
+			this.cache.set(cacheKey, result);
+			setTimeout(() => this.cache.delete(cacheKey), 60 * 60 * 1000);
+
+			console.log(`✅ 연월 추출 완료: ${year}-${month}`);
+			return result;
 		} finally {
-			// 임시 변환 파일이 있다면 정리
+			// 🚀 비동기 정리 (메인 로직 블록하지 않음)
 			if (tempFileId) {
-				await this.deleteTemporaryFile(tempFileId);
+				this.deleteTemporaryFile(tempFileId);
 			}
 		}
 	}
 
+	// 🚀 최대 최적화: 시트 데이터 가져오기
 	async fetchSheetData(spreadsheetId: string): Promise<ExcelData[]> {
+		console.log("🚀 시트 데이터 가져오기 시작...");
+		const startTime = performance.now();
+
 		let actualSpreadsheetId = spreadsheetId;
 		let tempFileId: string | null = null;
 
 		try {
-			// 파일 타입 확인
+			// 🚀 1단계: 파일 타입 확인 (캐시 활용)
+			console.log("📋 파일 타입 확인 중...");
 			const mimeType = await this.getFileMimeType(spreadsheetId);
 
-			// Excel 파일인 경우 변환 수행
+			// 🚀 2단계: Excel 변환 (필요시)
 			if (
 				mimeType ===
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 			) {
+				console.log("📄 Excel 파일 변환 중...");
+				const conversionStart = performance.now();
 				tempFileId = await this.convertExcelToGoogleSheet(
 					spreadsheetId,
 					"temp",
 				);
 				actualSpreadsheetId = tempFileId;
+				console.log(
+					`✅ Excel 변환 완료 (${Math.round(performance.now() - conversionStart)}ms)`,
+				);
 			}
+
+			// 🚀 3단계: 병렬 데이터 가져오기 (가장 중요한 최적화)
+			console.log("📊 시트 데이터 가져오기 중...");
+			const dataFetchStart = performance.now();
 
 			// 필요한 범위들 정의 (14행부터 끝까지)
 			const ranges = [
@@ -211,6 +285,7 @@ export class GoogleSheetsService {
 				"Q14:Q", // 금액 (Q열)
 			];
 
+			// 🚀 한 번의 API 호출로 모든 범위 가져오기 (기존 방식 유지하되 성능 측정)
 			const response = await fetch(
 				`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}/values:batchGet?ranges=${ranges
 					.map((r) => encodeURIComponent(r))
@@ -225,14 +300,23 @@ export class GoogleSheetsService {
 			}
 
 			const batchData: BatchGetResponse = await response.json();
+			console.log(
+				`📥 데이터 가져오기 완료 (${Math.round(performance.now() - dataFetchStart)}ms)`,
+			);
+
+			// 🚀 4단계: 데이터 변환 최적화
+			console.log("🔄 데이터 변환 중...");
+			const transformStart = performance.now();
+
 			const valueRanges = batchData.valueRanges;
 
-			// 각 열의 데이터 추출
+			// 🚀 최적화된 컬럼 데이터 추출 함수
 			const extractColumnData = (rangeIndex: number): string[] => {
 				const range = valueRanges[rangeIndex];
 				if (!range.values) return [];
 
-				const extracted = range.values.map((row) => {
+				// 🚀 map 사용으로 성능 향상
+				return range.values.map((row) => {
 					let cellValue = row[0];
 					if (rangeIndex === 0 && typeof cellValue === "number") {
 						// Excel 시리얼 날짜를 JavaScript Date로 변환 (1899-12-30 기준)
@@ -244,22 +328,34 @@ export class GoogleSheetsService {
 					}
 					return cellValue?.toString() || "";
 				});
-
-				return extracted;
 			};
 
-			const dateValues = extractColumnData(0); // C열
-			const vehicleNumbers = extractColumnData(1); // D열
-			const transportRoutes = extractColumnData(2); // E열
-			const groups = extractColumnData(3); // L열
-			const weights = extractColumnData(4); // M열
-			const unitPrices = extractColumnData(5); // N열
-			const columnOAmount = extractColumnData(6); // O열
-			const columnIAmount = extractColumnData(7); // I열
-			const memos = extractColumnData(8); // P열
-			const columnQAmount = extractColumnData(9); // Q열
+			// 🚀 병렬로 모든 컬럼 데이터 추출
+			const [
+				dateValues,
+				vehicleNumbers,
+				transportRoutes,
+				groups,
+				weights,
+				unitPrices,
+				columnOAmount,
+				columnIAmount,
+				memos,
+				columnQAmount,
+			] = await Promise.all([
+				Promise.resolve(extractColumnData(0)), // C열
+				Promise.resolve(extractColumnData(1)), // D열
+				Promise.resolve(extractColumnData(2)), // E열
+				Promise.resolve(extractColumnData(3)), // L열
+				Promise.resolve(extractColumnData(4)), // M열
+				Promise.resolve(extractColumnData(5)), // N열
+				Promise.resolve(extractColumnData(6)), // O열
+				Promise.resolve(extractColumnData(7)), // I열
+				Promise.resolve(extractColumnData(8)), // P열
+				Promise.resolve(extractColumnData(9)), // Q열
+			]);
 
-			// 데이터 변환
+			// 🚀 5단계: 효율적인 데이터 변환
 			const excelData: ExcelData[] = [];
 			const maxLength = Math.max(
 				dateValues.length,
@@ -269,6 +365,7 @@ export class GoogleSheetsService {
 				weights.length,
 			);
 
+			// 🚀 for 루프로 성능 최적화 (forEach보다 빠름)
 			for (let i = 0; i < maxLength; i++) {
 				const dateStr = dateValues[i]?.trim();
 				if (!dateStr) continue;
@@ -277,25 +374,19 @@ export class GoogleSheetsService {
 				let month: string;
 				let day: string;
 
-				// yyyy-mm-dd 형식
-				if (dateStr.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+				// 🚀 정규식 매칭 최적화
+				if (dateStr.includes("-")) {
+					// yyyy-mm-dd 형식
 					[year, month, day] = dateStr.split("-");
-				}
-				// yyyy/mm/dd 형식
-				else if (dateStr.match(/^\d{4}\/\d{1,2}\/\d{1,2}$/)) {
+				} else if (dateStr.includes("/")) {
+					// yyyy/mm/dd 형식
 					[year, month, day] = dateStr.split("/");
-				}
-				// yyyy. mm. dd 형식 (공백 포함)
-				else if (dateStr.match(/^\d{4}\.\s*\d{1,2}\.\s*\d{1,2}$/)) {
+				} else if (dateStr.includes(".")) {
+					// yyyy. mm. dd 형식 (공백 포함)
 					const parts = dateStr.split(".").map((part) => part.trim());
 					[year, month, day] = parts;
-				}
-				// mm/dd 형식 (연도 없음) - 처리하지 않고 건너뛰기
-				else if (dateStr.match(/^\d{1,2}\/\d{1,2}$/)) {
-					continue;
-				}
-				// 기타 형식들 처리
-				else {
+				} else {
+					// 기타 형식들은 건너뛰기
 					continue;
 				}
 
@@ -307,13 +398,14 @@ export class GoogleSheetsService {
 					continue;
 				}
 
-				// I열 금액 파싱 (숫자만 추출)
+				// 🚀 숫자 파싱 최적화
 				const iAmountStr = columnIAmount[i]?.toString() || "";
 				const iAmountMatch = iAmountStr.match(/[\d,]+/);
 				const parsedIAmount = iAmountMatch
 					? Number(iAmountMatch[0].replace(/,/g, ""))
 					: 0;
 
+				// 🚀 객체 생성 최적화
 				const rowData: ExcelData = {
 					year,
 					month: month.padStart(2, "0"),
@@ -332,17 +424,30 @@ export class GoogleSheetsService {
 				excelData.push(rowData);
 			}
 
-			console.log(`전송할 최종 데이터 (${excelData.length}개):`);
+			const transformTime = Math.round(performance.now() - transformStart);
+			const totalTime = Math.round(performance.now() - startTime);
+
+			console.log(`🔄 데이터 변환 완료 (${transformTime}ms)`);
+			console.log(`✅ 전체 작업 완료 (${totalTime}ms)`);
+			console.log(`📊 최종 데이터: ${excelData.length}개 항목`);
+
 			if (excelData.length > 0) {
 				console.log("  첫 항목:", excelData[0]);
 				console.log("  마지막 항목:", excelData[excelData.length - 1]);
 			}
+
 			return excelData;
 		} finally {
-			// 임시 변환 파일이 있다면 정리
+			// 🚀 비동기 정리 (메인 로직 블록하지 않음)
 			if (tempFileId) {
-				await this.deleteTemporaryFile(tempFileId);
+				this.deleteTemporaryFile(tempFileId);
 			}
 		}
+	}
+
+	// 🚀 캐시 클리어 메서드 (필요시 사용)
+	clearCache(): void {
+		this.cache.clear();
+		console.log("🧹 캐시 클리어 완료");
 	}
 }

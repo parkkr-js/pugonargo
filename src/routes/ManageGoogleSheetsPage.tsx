@@ -1,9 +1,11 @@
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { App } from "antd";
 import { useCallback, useMemo, useState } from "react";
+import { useDispatch } from "react-redux"; // 🚀 추가
 import type { GoogleSheetFile } from "../features/excelData/domain/entities/ExcelData";
 import { FirebaseService } from "../features/excelData/domain/services/FirebaseService";
 import { GoogleSheetsService } from "../features/excelData/domain/services/GoogleSheetsService";
+import { paymentSummaryApi } from "../features/paymentSummary/api/paymentSummary.api"; // 🚀 추가
 import { AuthCard } from "../ui/deskTop/components/manageGoogleSheets/AuthCard";
 import { ProcessingCard } from "../ui/deskTop/components/manageGoogleSheets/ProcessingCard";
 import { SheetFileList } from "../ui/deskTop/components/manageGoogleSheets/SheetFileList";
@@ -14,6 +16,7 @@ if (!clientId) {
 }
 
 export const ManageGoogleSheetsPage = () => {
+	const dispatch = useDispatch(); // 🚀 추가
 	const [accessToken, setAccessToken] = useState<string | null>(null);
 	const [googleSheetFiles, setGoogleSheetFiles] = useState<GoogleSheetFile[]>(
 		[],
@@ -72,46 +75,44 @@ export const ManageGoogleSheetsPage = () => {
 			const sheetsService = new GoogleSheetsService(accessToken);
 			const firebaseService = new FirebaseService();
 
-			sheetsService
-				.extractYearMonthFromSheet(fileId)
-				.then(({ year, month }) =>
-					sheetsService
-						.fetchSheetData(fileId)
-						.then((data) => ({ year, month, data })),
-				)
-				.then(({ year, month, data }) => {
-					if (data.length === 0) {
-						throw new Error("해당 시트에서 유효한 데이터를 찾을 수 없습니다.");
-					}
-					return { year, month, data };
-				})
-				.then(({ year, month, data }) =>
-					firebaseService
-						.saveExcelData(data, year, month)
-						.then(() => ({ year, month, data })),
-				)
-				.then(({ year, month, data }) =>
-					firebaseService
-						.saveYearMonthCollection(year, month)
-						.then(() => ({ year, month, data })),
-				)
-				.then(({ year, month, data }) => {
-					message.success(
-						`${fileName}의 데이터 ${data.length}개를 ${year}-${month} 컬렉션에 성공적으로 저장했습니다.`,
-					);
-				})
-				.catch((error) => {
-					const errorMessage =
-						error instanceof Error
-							? error.message
-							: "시트 데이터 처리에 실패했습니다.";
-					message.error(errorMessage);
-				})
-				.finally(() => {
-					setProcessing(false);
-				});
+			try {
+				// 🚀 1단계: 연월 정보 추출
+				const { year, month } =
+					await sheetsService.extractYearMonthFromSheet(fileId);
+
+				// 🚀 2단계: 시트 데이터 가져오기
+				const data = await sheetsService.fetchSheetData(fileId);
+
+				if (data.length === 0) {
+					throw new Error("해당 시트에서 유효한 데이터를 찾을 수 없습니다.");
+				}
+
+				// 🚀 3단계: Firebase에 저장
+				await firebaseService.saveExcelData(data, year, month);
+
+				// 🚀 4단계: 성공 후 RTK Query 캐시 무효화
+				dispatch(
+					paymentSummaryApi.util.invalidateTags([
+						"AvailableYearMonths", // 연월 목록 갱신
+						{ type: "PaymentSummary", id: `${year}-${month}` }, // 해당 연월 데이터 갱신
+					]),
+				);
+
+				// 🚀 5단계: 성공 메시지
+				message.success(
+					`${fileName} (${year}-${month}) 데이터가 성공적으로 업로드되었습니다!`,
+				);
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: "시트 데이터 처리에 실패했습니다.";
+				message.error(errorMessage);
+			} finally {
+				setProcessing(false);
+			}
 		},
-		[accessToken, message],
+		[accessToken, message, dispatch], // 🚀 dispatch 의존성 추가
 	);
 
 	const handleRefresh = useCallback(() => {

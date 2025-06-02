@@ -13,23 +13,20 @@ import {
 import { db } from "../../../firebase/firebaseConfig";
 import type { Repair } from "../types/repair.interface";
 
+interface RepairWithGroup extends Repair {
+	group: string;
+}
+
 export class RepairService {
 	private readonly collectionName = "repair";
 
-	// Firebase에서 데이터 조회 (순수한 데이터 접근만)
+	// Firebase에서 데이터 조회
 	async getRepairRecords(
 		vehicleNumber: string,
 		year: string,
 		month: string,
 		day: string,
 	): Promise<Repair[]> {
-		console.log("Service getRepairRecords params:", {
-			vehicleNumber,
-			year,
-			month,
-			day,
-		});
-
 		const q = query(
 			collection(db, this.collectionName),
 			where("vehicleNumber", "==", vehicleNumber),
@@ -40,11 +37,6 @@ export class RepairService {
 		);
 
 		const querySnapshot = await getDocs(q);
-		console.log("Service querySnapshot size:", querySnapshot.size);
-		console.log(
-			"Service querySnapshot docs:",
-			querySnapshot.docs.map((doc) => doc.data()),
-		);
 
 		const records = querySnapshot.docs.map(
 			(doc) =>
@@ -54,7 +46,6 @@ export class RepairService {
 				}) as Repair,
 		);
 
-		console.log("Service getRepairRecords result:", records);
 		return records;
 	}
 
@@ -94,24 +85,46 @@ export class RepairService {
 		await deleteDoc(docRef);
 	}
 
-	// Firebase에서 특정 날짜의 모든 수리 내역 삭제
-	async deleteRepairRecordsByDate(
-		vehicleNumber: string,
+	// yyyy-mm 형식의 날짜로 조회
+	async getRepairRecordsByDate(
 		year: string,
 		month: string,
-		day: string,
-	): Promise<void> {
-		const records = await this.getRepairRecords(
-			vehicleNumber,
-			year,
-			month,
-			day,
+	): Promise<RepairWithGroup[]> {
+		// 1. 수리 내역 조회
+		const q = query(
+			collection(db, this.collectionName),
+			where("year", "==", year),
+			where("month", "==", month),
+			orderBy("day", "asc"),
+			orderBy("createdAt", "desc"),
 		);
 
-		const deletePromises = records.map((record) =>
-			deleteDoc(doc(db, this.collectionName, record.id)),
+		const querySnapshot = await getDocs(q);
+		const repairs = querySnapshot.docs.map(
+			(doc) =>
+				({
+					id: doc.id,
+					...doc.data(),
+				}) as Repair,
 		);
 
-		await Promise.all(deletePromises);
+		// 2. 각 수리 내역에 대한 운전자 그룹 정보 조회
+		const repairsWithGroup = await Promise.all(
+			repairs.map(async (repair) => {
+				const driverQuery = query(
+					collection(db, "drivers"),
+					where("vehicleNumber", "==", repair.vehicleNumber),
+				);
+				const driverSnapshot = await getDocs(driverQuery);
+				const group = driverSnapshot.docs[0]?.data().group || "unknown";
+
+				return {
+					...repair,
+					group,
+				} as RepairWithGroup;
+			}),
+		);
+
+		return repairsWithGroup;
 	}
 }

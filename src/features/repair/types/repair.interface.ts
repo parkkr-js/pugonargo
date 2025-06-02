@@ -10,34 +10,32 @@ export interface Repair {
 	updatedAt?: string;
 }
 
-// 수리 내역 생성을 위한 파라미터 타입
-export interface CreateRepairRecordRequest {
+export interface CreateRepairRecordParams {
 	vehicleNumber: string;
 	date: string; // 'yyyy-mm-dd' 형식
 	repairCost: number;
 	repairDescription: string;
 }
 
-// 수리 내역 조회를 위한 파라미터 타입
-export interface GetRepairRecordsRequest {
+export interface GetRepairRecordsParams {
 	vehicleNumber: string;
 	date: string; // 'yyyy-mm-dd' 형식
 }
 
-// 수리 내역 삭제를 위한 파라미터 타입
-export interface DeleteRepairRecordsRequest {
-	vehicleNumber: string;
-	date: string; // 'yyyy-mm-dd' 형식
+export interface GetRepairRecordParams {
+	recordId: string;
 }
 
-// 수리 통계 타입
-export interface RepairStatistics {
-	totalCost: number;
-	recordCount: number;
-}
-
-// 폼 데이터 타입
-export interface RepairFormData {
+export interface UpdateRepairRecordParams {
+	recordId: string;
 	repairCost: number;
 	repairDescription: string;
+}
+
+export interface DeleteRepairRecordParams {
+	recordId: string;
+}
+
+export interface RepairWithGroup extends Repair {
+	group: string;
 }

@@ -13,9 +13,9 @@ interface FirebasePaymentDoc {
 	columnIAmount: number;
 	columnOAmount: number;
 	columnQAmount?: number;
-	year: string;
-	month: string;
-	day: string;
+	year: string; // "2025"
+	month: string; // "01"
+	day: string; // "18"
 	chargeableWeight?: number;
 	group?: string;
 	memo?: string;
@@ -210,15 +210,13 @@ export class PaymentSummaryService {
 			const snapshot = await getDocs(q);
 
 			// 고유한 year-month 조합을 Set으로 수집
-			const yearMonthSet = new Set<string>();
 
-			for (const doc of snapshot.docs) {
-				const data = doc.data() as FirebasePaymentDoc;
-				if (data.year && data.month) {
-					const yearMonth = `${data.year}-${data.month}`;
-					yearMonthSet.add(yearMonth);
-				}
-			}
+			const yearMonthSet = new Set(
+				snapshot.docs
+					.map((doc) => doc.data() as FirebasePaymentDoc)
+					.filter((data) => data.year && data.month)
+					.map((data) => `${data.year}-${data.month}`),
+			);
 
 			// Set을 배열로 변환하고 정렬
 			return Array.from(yearMonthSet).sort();
