@@ -6,10 +6,7 @@ export class GoogleAuthService {
 
 	constructor() {
 		this.clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
-		this.redirectUri =
-			process.env.NODE_ENV === "production"
-				? process.env.REACT_APP_GOOGLE_REDIRECT_URI_PROD || ""
-				: process.env.REACT_APP_GOOGLE_REDIRECT_URI_LOCAL || "";
+		this.redirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI || "";
 		this.apiKey = process.env.REACT_APP_GOOGLE_API_KEY || "";
 		this.scope =
 			"https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets";
