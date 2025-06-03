@@ -5,9 +5,14 @@ import { db } from "../../../../lib/firebase";
 import type { FuelRecord } from "../../../driver/components/FuelRecordCard";
 import type { RepairRecord } from "../../../driver/components/RepairRecordCard";
 
+interface DriverInfo {
+	name: string;
+	group: string;
+}
+
 export function useFuelRepairTable(
 	monthId: string,
-	driversMap: Record<string, string> = {},
+	driversMap: Record<string, DriverInfo> = {},
 ) {
 	const [fuel, setFuel] = useState<FuelRecord[]>([]);
 	const [repair, setRepair] = useState<RepairRecord[]>([]);
@@ -63,7 +68,7 @@ export function useFuelRepairTable(
 		const fuelRows = fuel.map((f) => ({
 			type: "fuel" as const,
 			date: f.date,
-			group: driversMap[f.vehicleNumber] || "-",
+			group: driversMap[f.vehicleNumber]?.group || "-",
 			vehicleNumber: f.vehicleNumber,
 			detail: f.unitPrice ? `${f.unitPrice.toLocaleString()}원` : "-",
 			cost: f.totalFuelCost ?? 0,
@@ -71,7 +76,7 @@ export function useFuelRepairTable(
 		const repairRows = repair.map((r) => ({
 			type: "repair" as const,
 			date: r.date,
-			group: driversMap[r.vehicleNumber] || "-",
+			group: driversMap[r.vehicleNumber]?.group || "-",
 			vehicleNumber: r.vehicleNumber,
 			detail: r.memo || "-",
 			cost: r.repairCost ?? 0,

@@ -125,7 +125,11 @@ export function CostTable({ rows, onFilteredRowsChange }: CostTableProps) {
 			<Table
 				columns={columns}
 				dataSource={dataSource}
-				pagination={false}
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: true,
+					showTotal: (total) => `${total}개`,
+				}}
 				onChange={handleChange}
 			/>
 		</div>

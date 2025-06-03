@@ -169,7 +169,7 @@ export const DriversPage = memo(() => {
 						pagination={{
 							pageSize: 10,
 							showSizeChanger: true,
-							showQuickJumper: true,
+							showTotal: (total) => `${total}개`,
 						}}
 					/>
 				</Card>
