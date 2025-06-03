@@ -20,7 +20,7 @@ export const PageHeader = memo(() => {
 				연동 시트 관리
 			</Title>
 			<Paragraph type="secondary" style={{ margin: "8px 0 0 0" }}>
-				Google Drive의 Excel 파일을 선택하여 시스템에 동기화하세요
+				데이터를 불러올 시트를 관리하세요
 			</Paragraph>
 		</div>
 	);

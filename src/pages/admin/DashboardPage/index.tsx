@@ -1,4 +1,6 @@
+import { DashboardOutlined } from "@ant-design/icons";
 import { Card, Divider, Space, Spin, Typography } from "antd";
+
 import { useEffect, useState } from "react";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { CostSummary } from "./components/CostSummary";
@@ -10,7 +12,7 @@ import { useFuelRepairTable } from "./hooks/useFuelRepairTable";
 import { useMonthList } from "./hooks/useMonthList";
 import { useMonthStats } from "./hooks/useMonthStats";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export default function DashboardPage() {
 	const [monthId, setMonthId] = useState("");
@@ -51,11 +53,23 @@ export default function DashboardPage() {
 	return (
 		<AdminLayout>
 			<Space direction="vertical" size="large" style={{ width: "100%" }}>
-				<div>
-					<Title level={2} style={{ marginBottom: 4 }}>
+				{/* 페이지 헤더 */}
+				<div style={{ marginBottom: "24px" }}>
+					<Title
+						level={2}
+						style={{
+							margin: 0,
+							display: "flex",
+							alignItems: "center",
+							gap: "8px",
+						}}
+					>
+						<DashboardOutlined />
 						대시보드
 					</Title>
-					<Text type="secondary">전체 거래 현황을 파악해보세요</Text>
+					<Paragraph type="secondary" style={{ margin: "8px 0 0 0" }}>
+						전체 거래 현황을 파악해보세요
+					</Paragraph>
 				</div>
 
 				<MonthNavigator monthId={monthId} setMonthId={setMonthId} />

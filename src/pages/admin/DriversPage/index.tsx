@@ -21,7 +21,7 @@ import {
 	useUpdateDriverMutation,
 } from "./hooks/useDriversQuery";
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 export const DriversPage = memo(() => {
 	const [modalOpen, setModalOpen] = useState(false);
@@ -308,6 +308,9 @@ export const DriversPage = memo(() => {
 						<UserOutlined />
 						기사님 관리
 					</Title>
+					<Paragraph type="secondary" style={{ margin: "8px 0 0 0" }}>
+						기사님 계정을 추가하고 관리하세요
+					</Paragraph>
 				</div>
 
 				<Card

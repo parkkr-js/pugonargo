@@ -1,5 +1,5 @@
 import { FileTextOutlined, InfoCircleOutlined } from "@ant-design/icons";
-import { DatePicker, Modal, Tooltip, Typography, message } from "antd";
+import { DatePicker, Tooltip, Typography, message } from "antd";
 import dayjs from "dayjs";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
@@ -8,6 +8,7 @@ import {
 	type TableRow,
 	TransactionsTable,
 } from "./components/TransactionsTable";
+import { VehicleFuelRepairModal } from "./components/VehicleFuelRepairModal";
 import { useDriversMap } from "./hooks/useDriversMap";
 import { useTransactions } from "./hooks/useTransactions";
 
@@ -153,7 +154,7 @@ export function TransactionsPage() {
 						거래 내역
 					</Title>
 					<Paragraph type="secondary" style={{ margin: "8px 0 0 0" }}>
-						모든 거래 내역을 확인하고 관리하세요
+						차량별 거래 내역을 관리하세요
 					</Paragraph>
 				</div>
 
@@ -198,9 +199,13 @@ export function TransactionsPage() {
 					/>
 				</div>
 			</div>
-			<Modal open={modalOpen} onCancel={handleModalClose} footer={null}>
-				<div>차량번호: {selectedVehicle}</div>
-			</Modal>
+			{selectedVehicle && (
+				<VehicleFuelRepairModal
+					vehicleNumber={selectedVehicle}
+					open={modalOpen}
+					onClose={handleModalClose}
+				/>
+			)}
 		</AdminLayout>
 	);
 }
