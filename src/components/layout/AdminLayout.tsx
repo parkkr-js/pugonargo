@@ -134,18 +134,13 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 						padding: "0 24px",
 						boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
 						display: "flex",
-						justifyContent: "space-between",
+						justifyContent: "flex-end",
 						alignItems: "center",
 					}}
 				>
-					<div>
-						<Text type="secondary">전체 거래 현황을 파악해보세요</Text>
-					</div>
-
 					{/* 사용자 정보 및 로그아웃 */}
 					<Space>
 						<Text strong>관리자({user?.email || "Unknown"})</Text>
-						<Text type="secondary">|</Text>
 						<Button
 							type="text"
 							icon={<LogoutOutlined />}
