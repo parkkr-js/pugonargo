@@ -1,26 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ConfigProvider } from "antd";
+import koKR from "antd/locale/ko_KR";
+import { queryClient } from "./lib/queryClient";
+import { AppRouter } from "./routes/AppRouter";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ConfigProvider locale={koKR}>
+				<AppRouter />
+				{process.env.NODE_ENV === "development" && (
+					<ReactQueryDevtools initialIsOpen={false} />
+				)}
+			</ConfigProvider>
+		</QueryClientProvider>
+	);
 }
 
 export default App;
