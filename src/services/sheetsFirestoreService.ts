@@ -32,16 +32,13 @@ export class SheetsFirestoreService {
 				const docRef = doc(this.rawDataCollection, item.id);
 				batch.set(docRef, {
 					...item,
-					date: Timestamp.fromDate(item.date),
+					// date는 string 그대로 저장
 					createdAt: Timestamp.fromDate(item.createdAt),
 					updatedAt: Timestamp.fromDate(item.updatedAt),
 				});
 			}
 
 			await batch.commit();
-			console.log(
-				`Batch ${Math.floor(i / batchSize) + 1} committed: ${batchData.length} records`,
-			);
 		}
 	}
 

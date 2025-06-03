@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import type { MonthlyStats, RawData } from "../types/sheets";
 
 /**
@@ -78,14 +79,15 @@ export const transformRowToRawData = (
 			id: `${fileId}_${rowIndex}`,
 			fileId,
 			fileName,
-			date: parseDate(row[2] || 0), // C열 (인덱스 2)
-			d: row[3] || "", // D열
-			e: row[4] || "", // E열
-			m: row[12] || "", // M열 (인덱스 12)
-			n: row[13] || "", // N열
-			o: parseNumber(row[14] || 0), // O열 (인덱스 14)
-			p: row[15] || "", // P열
-			i: parseNumber(row[8] || 0), // I열 (인덱스 8)
+			date: dayjs(parseDate(row[2] || 0)).format("YYYY-MM-DD"), // 반드시 string으로 변환
+			d: row[3] as string,
+			e: row[4] as string,
+			i: row[8] as number,
+			m: row[12] as number,
+			n: row[13] as number,
+			o: row[14] as number,
+			p: row[15] as string,
+			q: row[16] as number,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};

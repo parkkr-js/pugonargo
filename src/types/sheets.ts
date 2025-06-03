@@ -12,14 +12,15 @@ export interface RawData {
 	id: string;
 	fileId: string; // 원본 스프레드시트 ID
 	fileName: string;
-	date: Date; // C열 (날짜, Excel 시리얼 → Date 변환됨)
-	d: string | number; // D열
-	e: string | number; // E열
-	m: string | number; // M열
-	n: string | number; // N열
+	date: string; // C열 (날짜, YYYY-MM-DD string)
+	d: string; // D열
+	e: string; // E열
+	m: number; // M열
+	n: number; // N열
 	o: number; // O열 (월별 집계용)
-	p: string | number; // P열
+	p: string; // P열
 	i: number; // I열 (월별 집계용)
+	q: number; // Q열
 	createdAt: Date;
 	updatedAt: Date;
 }

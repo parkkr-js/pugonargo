@@ -119,11 +119,7 @@ export class GoogleApiService {
 	/**
 	 * 구글 시트에서 지정된 범위의 데이터 가져오기
 	 */
-	async getSheetData(
-		sheetId: string,
-		sheetName = "Sheet1",
-		startRow = 14,
-	): Promise<(string | number)[][]> {
+	async getSheetData(sheetId: string): Promise<(string | number)[][]> {
 		let actualSpreadsheetId = sheetId;
 		let tempFileId: string | null = null;
 
@@ -136,7 +132,6 @@ export class GoogleApiService {
 				mimeType ===
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 			) {
-				console.log("Excel 파일 감지, 임시 변환 시작...");
 				tempFileId = await this.convertExcelToGoogleSheet(sheetId, "temp");
 				actualSpreadsheetId = tempFileId;
 			}
@@ -146,7 +141,6 @@ export class GoogleApiService {
 				"C14:C", // 날짜
 				"D14:D", // 차량번호
 				"E14:E", // 운송구간
-				"L14:L", // 그룹
 				"M14:M", // 지급 중량
 				"N14:N", // 지급 단가
 				"O14:O", // 금액 (O열)
@@ -154,8 +148,6 @@ export class GoogleApiService {
 				"P14:P", // 비고
 				"Q14:Q", // 금액 (Q열)
 			];
-
-			console.log("Fetching sheet data with ranges:", ranges);
 
 			const response = await fetch(
 				`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}/values:batchGet?ranges=${ranges
@@ -202,20 +194,18 @@ export class GoogleApiService {
 			const dateValues = extractColumnData(0); // C열
 			const vehicleNumbers = extractColumnData(1); // D열
 			const transportRoutes = extractColumnData(2); // E열
-			const groups = extractColumnData(3); // L열
-			const weights = extractColumnData(4); // M열
-			const unitPrices = extractColumnData(5); // N열
-			const columnOAmount = extractColumnData(6); // O열
-			const columnIAmount = extractColumnData(7); // I열
-			const memos = extractColumnData(8); // P열
-			const columnQAmount = extractColumnData(9); // Q열
+			const weights = extractColumnData(3); // M열
+			const unitPrices = extractColumnData(4); // N열
+			const columnOAmount = extractColumnData(5); // O열
+			const columnIAmount = extractColumnData(6); // I열
+			const memos = extractColumnData(7); // P열
+			const columnQAmount = extractColumnData(8); // Q열
 
 			// 가장 긴 열을 기준으로 행 개수 결정
 			const maxLength = Math.max(
 				dateValues.length,
 				vehicleNumbers.length,
 				transportRoutes.length,
-				groups.length,
 				weights.length,
 			);
 
@@ -235,16 +225,15 @@ export class GoogleApiService {
 
 				const row: (string | number)[] = [];
 				// C, D, E, L, M, N, O, I, P, Q 순서로 배치
-				row[2] = dateValues[i] || ""; // C열
-				row[3] = vehicleNumbers[i] || ""; // D열
-				row[4] = transportRoutes[i] || ""; // E열
-				row[11] = groups[i] || ""; // L열
-				row[12] = weights[i] || ""; // M열
-				row[13] = unitPrices[i] || ""; // N열
-				row[14] = columnOAmount[i] || ""; // O열
-				row[8] = columnIAmount[i] || ""; // I열
-				row[15] = memos[i] || ""; // P열
-				row[16] = columnQAmount[i] || ""; // Q열
+				row[2] = dateValues[i] || ""; // C열 (string)
+				row[3] = vehicleNumbers[i] || ""; // D열 (string)
+				row[4] = transportRoutes[i] || ""; // E열 (string)
+				row[12] = Number(weights[i]) || 0; // M열 (number)
+				row[13] = Number(unitPrices[i]) || 0; // N열 (number)
+				row[14] = Number(columnOAmount[i]) || 0; // O열 (number)
+				row[8] = Number(columnIAmount[i]) || 0; // I열 (number)
+				row[15] = memos[i] || ""; // P열 (string)
+				row[16] = Number(columnQAmount[i]) || 0; // Q열 (number)
 
 				rows.push(row);
 			}

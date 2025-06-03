@@ -5,7 +5,7 @@ import { SheetsPage } from "../pages/admin/SheetsPage";
 import { TransactionsPage } from "../pages/admin/TransactionsPage";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { OAuthCallbackPage } from "../pages/auth/OAuthCallbackPage";
-import DriverPage from "../pages/driver/DriverPage";
+import DriverPage from "../pages/driver";
 import { useAuthStore } from "../stores/authStore";
 
 // 루트 경로 리다이렉트 컴포넌트
