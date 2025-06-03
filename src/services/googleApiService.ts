@@ -90,7 +90,6 @@ export class GoogleApiService {
 				method: "DELETE",
 				headers: { Authorization: `Bearer ${this.accessToken}` },
 			});
-			console.log("임시 변환 파일 삭제 완료:", fileId);
 		} catch (error) {
 			console.error("임시 파일 삭제 실패:", error);
 			// 에러가 발생해도 메인 로직에는 영향 없도록 함
@@ -238,7 +237,6 @@ export class GoogleApiService {
 				rows.push(row);
 			}
 
-			console.log("Processed rows:", rows.length);
 			return rows;
 		} catch (error) {
 			console.error("Failed to get sheet data:", error);
