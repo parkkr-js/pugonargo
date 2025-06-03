@@ -1,6 +1,6 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { Card, Col, Row, Statistic, Table, Tag, Typography } from "antd";
-import { AdminLayout } from "../../components/layout/AdminLayout";
+import { AdminLayout } from "../../../components/layout/AdminLayout";
 
 const { Title, Paragraph } = Typography;
 

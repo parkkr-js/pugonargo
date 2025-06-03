@@ -80,7 +80,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 				collapsible
 				collapsed={collapsed}
 				onCollapse={setCollapsed}
-				width={240}
+				width={200}
 				style={{
 					background: "#2f3349",
 					boxShadow: "2px 0 8px rgba(0,0,0,0.15)",

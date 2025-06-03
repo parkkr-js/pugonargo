@@ -1,5 +1,6 @@
 import { Card, Divider, Space, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
+import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { CostSummary } from "./components/CostSummary";
 import { CostTable } from "./components/CostTable";
 import { MonthNavigator } from "./components/MonthNavigator";
@@ -48,7 +49,7 @@ export default function DashboardPage() {
 	);
 
 	return (
-		<div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
+		<AdminLayout>
 			<Space direction="vertical" size="large" style={{ width: "100%" }}>
 				<div>
 					<Title level={2} style={{ marginBottom: 4 }}>
@@ -102,6 +103,6 @@ export default function DashboardPage() {
 					</>
 				)}
 			</Space>
-		</div>
+		</AdminLayout>
 	);
 }
