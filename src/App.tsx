@@ -10,7 +10,7 @@ function App() {
 		<QueryClientProvider client={queryClient}>
 			<ConfigProvider locale={koKR}>
 				<AppRouter />
-				{process.env.NODE_ENV === "development" && (
+				{process.env.NODE_ENV === "production" && (
 					<ReactQueryDevtools initialIsOpen={false} />
 				)}
 			</ConfigProvider>
