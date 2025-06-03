@@ -26,9 +26,6 @@ export function FuelRecordCard({
 				background: "#f8fafd",
 			}}
 		>
-			<div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-				주유내역
-			</div>
 			<div>단가: {record.unitPrice.toLocaleString()}원</div>
 			<div>주유량: {record.fuelAmount.toLocaleString()}L</div>
 			<div>총주유비: {record.totalFuelCost.toLocaleString()}원</div>

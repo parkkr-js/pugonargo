@@ -180,7 +180,16 @@ export function DailyRecordsTab() {
 			/>
 			<div style={{ marginTop: 16 }}>
 				{isLoading ? (
-					<Spin />
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							minHeight: 200,
+						}}
+					>
+						<Spin />
+					</div>
 				) : (
 					<Space direction="vertical" size="large" style={{ width: "100%" }}>
 						{/* 운행 내역 */}

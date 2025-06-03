@@ -25,9 +25,6 @@ export function RepairRecordCard({
 				background: "#f8fafd",
 			}}
 		>
-			<div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-				수리내역
-			</div>
 			<div>정비비용: {record.repairCost.toLocaleString()}원</div>
 			<div>메모: {record.memo}</div>
 			<div style={{ marginTop: 8, display: "flex", gap: 8 }}>
