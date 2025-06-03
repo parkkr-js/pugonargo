@@ -19,4 +19,11 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
+// 현재 환경 로깅 (디버깅용)
+console.log("Current environment:", process.env.NODE_ENV);
+console.log("Firebase config:", {
+	...firebaseConfig,
+	apiKey: firebaseConfig.apiKey ? "***" : undefined,
+});
+
 export default app;
