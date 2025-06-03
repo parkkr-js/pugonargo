@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { fetchFuelByMonth } from "../../../../services/dashboard/fetchFuelByMonth";
-import { fetchRepairByMonth } from "../../../../services/dashboard/fetchRepairByMonth";
+import dayjs from "dayjs";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { useEffect, useMemo, useState } from "react";
+import { db } from "../../../../lib/firebase";
 import type { FuelRecord } from "../../../driver/components/FuelRecordCard";
 import type { RepairRecord } from "../../../driver/components/RepairRecordCard";
 
@@ -9,35 +9,56 @@ export function useFuelRepairTable(
 	monthId: string,
 	driversMap: Record<string, string> = {},
 ) {
-	const [sortKey, setSortKey] = useState<string>("date");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-	const [filter, setFilter] = useState<{
-		date?: string;
-		vehicleNumber?: string;
-	}>({});
+	const [fuel, setFuel] = useState<FuelRecord[]>([]);
+	const [repair, setRepair] = useState<RepairRecord[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
 
-	const [year, month] = monthId.split("-").map(Number);
-	const fuelQuery = useQuery({
-		queryKey: ["fuel", monthId],
-		queryFn: () => fetchFuelByMonth(year, month),
-		enabled: !!monthId,
-	});
-	const repairQuery = useQuery({
-		queryKey: ["repair", monthId],
-		queryFn: () => fetchRepairByMonth(year, month),
-		enabled: !!monthId,
-	});
+	useEffect(() => {
+		if (!monthId) return;
 
-	const fuel = useMemo(
-		() => (fuelQuery.data ?? []) as FuelRecord[],
-		[fuelQuery.data],
-	);
-	const repair = useMemo(
-		() => (repairQuery.data ?? []) as RepairRecord[],
-		[repairQuery.data],
-	);
+		const [year, month] = monthId.split("-").map(Number);
+		const start = dayjs(`${year}-${String(month).padStart(2, "0")}-01`).format(
+			"YYYY-MM-DD",
+		);
+		const end = dayjs(start).endOf("month").format("YYYY-MM-DD");
 
-	// fuel/repair를 테이블 row로 변환
+		// Fuel 데이터 실시간 구독
+		const fuelQuery = query(
+			collection(db, "fuel"),
+			where("date", ">=", start),
+			where("date", "<=", end),
+		);
+		const fuelUnsubscribe = onSnapshot(fuelQuery, (snapshot) => {
+			const fuelData = snapshot.docs.map((doc) => ({
+				...(doc.data() as FuelRecord),
+				id: doc.id,
+			}));
+			setFuel(fuelData);
+			setIsLoading(false);
+		});
+
+		// Repair 데이터 실시간 구독
+		const repairQuery = query(
+			collection(db, "repair"),
+			where("date", ">=", start),
+			where("date", "<=", end),
+		);
+		const repairUnsubscribe = onSnapshot(repairQuery, (snapshot) => {
+			const repairData = snapshot.docs.map((doc) => ({
+				...(doc.data() as RepairRecord),
+				id: doc.id,
+			}));
+			setRepair(repairData);
+			setIsLoading(false);
+		});
+
+		// 클린업 함수
+		return () => {
+			fuelUnsubscribe();
+			repairUnsubscribe();
+		};
+	}, [monthId]);
+
 	const tableRows = useMemo(() => {
 		const fuelRows = fuel.map((f) => ({
 			type: "fuel" as const,
@@ -58,18 +79,5 @@ export function useFuelRepairTable(
 		return [...fuelRows, ...repairRows];
 	}, [fuel, repair, driversMap]);
 
-	return {
-		tableRows,
-		totalRepair: repair.reduce((sum, r) => sum + (r.repairCost ?? 0), 0),
-		totalFuel: fuel.reduce((sum, f) => sum + (f.totalFuelCost ?? 0), 0),
-		totalCost:
-			repair.reduce((sum, r) => sum + (r.repairCost ?? 0), 0) +
-			fuel.reduce((sum, f) => sum + (f.totalFuelCost ?? 0), 0),
-		sortKey,
-		setSortKey,
-		sortOrder,
-		setSortOrder,
-		filter,
-		setFilter,
-	};
+	return { tableRows, isLoading };
 }

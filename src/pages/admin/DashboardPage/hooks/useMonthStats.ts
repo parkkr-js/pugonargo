@@ -1,17 +1,43 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchMonthlyStats } from "../../../../services/dashboard/fetchMonthlyStats";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db } from "../../../../lib/firebase";
 
 export function useMonthStats(monthId: string) {
-	return useQuery({
-		queryKey: ["monthlyStats", monthId],
-		queryFn: async () => {
-			const data = await fetchMonthlyStats(monthId);
-			if (!data) return null;
-			return {
-				totalI: data.totalI ?? 0,
-				totalO: data.totalO ?? 0,
-			};
-		},
-		enabled: !!monthId,
-	});
+	const [data, setData] = useState<{ totalI: number; totalO: number } | null>(
+		null,
+	);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<Error | null>(null);
+
+	useEffect(() => {
+		if (!monthId) {
+			setData(null);
+			setIsLoading(false);
+			return;
+		}
+
+		const unsubscribe = onSnapshot(
+			doc(db, "monthlyStats", monthId),
+			(doc) => {
+				if (!doc.exists()) {
+					setData(null);
+				} else {
+					const stats = doc.data();
+					setData({
+						totalI: stats.totalI ?? 0,
+						totalO: stats.totalO ?? 0,
+					});
+				}
+				setIsLoading(false);
+			},
+			(error) => {
+				setError(error as Error);
+				setIsLoading(false);
+			},
+		);
+
+		return () => unsubscribe();
+	}, [monthId]);
+
+	return { data, isLoading, error };
 }

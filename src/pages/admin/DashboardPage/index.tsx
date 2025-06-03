@@ -1,3 +1,4 @@
+import { Card, Divider, Space, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { CostSummary } from "./components/CostSummary";
 import { CostTable } from "./components/CostTable";
@@ -8,12 +9,17 @@ import { useFuelRepairTable } from "./hooks/useFuelRepairTable";
 import { useMonthList } from "./hooks/useMonthList";
 import { useMonthStats } from "./hooks/useMonthStats";
 
+const { Title, Text } = Typography;
+
 export default function DashboardPage() {
 	const [monthId, setMonthId] = useState("");
 	const { data: months = [], isLoading: monthsLoading } = useMonthList();
 	const { data: driversMap, isLoading: driversLoading } = useDriversMap();
 	const { data: monthStats, isLoading: statsLoading } = useMonthStats(monthId);
-	const { tableRows } = useFuelRepairTable(monthId, driversMap);
+	const { tableRows, isLoading: tableLoading } = useFuelRepairTable(
+		monthId,
+		driversMap,
+	);
 
 	const [filteredRows, setFilteredRows] = useState(tableRows);
 
@@ -24,7 +30,8 @@ export default function DashboardPage() {
 		}
 	}, [months, monthId]);
 
-	const isLoading = monthsLoading || driversLoading || statsLoading;
+	const isLoading =
+		monthsLoading || driversLoading || statsLoading || tableLoading;
 
 	// 필터링된 데이터의 합계 계산
 	const filteredTotals = filteredRows.reduce(
@@ -41,48 +48,60 @@ export default function DashboardPage() {
 	);
 
 	return (
-		<div style={{ maxWidth: 1000, margin: "0 auto", padding: 32 }}>
-			<h2 style={{ fontWeight: 700, fontSize: 22, marginBottom: 4 }}>
-				대시보드{" "}
-				<span style={{ fontWeight: 400, fontSize: 16, color: "#888" }}>
-					| 전체 거래 현황을 파악해보세요
-				</span>
-			</h2>
-			<MonthNavigator monthId={monthId} setMonthId={setMonthId} />
-			{isLoading ? (
-				<div
-					style={{
-						display: "flex",
-						justifyContent: "center",
-						alignItems: "center",
-						minHeight: 300,
-					}}
-				>
-					<div>로딩중...</div>
+		<div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
+			<Space direction="vertical" size="large" style={{ width: "100%" }}>
+				<div>
+					<Title level={2} style={{ marginBottom: 4 }}>
+						대시보드
+					</Title>
+					<Text type="secondary">전체 거래 현황을 파악해보세요</Text>
 				</div>
-			) : (
-				<>
-					<div style={{ marginBottom: 8, color: "#888", fontSize: 14 }}>
-						거래 내역{" "}
-						<span style={{ fontWeight: 400 }}>
-							(구글 시트에서 불러오는 값입니다.)
-						</span>
+
+				<MonthNavigator monthId={monthId} setMonthId={setMonthId} />
+
+				{isLoading ? (
+					<div style={{ textAlign: "center", padding: "48px 0" }}>
+						<Spin size="large" />
 					</div>
-					<StatsCards stats={monthStats} />
-					<div style={{ margin: "32px 0 8px 0", color: "#888", fontSize: 14 }}>
-						정비 · 유류비{" "}
-						<span style={{ fontWeight: 400 }}>
-							(기사님들이 직접 입력한 값입니다.)
-						</span>
-					</div>
-					<CostSummary
-						totalRepair={filteredTotals.totalRepair}
-						totalFuel={filteredTotals.totalFuel}
-						totalCost={filteredTotals.totalCost}
-					/>
-					<CostTable rows={tableRows} onFilteredRowsChange={setFilteredRows} />
-				</>
-			)}
+				) : (
+					<>
+						<Card>
+							<Space
+								direction="vertical"
+								size="small"
+								style={{ width: "100%" }}
+							>
+								<Text type="secondary">
+									거래 내역 (구글 시트에서 불러오는 값입니다.)
+								</Text>
+								<StatsCards stats={monthStats} />
+							</Space>
+						</Card>
+
+						<Card>
+							<Space
+								direction="vertical"
+								size="large"
+								style={{ width: "100%" }}
+							>
+								<Text type="secondary">
+									정비 · 유류비 (기사님들이 직접 입력한 값입니다.)
+								</Text>
+								<CostSummary
+									totalRepair={filteredTotals.totalRepair}
+									totalFuel={filteredTotals.totalFuel}
+									totalCost={filteredTotals.totalCost}
+								/>
+								<Divider style={{ margin: "16px 0" }} />
+								<CostTable
+									rows={tableRows}
+									onFilteredRowsChange={setFilteredRows}
+								/>
+							</Space>
+						</Card>
+					</>
+				)}
+			</Space>
 		</div>
 	);
 }
