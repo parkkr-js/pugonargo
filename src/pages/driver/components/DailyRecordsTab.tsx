@@ -10,6 +10,7 @@ import {
 } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useState } from "react";
+import styled from "styled-components";
 import type { FuelRecordInput } from "../../../services/client/createFuelRecord";
 import type { RepairRecordInput } from "../../../services/client/createRepairRecord";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
@@ -170,71 +171,59 @@ export function DailyRecordsTab() {
 	};
 
 	return (
-		<div style={{ padding: 16 }}>
+		<Container>
 			{contextHolder}
-			<DatePicker
+			<StyledDatePicker
 				value={date}
-				onChange={(val) => val && setDate(val)}
-				style={{ width: "100%" }}
+				onChange={(date) => {
+					if (date) {
+						setDate(date as Dayjs);
+					}
+				}}
 				disabledDate={disabledDate}
+				size="large"
 			/>
-			<div style={{ marginTop: 16 }}>
+			<ContentContainer>
 				{isLoading ? (
-					<div
-						style={{
-							display: "flex",
-							justifyContent: "center",
-							alignItems: "center",
-							minHeight: 200,
-						}}
-					>
+					<LoadingContainer>
 						<Spin />
-					</div>
+					</LoadingContainer>
 				) : (
-					<Space direction="vertical" size="large" style={{ width: "100%" }}>
+					<StyledSpace direction="vertical" size="middle">
 						{/* 운행 내역 */}
-						<Card title="운행 내역" style={{ borderRadius: 10 }}>
+						<StyledCard title="운행 내역">
 							{driveRecords.length === 0 ? (
-								<Flex justify="center" align="center" style={{ minHeight: 80 }}>
+								<EmptyStateContainer justify="center" align="center">
 									<Text type="secondary">
 										아직 입력된 운행 내역이 없습니다.
 									</Text>
-								</Flex>
+								</EmptyStateContainer>
 							) : (
-								<Space
-									direction="vertical"
-									size="small"
-									style={{ width: "100%" }}
-								>
+								<RecordsSpace direction="vertical" size="small">
 									{driveRecords.map((record) => (
 										<DailyDriveCard key={record.id} record={record} />
 									))}
-								</Space>
+								</RecordsSpace>
 							)}
-						</Card>
+						</StyledCard>
 
 						{/* 주유 내역 */}
-						<Card
+						<StyledCard
 							title="주유 내역"
 							extra={
-								<Button type="primary" size="small" onClick={handleAddFuel}>
+								<Button type="primary" size="middle" onClick={handleAddFuel}>
 									추가하기
 								</Button>
 							}
-							style={{ borderRadius: 10 }}
 						>
 							{fuelRecords.length === 0 ? (
-								<Flex justify="center" align="center" style={{ minHeight: 80 }}>
+								<EmptyStateContainer justify="center" align="center">
 									<Text type="secondary">
 										아직 입력된 주유 내역이 없습니다.
 									</Text>
-								</Flex>
+								</EmptyStateContainer>
 							) : (
-								<Space
-									direction="vertical"
-									size="small"
-									style={{ width: "100%" }}
-								>
+								<RecordsSpace direction="vertical" size="small">
 									{fuelRecords.map((record) => (
 										<FuelRecordCard
 											key={record.id}
@@ -243,9 +232,9 @@ export function DailyRecordsTab() {
 											onDelete={handleDeleteFuel}
 										/>
 									))}
-								</Space>
+								</RecordsSpace>
 							)}
-						</Card>
+						</StyledCard>
 						<FuelRecordModal
 							open={fuelModalOpen}
 							initialData={editingFuel || undefined}
@@ -255,31 +244,25 @@ export function DailyRecordsTab() {
 								setEditingFuel(null);
 							}}
 							vehicleNumber={vehicleNumber}
-							hideDateField
 						/>
 
 						{/* 수리 내역 */}
-						<Card
+						<StyledCard
 							title="수리 내역"
 							extra={
-								<Button type="primary" size="small" onClick={handleAddRepair}>
+								<Button type="primary" size="middle" onClick={handleAddRepair}>
 									추가하기
 								</Button>
 							}
-							style={{ borderRadius: 10 }}
 						>
 							{repairRecords.length === 0 ? (
-								<Flex justify="center" align="center" style={{ minHeight: 80 }}>
+								<EmptyStateContainer justify="center" align="center">
 									<Text type="secondary">
 										아직 입력된 수리 내역이 없습니다.
 									</Text>
-								</Flex>
+								</EmptyStateContainer>
 							) : (
-								<Space
-									direction="vertical"
-									size="small"
-									style={{ width: "100%" }}
-								>
+								<RecordsSpace direction="vertical" size="small">
 									{repairRecords.map((record) => (
 										<RepairRecordCard
 											key={record.id}
@@ -288,9 +271,9 @@ export function DailyRecordsTab() {
 											onDelete={handleDeleteRepair}
 										/>
 									))}
-								</Space>
+								</RecordsSpace>
 							)}
-						</Card>
+						</StyledCard>
 						<RepairRecordModal
 							open={repairModalOpen}
 							initialData={editingRepair || undefined}
@@ -300,11 +283,55 @@ export function DailyRecordsTab() {
 								setEditingRepair(null);
 							}}
 							vehicleNumber={vehicleNumber}
-							hideDateField
 						/>
-					</Space>
+					</StyledSpace>
 				)}
-			</div>
-		</div>
+			</ContentContainer>
+		</Container>
 	);
 }
+
+const Container = styled.div`
+	padding: ${({ theme }) => theme.spacing.md};
+`;
+
+const StyledDatePicker = styled(DatePicker)`
+	width: 100%;
+`;
+
+const LoadingContainer = styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 200px;
+`;
+
+const StyledCard = styled(Card)`
+	border-radius: ${({ theme }) => theme.borderRadius.md};
+	box-shadow: ${({ theme }) => theme.shadows.card};
+	transition: box-shadow 0.3s ease;
+
+	.ant-card-body {
+		padding: ${({ theme }) => theme.spacing.sm};
+	}
+
+	&:hover {
+		box-shadow: ${({ theme }) => theme.shadows.cardHover};
+	}
+`;
+
+const EmptyStateContainer = styled(Flex)`
+	min-height: 80px;
+`;
+
+const RecordsSpace = styled(Space)`
+	width: 100%;
+`;
+
+const ContentContainer = styled.div`
+	margin-top: ${({ theme }) => theme.spacing.md};
+`;
+
+const StyledSpace = styled(Space)`
+	width: 100%;
+`;
