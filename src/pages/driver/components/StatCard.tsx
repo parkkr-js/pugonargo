@@ -1,3 +1,5 @@
+import styled from "styled-components";
+
 interface StatCardProps {
 	data?: {
 		totalAmount: number;
@@ -16,75 +18,75 @@ export function StatCard({ data }: StatCardProps) {
 	const totalRepairCost = data?.totalRepairCost ?? 0;
 
 	return (
-		<div
-			style={{
-				border: "1px solid #eee",
-				borderRadius: 12,
-				padding: 24,
-				background: "#fff",
-				boxShadow: "0 2px 8px 0 rgba(0,0,0,0.03)",
-				maxWidth: 420,
-				margin: "0 auto",
-			}}
-		>
-			<div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>
-				선택 기간 운행 매출
-			</div>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					marginBottom: 8,
-				}}
-			>
+		<CardContainer>
+			<Title>선택 기간 운행 매출</Title>
+			<Row>
 				<span>총 금액</span>
-				<span style={{ color: "#222", fontWeight: 600, fontSize: 18 }}>
-					{totalAmount.toLocaleString()}원
-				</span>
-			</div>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					marginBottom: 8,
-				}}
-			>
+				<Amount>{totalAmount.toLocaleString()}원</Amount>
+			</Row>
+			<Row>
 				<span>지입료(5%)</span>
-				<span style={{ color: "#222", fontWeight: 600, fontSize: 18 }}>
-					{totalDeduction.toLocaleString()}원
-				</span>
-			</div>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					marginBottom: 16,
-				}}
-			>
+				<Amount>{totalDeduction.toLocaleString()}원</Amount>
+			</Row>
+			<Row style={{ marginBottom: 12, fontWeight: 600 }}>
 				<span>공제 후 금액</span>
-				<span style={{ color: "#223388", fontWeight: 900, fontSize: 20 }}>
-					{afterDeduction.toLocaleString()}원
-				</span>
-			</div>
-			<hr style={{ margin: "16px 0" }} />
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					marginBottom: 8,
-				}}
-			>
+				<AfterDeduction>{afterDeduction.toLocaleString()}원</AfterDeduction>
+			</Row>
+			<StyledHr />
+			<Row>
 				<span>총 유류비</span>
-				<span style={{ color: "#223388", fontWeight: 700, fontSize: 17 }}>
-					{totalFuelCost.toLocaleString()}원
-				</span>
-			</div>
-			<div style={{ display: "flex", justifyContent: "space-between" }}>
+				<Amount>{totalFuelCost.toLocaleString()}원</Amount>
+			</Row>
+			<Row>
 				<span>총 정비비</span>
-				<span style={{ color: "#223388", fontWeight: 700, fontSize: 17 }}>
-					{totalRepairCost.toLocaleString()}원
-				</span>
-			</div>
-		</div>
+				<Amount>{totalRepairCost.toLocaleString()}원</Amount>
+			</Row>
+		</CardContainer>
 	);
 }
+
+const CardContainer = styled.div`
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+  background: #fff;
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  max-width: 420px;
+  margin: 0 auto;
+`;
+
+const Title = styled.div`
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  color: black;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`;
+
+const Row = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  color: ${({ theme }) => theme.colors.text.secondary};
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const Amount = styled.span`
+  color: ${({ theme }) => theme.colors.text.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.normal};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+`;
+
+const AfterDeduction = styled.span`
+  color: ${({ theme }) => theme.colors.primary};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+  font-size: ${({ theme }) => theme.fontSizes.md};
+`;
+
+const StyledHr = styled.hr`
+  margin: ${({ theme }) => theme.spacing.md} 0;
+  border: none;
+  border-top: 1px solid ${({ theme }) => theme.colors.border.light};
+`;

@@ -1,9 +1,20 @@
 import { DatePicker, Spin } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useState } from "react";
+import styled, { createGlobalStyle } from "styled-components";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
 import { usePeriodStats } from "../hooks/usePeriodStats";
 import { StatCard } from "./StatCard";
+
+const MobileCalendarStyle = createGlobalStyle`
+	.ant-picker-dropdown .ant-picker-panels {
+		display: flex !important;
+		flex-direction: column !important;
+	}
+	.ant-picker-dropdown .ant-picker-panel-container {
+		flex-direction: column !important;
+	}
+`;
 
 export function PeriodStatsTab() {
 	const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs(), dayjs()]);
@@ -26,46 +37,49 @@ export function PeriodStatsTab() {
 	};
 
 	return (
-		<>
-			<div style={{ padding: 16 }}>
-				<DatePicker.RangePicker
-					value={range}
-					onChange={(val) => val && setRange(val as [Dayjs, Dayjs])}
-					style={{ width: "100%" }}
-					disabledDate={disabledDate}
-					panelRender={(panel) => (
-						<div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-							{panel}
-						</div>
-					)}
-				/>
-				<div style={{ marginTop: 16 }}>
-					{isLoading ? (
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-								minHeight: 200,
-							}}
-						>
-							<Spin />
-						</div>
-					) : (
-						<StatCard data={data && !isError ? data : zeroData} />
-					)}
-				</div>
-			</div>
-			{/* 모바일 세로 달력 스타일 */}
-			<style>{`
-				.ant-picker-dropdown .ant-picker-panels {
-					display: flex !important;
-					flex-direction: column !important;
-				}
-				.ant-picker-dropdown .ant-picker-panel-container {
-					flex-direction: column !important;
-				}
-			`}</style>
-		</>
+		<Wrapper>
+			<MobileCalendarStyle />
+			<StyledRangePicker
+				value={range}
+				onChange={(val) => val && setRange(val as [Dayjs, Dayjs])}
+				disabledDate={disabledDate}
+				panelRender={(panel) => <PanelWrapper>{panel}</PanelWrapper>}
+				size="large"
+			/>
+			<Content>
+				{isLoading ? (
+					<LoadingArea>
+						<Spin />
+					</LoadingArea>
+				) : (
+					<StatCard data={data && !isError ? data : zeroData} />
+				)}
+			</Content>
+		</Wrapper>
 	);
 }
+
+const Wrapper = styled.div`
+	padding: 16px;
+`;
+
+const StyledRangePicker = styled(DatePicker.RangePicker)`
+	width: 100%;
+`;
+
+const PanelWrapper = styled.div`
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+`;
+
+const Content = styled.div`
+	margin-top: 24px;
+`;
+
+const LoadingArea = styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 200px;
+`;

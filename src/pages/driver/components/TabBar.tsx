@@ -1,43 +1,49 @@
+import { Tabs } from "antd";
+import { useCallback } from "react";
+import styled from "styled-components";
+
 interface TabBarProps {
 	activeTab: "period" | "daily";
 	onChange: (tab: "period" | "daily") => void;
 }
 
 export function TabBar({ activeTab, onChange }: TabBarProps) {
+	const handleChange = useCallback(
+		(key: string) => {
+			onChange(key as "period" | "daily");
+		},
+		[onChange],
+	);
+
 	return (
-		<div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
-			<button
-				style={{
-					flex: 1,
-					padding: 12,
-					fontWeight: activeTab === "period" ? 700 : 400,
-					background: "none",
-					border: "none",
-					borderBottom: activeTab === "period" ? "2px solid #222" : "none",
-					color: activeTab === "period" ? "#222" : "#888",
-					fontSize: 16,
-				}}
-				type="button"
-				onClick={() => onChange("period")}
-			>
-				기간별 통계
-			</button>
-			<button
-				type="button"
-				style={{
-					flex: 1,
-					padding: 12,
-					fontWeight: activeTab === "daily" ? 700 : 400,
-					background: "none",
-					border: "none",
-					borderBottom: activeTab === "daily" ? "2px solid #222" : "none",
-					color: activeTab === "daily" ? "#222" : "#888",
-					fontSize: 16,
-				}}
-				onClick={() => onChange("daily")}
-			>
-				일별 기록
-			</button>
-		</div>
+		<StyledTabs
+			activeKey={activeTab}
+			onChange={handleChange}
+			centered
+			items={[
+				{ key: "period", label: "기간별 통계" },
+				{ key: "daily", label: "일별 기록" },
+			]}
+			tabBarGutter={132}
+		/>
 	);
 }
+
+const StyledTabs = styled(Tabs)`
+  && {
+    .ant-tabs-nav {
+      margin: 0;
+      border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
+    }
+    .ant-tabs-tab {
+      font-size: ${({ theme }) => theme.fontSizes.md};
+      font-weight: ${({ theme }) => theme.fontWeights.medium};
+    }
+    .ant-tabs-tab-active .ant-tabs-tab-btn {
+      color: ${({ theme }) => theme.colors.text.primary} !important;
+    }
+    .ant-tabs-ink-bar {
+      background: ${({ theme }) => theme.colors.text.primary} !important;
+    }
+  }
+`;

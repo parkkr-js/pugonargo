@@ -1,3 +1,5 @@
+import styled from "styled-components";
+
 interface DailyDriveCardProps {
 	record: {
 		id: string;
@@ -19,20 +21,72 @@ export function DailyDriveCard({ record }: DailyDriveCardProps) {
 	const deduction = Math.round(totalAmount * 0.05);
 
 	return (
-		<div
-			style={{
-				border: "1px solid #eee",
-				borderRadius: 8,
-				padding: 12,
-				marginBottom: 12,
-				background: "#fff",
-			}}
-		>
-			<div>운송구간: {record.e}</div>
-			<div>지급중량: {m.toLocaleString()}</div>
-			<div>총 금액: {totalAmount.toLocaleString()} 원</div>
-			<div>지입료(5%): {deduction.toLocaleString()} 원</div>
-			<div>공제 후 금액: {o.toLocaleString()} 원</div>
-		</div>
+		<Card>
+			<InfoRow>
+				<InfoLabel>운송구간</InfoLabel>
+				<InfoValue>{record.e}</InfoValue>
+			</InfoRow>
+			<InfoRow>
+				<InfoLabel>지급중량</InfoLabel>
+				<InfoValue>{m.toLocaleString()}</InfoValue>
+			</InfoRow>
+			<InfoRow>
+				<InfoLabel>총 금액</InfoLabel>
+				<PrimaryValue>{totalAmount.toLocaleString()}원</PrimaryValue>
+			</InfoRow>
+			<InfoRow>
+				<InfoLabel>지입료(5%)</InfoLabel>
+				<PrimaryValue>{deduction.toLocaleString()}원</PrimaryValue>
+			</InfoRow>
+			<InfoRow>
+				<InfoLabelStrong>공제 후 금액</InfoLabelStrong>
+				<FinalValue>{o.toLocaleString()}원</FinalValue>
+			</InfoRow>
+		</Card>
 	);
 }
+
+const Card = styled.div`
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #eee;
+	border-radius: ${({ theme }) => theme.borderRadius.md};
+	padding: ${({ theme }) => theme.spacing.md};
+	background: #fff;
+	box-shadow: ${({ theme }) => theme.shadows.card};
+	gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+const InfoRow = styled.div`
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: ${({ theme }) => theme.spacing.xs};
+	font-size: ${({ theme }) => theme.fontSizes.md};
+	&:last-child {
+		margin-bottom: 0;
+	}
+`;
+
+const InfoLabel = styled.span`
+	color: ${({ theme }) => theme.colors.text.secondary};
+	font-weight: ${({ theme }) => theme.fontWeights.normal};
+`;
+
+const InfoLabelStrong = styled(InfoLabel)`
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;
+
+const InfoValue = styled.span`
+	color: ${({ theme }) => theme.colors.text.primary};
+`;
+
+const PrimaryValue = styled(InfoValue)`
+	color: ${({ theme }) => theme.colors.primary};
+	font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const FinalValue = styled(PrimaryValue)`
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;

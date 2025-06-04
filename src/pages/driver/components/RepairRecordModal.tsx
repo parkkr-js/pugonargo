@@ -1,7 +1,8 @@
-import { DatePicker, Form, Input, InputNumber, Modal } from "antd";
+import { Button, Form, Input, InputNumber, Modal } from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { useEffect } from "react";
+import styled from "styled-components";
 import type { RepairRecordInput } from "../../../services/client/createRepairRecord";
 
 interface RepairRecordModalProps {
@@ -9,7 +10,6 @@ interface RepairRecordModalProps {
 	initialData?: RepairRecordInput;
 	onOk: (data: RepairRecordInput) => void;
 	onCancel: () => void;
-	hideDateField?: boolean;
 }
 
 interface RepairRecordForm {
@@ -24,7 +24,6 @@ export function RepairRecordModal({
 	onOk,
 	onCancel,
 	vehicleNumber,
-	hideDateField = false,
 }: RepairRecordModalProps & { vehicleNumber: string }) {
 	const [form] = Form.useForm<RepairRecordForm>();
 
@@ -38,49 +37,104 @@ export function RepairRecordModal({
 		}
 	}, [initialData, form]);
 
+	const handleCancel = () => {
+		form.resetFields();
+		onCancel();
+	};
+
 	return (
-		<Modal
+		<StyledModal
 			open={open}
-			onOk={() =>
-				form.validateFields().then((values) =>
-					onOk({
-						...values,
-						date: dayjs(values.date).format("YYYY-MM-DD"),
-						vehicleNumber,
-					}),
-				)
-			}
-			onCancel={onCancel}
 			title={initialData ? "수리내역 수정" : "수리내역 추가"}
-			okText={initialData ? "수정" : "추가"}
+			footer={
+				<ModalFooter>
+					<StyledButton onClick={handleCancel}>취소</StyledButton>
+					<StyledButton
+						type="primary"
+						onClick={async () => {
+							try {
+								const values = await form.validateFields();
+								const safeMemo =
+									typeof values.memo === "string" ? values.memo : "";
+								onOk({
+									...values,
+									date: dayjs(values.date).format("YYYY-MM-DD"),
+									vehicleNumber,
+									memo: safeMemo,
+								});
+								form.resetFields();
+							} catch {}
+						}}
+					>
+						{initialData ? "수정" : "추가"}
+					</StyledButton>
+				</ModalFooter>
+			}
+			onCancel={handleCancel}
 		>
 			<Form form={form} layout="vertical">
-				{!hideDateField && (
-					<Form.Item name="date" label="날짜" rules={[{ required: true }]}>
-						<DatePicker style={{ width: "100%" }} />
-					</Form.Item>
-				)}
 				<Form.Item
+					style={{ marginTop: 24 }}
 					name="repairCost"
-					label="정비 비용"
-					rules={[{ required: true }]}
+					label={<LabelText>정비 비용</LabelText>}
+					rules={[{ required: true, message: "정비 비용을 입력해주세요" }]}
 				>
-					<InputNumber
-						min={0}
-						style={{ width: "100%" }}
-						placeholder="정비 비용을 입력하세요"
-					/>
+					<StyledInputNumber min={0} placeholder="정비 비용을 입력하세요" />
 				</Form.Item>
-				<Form.Item name="memo" label="메모">
-					<Input placeholder="정비 내용을 작성해주세요" />
+				<Form.Item name="memo" label={<LabelText>메모</LabelText>}>
+					<StyledInput placeholder="정비 내용을 작성해주세요" />
 				</Form.Item>
-				<div style={{ fontWeight: 700, marginTop: 8, textAlign: "right" }}>
+				<TotalCostRow>
 					정비 비용{" "}
-					<span style={{ fontWeight: 900 }}>
-						{repairCost.toLocaleString()} 원
-					</span>
-				</div>
+					<TotalCostValue>{repairCost.toLocaleString()} 원</TotalCostValue>
+				</TotalCostRow>
 			</Form>
-		</Modal>
+		</StyledModal>
 	);
 }
+
+const StyledModal = styled(Modal)`
+	.ant-modal-content {
+		border-radius: ${({ theme }) => theme.borderRadius.lg};
+	}
+`;
+
+const LabelText = styled.span`
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;
+
+const StyledInputNumber = styled(InputNumber)`
+	width: 100%;
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+	padding: 8px 12px;
+`;
+
+const StyledInput = styled(Input)`
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+	padding: 8px 12px;
+`;
+
+const TotalCostRow = styled.div`
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	margin-top: ${({ theme }) => theme.spacing.md};
+	text-align: right;
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+`;
+
+const TotalCostValue = styled.span`
+	color: ${({ theme }) => theme.colors.primary};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	margin-left: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ModalFooter = styled.div`
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 ${({ theme }) => theme.spacing.md};
+`;
+
+const StyledButton = styled(Button)`
+	min-width: 80px;
+`;
