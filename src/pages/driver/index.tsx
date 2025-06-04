@@ -19,16 +19,38 @@ export default function DriverPage() {
 	}
 
 	return (
-		<Layout style={{ minHeight: "100vh" }}>
-			<Content style={{ maxWidth: 498, margin: "0 auto", width: "100%" }}>
+		<Layout style={{ minHeight: "100vh", overflowX: "hidden" }}>
+			<Content
+				style={{
+					maxWidth: 498,
+					margin: "0 auto",
+					width: "100%",
+					overflowX: "hidden",
+					padding: 0,
+				}}
+			>
 				<Card
 					styles={{ body: { padding: 0, height: "100%" } }}
-					style={{ height: "100vh" }}
+					style={{
+						height: "100vh",
+						maxWidth: 498,
+						width: "100%",
+						overflowX: "hidden",
+						padding: 0,
+						margin: "0 auto",
+					}}
 				>
-					<Layout style={{ height: "100%" }}>
+					<Layout style={{ height: "100%", overflowX: "hidden" }}>
 						<Header />
 						<TabBar activeTab={activeTab} onChange={setActiveTab} />
-						<Content style={{ flex: 1, overflow: "auto" }}>
+						<Content
+							style={{
+								flex: 1,
+								overflow: "auto",
+								overflowX: "hidden",
+								width: "100%",
+							}}
+						>
 							{activeTab === "period" ? (
 								<PeriodStatsTab />
 							) : (
