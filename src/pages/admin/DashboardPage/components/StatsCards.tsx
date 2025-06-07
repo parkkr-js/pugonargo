@@ -1,3 +1,5 @@
+import styled from "styled-components";
+
 interface StatsCardsProps {
 	stats?: {
 		totalI: number;
@@ -8,40 +10,59 @@ interface StatsCardsProps {
 export function StatsCards({ stats }: StatsCardsProps) {
 	const totalI = stats?.totalI ?? 0;
 	const totalO = stats?.totalO ?? 0;
-	const totalISupply = totalI;
+	const totalISupply = Math.round(totalI);
 	const totalIWithTax = Math.round(totalI * 1.1);
-	const totalOSupply = totalO;
+	const totalOSupply = Math.round(totalO);
 	const totalOWithTax = Math.round(totalO * 1.1);
 
 	return (
-		<div style={{ display: "flex", gap: 16, margin: "24px 0" }}>
-			<div style={cardStyle}>
-				<div style={labelStyle}>총 청구금액(부가세 포함)</div>
-				<div style={valueStyle}>{totalIWithTax.toLocaleString()} 원</div>
-			</div>
-			<div style={cardStyle}>
-				<div style={labelStyle}>총 청구금액(공급가)</div>
-				<div style={valueStyle}>{totalISupply.toLocaleString()} 원</div>
-			</div>
-			<div style={cardStyle}>
-				<div style={labelStyle}>총 지급금액</div>
-				<div style={valueStyle}>{totalOWithTax.toLocaleString()} 원</div>
-			</div>
-			<div style={cardStyle}>
-				<div style={labelStyle}>총 지급금액(공급가)</div>
-				<div style={valueStyle}>{totalOSupply.toLocaleString()} 원</div>
-			</div>
-		</div>
+		<CardRow>
+			<StatCard>
+				<StatLabel>총 청구금액(부가세 포함)</StatLabel>
+				<StatValue>{totalIWithTax.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 청구금액(공급가)</StatLabel>
+				<StatValue>{totalISupply.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 지급금액</StatLabel>
+				<StatValue>{totalOWithTax.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 지급금액(공급가)</StatLabel>
+				<StatValue>{totalOSupply.toLocaleString()} 원</StatValue>
+			</StatCard>
+		</CardRow>
 	);
 }
 
-const cardStyle = {
-	flex: 1,
-	background: "#f8fafd",
-	borderRadius: 12,
-	padding: "16px 12px",
-	textAlign: "center" as const,
-	boxShadow: "0 1px 4px 0 rgba(0,0,0,0.03)",
-};
-const labelStyle = { color: "#888", fontSize: 14, marginBottom: 8 };
-const valueStyle = { color: "#223388", fontWeight: 700, fontSize: 20 };
+const CardRow = styled.div`
+	display: flex;
+	gap: 16px;
+`;
+
+const StatCard = styled.div`
+	flex: 1;
+	background: ${({ theme }) => theme.colors.background.secondary};
+	border-radius: ${({ theme }) => theme.borderRadius.xl};
+	padding: 16px 12px;
+	text-align: center;
+	box-shadow: ${({ theme }) => theme.shadows.xs};
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
+const StatLabel = styled.div`
+	color: ${({ theme }) => theme.colors.gray[600]};
+	font-size: ${({ theme }) => theme.fontSizes.sm};
+	margin-bottom: 8px;
+	font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const StatValue = styled.div`
+	color: ${({ theme }) => theme.colors.primary};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
+`;

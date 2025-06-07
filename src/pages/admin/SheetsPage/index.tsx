@@ -16,7 +16,6 @@ export const SheetsPage = () => {
 	// 훅들
 	const {
 		data: driveFiles,
-		isLoading: loadingFiles,
 		isFetching: fetchingFiles,
 		refetch: refetchFiles,
 	} = useDriveFiles(accessToken);

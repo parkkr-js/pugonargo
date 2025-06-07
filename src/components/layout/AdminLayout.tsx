@@ -155,7 +155,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 				{/* 메인 콘텐츠 */}
 				<Content
 					style={{
-						margin: "24px",
+						margin: "12px",
 						padding: "24px",
 						background: "white",
 						borderRadius: "8px",
