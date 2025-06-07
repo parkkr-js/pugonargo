@@ -17,6 +17,7 @@ export const SheetsPage = () => {
 	const {
 		data: driveFiles,
 		isLoading: loadingFiles,
+		isFetching: fetchingFiles,
 		refetch: refetchFiles,
 	} = useDriveFiles(accessToken);
 	const processFileMutation = useProcessExcelFile();
@@ -60,7 +61,7 @@ export const SheetsPage = () => {
 				/>
 				<DriveFilesTable
 					files={driveFiles}
-					isLoading={loadingFiles}
+					isLoading={fetchingFiles}
 					isAuthenticated={isAuthenticated}
 					selectedFileId={selectedFileId}
 					isProcessing={processFileMutation.isPending}

@@ -1,5 +1,6 @@
 import { PlayCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Card, Empty, Spin, Table, Typography } from "antd";
+import dayjs from "dayjs";
 import { memo, useCallback, useMemo } from "react";
 import type { DriveFile } from "../../../../types/sheets";
 
@@ -48,11 +49,15 @@ export const DriveFilesTable = memo(
 					title: "수정일",
 					dataIndex: "modifiedTime",
 					key: "modifiedTime",
-					render: (time: string) => (
-						<Text type="secondary">
-							{new Date(time).toLocaleDateString("ko-KR")}
-						</Text>
-					),
+					render: (time: string) => {
+						const d = dayjs(time);
+						const isToday = d.isSame(dayjs(), "day");
+						return (
+							<Text type="secondary">
+								{isToday ? d.format("h:mm A") : d.format("YYYY. MM. DD")}
+							</Text>
+						);
+					},
 				},
 				{
 					title: "크기",
@@ -104,27 +109,54 @@ export const DriveFilesTable = memo(
 						description="Google 인증이 필요합니다"
 						image={Empty.PRESENTED_IMAGE_SIMPLE}
 					/>
-				) : isLoading ? (
-					<div style={{ textAlign: "center", padding: "40px 0" }}>
-						<Spin size="large" />
-					</div>
-				) : !files || files.length === 0 ? (
-					<Empty
-						description="Excel 파일이 없습니다"
-						image={Empty.PRESENTED_IMAGE_SIMPLE}
-					/>
 				) : (
-					<Table
-						columns={columns}
-						dataSource={files}
-						rowKey="id"
-						size="small"
-						pagination={{
-							pageSize: 10,
-							showSizeChanger: false,
-							showQuickJumper: false,
-						}}
-					/>
+					<div style={{ position: "relative", minHeight: 240 }}>
+						{/* 오버레이 스피너 */}
+						{isLoading && (
+							<div
+								style={{
+									position: "absolute",
+									zIndex: 2,
+									top: 0,
+									left: 0,
+									width: "100%",
+									height: "100%",
+									background: "rgba(255,255,255,0.7)",
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+								}}
+							>
+								<Spin size="large" />
+							</div>
+						)}
+						{/* 리스트 */}
+						<div
+							style={{
+								filter: isLoading ? "blur(2px)" : "none",
+								pointerEvents: isLoading ? "none" : "auto",
+							}}
+						>
+							{!files || files.length === 0 ? (
+								<Empty
+									description="Excel/시트 파일이 없습니다"
+									image={Empty.PRESENTED_IMAGE_SIMPLE}
+								/>
+							) : (
+								<Table
+									columns={columns}
+									dataSource={files}
+									rowKey="id"
+									size="small"
+									pagination={{
+										pageSize: 10,
+										showSizeChanger: false,
+										showQuickJumper: false,
+									}}
+								/>
+							)}
+						</div>
+					</div>
 				)}
 			</Card>
 		);

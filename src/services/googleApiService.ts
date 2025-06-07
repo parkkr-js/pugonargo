@@ -8,13 +8,13 @@ export class GoogleApiService {
 	}
 
 	/**
-	 * Google Drive에서 Excel 파일 목록 가져오기 (휴지통 제외)
+	 * Google Drive에서 Excel 파일 및 구글 시트 파일 목록 가져오기 (휴지통 제외)
 	 */
 	async getDriveExcelFiles(): Promise<DriveFile[]> {
 		try {
-			// 휴지통에 있지 않은 Excel 파일만 가져오기
+			// 휴지통에 있지 않은 Excel 파일과 구글 시트 파일만 가져오기
 			const query =
-				"(mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType='application/vnd.ms-excel') and trashed=false";
+				"(mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType='application/vnd.ms-excel' or mimeType='application/vnd.google-apps.spreadsheet') and trashed=false";
 
 			const response = await fetch(
 				`https://www.googleapis.com/drive/v3/files?pageSize=100&fields=files(id,name,mimeType,modifiedTime,size)&q=${encodeURIComponent(query)}&orderBy=modifiedTime desc`,
