@@ -8,7 +8,6 @@ import { InfoPopover } from "./components/InfoPopover";
 import { MonthNavigator } from "./components/MonthNavigator";
 import { StatsCards } from "./components/StatsCards";
 import { useDriversMap } from "./hooks/useDriversMap";
-
 import { useMonthList } from "./hooks/useMonthList";
 import { useMonthStats } from "./hooks/useMonthStats";
 
@@ -90,6 +89,7 @@ const PageHeader = styled.div`
 	justify-content: flex-start;
 	gap: 24px;
 `;
+
 const MainTitle = styled.h1`
 	font-size: ${({ theme }) => theme.fontSizes["2xl"]};
 	font-weight: 700;
@@ -99,11 +99,13 @@ const MainTitle = styled.h1`
 	align-items: center;
 	gap: 8px;
 `;
+
 const SubTitle = styled.span`
 	font-size: 1rem;
 	color: ${({ theme }) => theme.colors.gray[600]};
 	font-weight: 400;
 `;
+
 const LabelWithSub = styled.div`
 	font-size: ${({ theme }) => theme.fontSizes.lg};
 	color: ${({ theme }) => theme.colors.gray[900]};
@@ -127,6 +129,7 @@ const VerticalStack = styled.div<{ gap?: number }>`
 	gap: ${({ gap }) => gap ?? 24}px;
 	width: 100%;
 `;
+
 const HorizontalStack = styled.div`
 	display: flex;
 	flex-direction: row;

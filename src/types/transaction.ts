@@ -1,0 +1,61 @@
+export interface Transaction {
+	id: string;
+	date: string;
+	vehicleNumber: string;
+	route: string;
+	weight: number;
+	unitPrice: number;
+	amount: number;
+	note: string;
+	i: number;
+}
+
+export interface DriversMap {
+	[vehicleNumber: string]: string | null;
+}
+
+export interface TableTransaction {
+	key: string;
+	date: string;
+	group: string | null;
+	vehicleNumber: string;
+	route: string;
+	weight: number;
+	unitPrice: number;
+	amount: number;
+	note: string;
+	i: number;
+}
+
+export interface Summary {
+	totalWithTax: number;
+	totalWithoutTax: number;
+	totalPaid: number;
+	totalPaidWithoutTax: number;
+}
+
+export interface BaseRow {
+	date: string;
+	id?: string;
+}
+
+export interface FuelRow extends BaseRow {
+	type: "fuel";
+	unitPrice: number;
+	totalFuelCost: number;
+	liter?: number;
+}
+
+export interface RepairRow extends BaseRow {
+	type: "repair";
+	repairCost: number;
+	memo: string;
+}
+
+export type VehicleFuelRepairRow = FuelRow | RepairRow;
+
+export interface VehicleFuelRepairSummary {
+	totalCost: number;
+	totalRepair: number;
+	totalFuel: number;
+}

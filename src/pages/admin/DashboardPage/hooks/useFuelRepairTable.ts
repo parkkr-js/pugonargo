@@ -10,13 +10,20 @@ interface DriverInfo {
 	group: string;
 }
 
+interface DataState {
+	fuel: FuelRecord[];
+	repair: RepairRecord[];
+}
+
 export function useFuelRepairTable(
 	monthId: string,
 	driversMap: Record<string, DriverInfo> = {},
 ) {
-	const [fuel, setFuel] = useState<FuelRecord[]>([]);
-	const [repair, setRepair] = useState<RepairRecord[]>([]);
+	const [data, setData] = useState<DataState>({ fuel: [], repair: [] });
 	const [isLoading, setIsLoading] = useState(true);
+	const [loadedCollections, setLoadedCollections] = useState<Set<string>>(
+		new Set(),
+	);
 
 	useEffect(() => {
 		if (!monthId) return;
@@ -26,6 +33,11 @@ export function useFuelRepairTable(
 			"YYYY-MM-DD",
 		);
 		const end = dayjs(start).endOf("month").format("YYYY-MM-DD");
+
+		// 초기 상태 리셋
+		setData({ fuel: [], repair: [] });
+		setLoadedCollections(new Set());
+		setIsLoading(true);
 
 		// Fuel 데이터 실시간 구독
 		const fuelQuery = query(
@@ -38,8 +50,12 @@ export function useFuelRepairTable(
 				...(doc.data() as FuelRecord),
 				id: doc.id,
 			}));
-			setFuel(fuelData);
-			setIsLoading(false);
+			setData((prev) => ({ ...prev, fuel: fuelData }));
+			setLoadedCollections((prev) => {
+				const newSet = new Set(prev);
+				newSet.add("fuel");
+				return newSet;
+			});
 		});
 
 		// Repair 데이터 실시간 구독
@@ -53,8 +69,12 @@ export function useFuelRepairTable(
 				...(doc.data() as RepairRecord),
 				id: doc.id,
 			}));
-			setRepair(repairData);
-			setIsLoading(false);
+			setData((prev) => ({ ...prev, repair: repairData }));
+			setLoadedCollections((prev) => {
+				const newSet = new Set(prev);
+				newSet.add("repair");
+				return newSet;
+			});
 		});
 
 		// 클린업 함수
@@ -64,8 +84,15 @@ export function useFuelRepairTable(
 		};
 	}, [monthId]);
 
+	// 두 컬렉션 모두 로드되었는지 확인
+	useEffect(() => {
+		if (loadedCollections.size === 2) {
+			setIsLoading(false);
+		}
+	}, [loadedCollections]);
+
 	const tableRows = useMemo(() => {
-		const fuelRows = fuel.map((f) => ({
+		const fuelRows = data.fuel.map((f) => ({
 			type: "fuel" as const,
 			date: f.date,
 			group: driversMap[f.vehicleNumber]?.group || "-",
@@ -73,7 +100,7 @@ export function useFuelRepairTable(
 			detail: f.unitPrice ? `${f.unitPrice.toLocaleString()}원` : "-",
 			cost: f.totalFuelCost ?? 0,
 		}));
-		const repairRows = repair.map((r) => ({
+		const repairRows = data.repair.map((r) => ({
 			type: "repair" as const,
 			date: r.date,
 			group: driversMap[r.vehicleNumber]?.group || "-",
@@ -82,7 +109,7 @@ export function useFuelRepairTable(
 			cost: r.repairCost ?? 0,
 		}));
 		return [...fuelRows, ...repairRows];
-	}, [fuel, repair, driversMap]);
+	}, [data, driversMap]);
 
 	return { tableRows, isLoading };
 }

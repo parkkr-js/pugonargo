@@ -1,55 +1,75 @@
-import { Card, Col, Row, Statistic } from "antd";
+import { useMemo } from "react";
+import styled from "styled-components";
+import type { TableTransaction } from "../../../../types/transaction";
 
-export interface Summary {
-	totalWithTax: number;
-	totalWithoutTax: number;
-	totalPaid: number;
-	totalPaidWithoutTax: number;
+interface SummaryCardsProps {
+	data: TableTransaction[];
 }
 
-export function SummaryCards({ summary }: { summary: Summary }) {
+export function SummaryCards({ data }: SummaryCardsProps) {
+	const summary = useMemo(() => {
+		const totalI = data.reduce((sum, record) => sum + record.i, 0);
+		const totalO = data.reduce((sum, record) => sum + record.amount, 0);
+
+		return {
+			totalI,
+			totalO,
+		};
+	}, [data]);
+
+	const totalISupply = Math.round(summary.totalI);
+	const totalIWithTax = Math.round(summary.totalI * 1.1);
+	const totalOSupply = Math.round(summary.totalO);
+	const totalOWithTax = Math.round(summary.totalO * 1.1);
+
 	return (
-		<Row gutter={16} style={{ marginBottom: "24px" }}>
-			<Col span={6}>
-				<Card>
-					<Statistic
-						title="총 청구액(부가세 포함)"
-						value={summary.totalWithTax.toLocaleString()}
-						suffix="원"
-						valueStyle={{ color: "#1890ff" }}
-					/>
-				</Card>
-			</Col>
-			<Col span={6}>
-				<Card>
-					<Statistic
-						title="총 청구액(공급가)"
-						value={summary.totalWithoutTax.toLocaleString()}
-						suffix="원"
-						valueStyle={{ color: "#52c41a" }}
-					/>
-				</Card>
-			</Col>
-			<Col span={6}>
-				<Card>
-					<Statistic
-						title="총 지급금액"
-						value={summary.totalPaid.toLocaleString()}
-						suffix="원"
-						valueStyle={{ color: "#722ed1" }}
-					/>
-				</Card>
-			</Col>
-			<Col span={6}>
-				<Card>
-					<Statistic
-						title="총 지급액(공급가)"
-						value={summary.totalPaidWithoutTax.toLocaleString()}
-						suffix="원"
-						valueStyle={{ color: "#fa8c16" }}
-					/>
-				</Card>
-			</Col>
-		</Row>
+		<CardRow>
+			<StatCard>
+				<StatLabel>총 청구금액(부가세 포함)</StatLabel>
+				<StatValue>{totalIWithTax.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 청구금액(공급가)</StatLabel>
+				<StatValue>{totalISupply.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 지급금액</StatLabel>
+				<StatValue>{totalOWithTax.toLocaleString()} 원</StatValue>
+			</StatCard>
+			<StatCard>
+				<StatLabel>총 지급금액(공급가)</StatLabel>
+				<StatValue>{totalOSupply.toLocaleString()} 원</StatValue>
+			</StatCard>
+		</CardRow>
 	);
 }
+
+const CardRow = styled.div`
+	display: flex;
+	gap: 16px;
+`;
+
+const StatCard = styled.div`
+	flex: 1;
+	background: ${({ theme }) => theme.colors.background.secondary};
+	border-radius: ${({ theme }) => theme.borderRadius.xl};
+	padding: 16px 12px;
+	text-align: center;
+	box-shadow: ${({ theme }) => theme.shadows.xs};
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
+const StatLabel = styled.div`
+	color: ${({ theme }) => theme.colors.gray[600]};
+	font-size: ${({ theme }) => theme.fontSizes.sm};
+	margin-bottom: 8px;
+	font-weight: ${({ theme }) => theme.fontWeights.medium};
+`;
+
+const StatValue = styled.div`
+	color: ${({ theme }) => theme.colors.primary};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
+`;

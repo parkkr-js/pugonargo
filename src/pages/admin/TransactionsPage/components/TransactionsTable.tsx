@@ -1,220 +1,169 @@
-import { Button, Input, Table } from "antd";
-import type { InputRef } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useMemo, useRef } from "react";
+import { Button, Table } from "antd";
+import type { ColumnsType, TableProps } from "antd/es/table";
+import { useMemo, useState } from "react";
+import type { TableTransaction } from "../../../../types/transaction";
+import { useDriversMap } from "../hooks/useDriversMap";
+import { useTransactions } from "../hooks/useTransactions";
+import { SummaryCards } from "./SummaryCards";
+import { VehicleFuelRepairModal } from "./VehicleFuelRepairModal";
 
-export interface TableRow {
-	date: string;
-	group: string;
-	d: string;
-	e: string;
-	m: number;
-	n: number;
-	o: number;
-	p: string;
-	[key: string]: unknown;
-}
-
-export function TransactionsTable({
-	rows,
-	loading,
-	onVehicleClick,
+export const TransactionsTable = ({
+	startDate,
+	endDate,
 }: {
-	rows: TableRow[];
-	loading: boolean;
-	onVehicleClick: (vehicleNumber: string) => void;
-}) {
-	const searchInput = useRef<InputRef>(null);
+	startDate: string;
+	endDate: string;
+}) => {
+	const [filteredData, setFilteredData] = useState<TableTransaction[]>([]);
+	const [modalOpen, setModalOpen] = useState(false);
+	const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
-	// 필터 옵션들을 메모이제이션 - rows가 바뀔 때만 재계산
-	const { groupFilters, vehicleNumberFilters } = useMemo(() => {
-		const groupFilters = Array.from(new Set(rows.map((row) => row.group))).map(
-			(g) => ({
-				text: g,
-				value: g,
-			}),
-		);
-		const vehicleNumberFilters = Array.from(
-			new Set(rows.map((row) => row.d)),
-		).map((d) => ({
-			text: d,
-			value: d,
+	const { data: transactions = [], isLoading: isTransactionsLoading } =
+		useTransactions(startDate, endDate);
+	const { data: driversMap = {}, isLoading: isDriversLoading } =
+		useDriversMap();
+
+	const isLoading = isTransactionsLoading || isDriversLoading;
+
+	const tableData = useMemo(() => {
+		if (isLoading) return [];
+
+		return transactions.map((transaction) => ({
+			key: transaction.id,
+			date: transaction.date,
+			group: driversMap[transaction.vehicleNumber] || null,
+			vehicleNumber: transaction.vehicleNumber,
+			route: transaction.route,
+			weight: transaction.weight,
+			unitPrice: transaction.unitPrice,
+			amount: transaction.amount,
+			note: transaction.note,
+			i: transaction.i,
 		}));
+	}, [transactions, driversMap, isLoading]);
 
-		return { groupFilters, vehicleNumberFilters };
-	}, [rows]);
-
-	// 이벤트 핸들러들 메모이제이션
-	const handleSearch = useCallback(
-		(selectedKeys: string[], confirm: () => void, dataIndex: string) => {
-			confirm();
+	const columns: ColumnsType<TableTransaction> = [
+		{
+			title: "날짜",
+			dataIndex: "date",
+			key: "date",
+			sorter: (a, b) => a.date.localeCompare(b.date),
+			width: "15%",
 		},
-		[],
-	);
-
-	const handleReset = useCallback((clearFilters?: () => void) => {
-		clearFilters?.();
-	}, []);
-
-	// 컬럼 정의를 메모이제이션 - 필터와 핸들러가 바뀔 때만 재생성
-	const columns: ColumnsType<TableRow> = useMemo(
-		() => [
-			{
-				title: "날짜",
-				dataIndex: "date",
-				key: "date",
-				sorter: (a, b) => a.date.localeCompare(b.date),
-				render: (date: string) => {
-					// YYYY-MM-DD 형태를 YY.MM.DD로 변환
-					const dateObj = new Date(date);
-					const year = dateObj.getFullYear().toString().slice(-2);
-					const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-					const day = dateObj.getDate().toString().padStart(2, "0");
-					return `${year}.${month}.${day}`;
-				},
-			},
-			{
-				title: "그룹",
-				dataIndex: "group",
-				key: "group",
-				filters: groupFilters,
-				onFilter: (value, record) => record.group === value,
-				sorter: (a, b) => a.group.localeCompare(b.group),
-			},
-			{
-				title: "차량번호",
-				dataIndex: "d",
-				key: "d",
-				filters: vehicleNumberFilters,
-				sorter: (a, b) => a.d.localeCompare(b.d),
-				filterDropdown: ({
-					setSelectedKeys,
-					selectedKeys,
-					confirm,
-					clearFilters,
-				}) => (
-					<div style={{ padding: 8 }}>
-						<Input
-							ref={searchInput}
-							placeholder="차량번호 검색"
-							value={selectedKeys[0]}
-							onChange={(e) =>
-								setSelectedKeys(e.target.value ? [e.target.value] : [])
-							}
-							onPressEnter={() =>
-								handleSearch(selectedKeys as string[], confirm, "d")
-							}
-							style={{ marginBottom: 8, display: "block" }}
-						/>
-						<Button
-							type="primary"
-							onClick={() =>
-								handleSearch(selectedKeys as string[], confirm, "d")
-							}
-							size="small"
-							style={{ width: 90, marginRight: 8 }}
-						>
-							검색
-						</Button>
-						<Button
-							onClick={() => handleReset(clearFilters)}
-							size="small"
-							style={{ width: 90 }}
-						>
-							초기화
-						</Button>
-					</div>
-				),
-				filterIcon: (filtered: boolean) => (
-					<span style={{ color: filtered ? "#1677ff" : undefined }}>🔍</span>
-				),
-				filterDropdownProps: {
-					onOpenChange: (visible: boolean) => {
-						if (visible) {
-							setTimeout(() => searchInput.current?.select(), 100);
-						}
-					},
-				},
-				onFilter: (value, record) =>
-					record.d
-						.toString()
-						.toLowerCase()
-						.includes((value as string).toLowerCase()),
-				render: (d: string) => (
-					<button
-						type="button"
-						style={{
-							background: "none",
-							border: "none",
-							color: "#1677ff",
-							cursor: "pointer",
-							padding: 0,
+		{
+			title: "그룹",
+			dataIndex: "group",
+			key: "group",
+			filters: Array.from(
+				new Set(tableData.map((row) => row.group).filter(Boolean)),
+			).map((group) => ({
+				text: group || "-",
+				value: group || "-",
+			})),
+			onFilter: (value, record) => record.group === value,
+			width: "10%",
+		},
+		{
+			title: "차량번호",
+			dataIndex: "vehicleNumber",
+			key: "vehicleNumber",
+			filters: Array.from(
+				new Set(tableData.map((row) => row.vehicleNumber)),
+			).map((vehicle) => ({
+				text: vehicle,
+				value: vehicle,
+			})),
+			filterSearch: true,
+			onFilter: (value, record) => record.vehicleNumber === value,
+			width: "10%",
+			render: (vehicleNumber, record) => {
+				const hasGroup = record.group !== "-" && record.group !== null;
+				return (
+					<Button
+						type="link"
+						onClick={() => {
+							setSelectedVehicle(vehicleNumber);
+							setModalOpen(true);
 						}}
-						onClick={() => onVehicleClick(d)}
+						disabled={!hasGroup}
+						style={{ color: hasGroup ? "inherit" : "#999" }}
 					>
-						{d}
-					</button>
-				),
+						{vehicleNumber}
+					</Button>
+				);
 			},
-			{
-				title: "운송구간",
-				dataIndex: "e",
-				key: "e",
-				sorter: (a, b) => a.e.localeCompare(b.e),
-			},
-			{
-				title: "지급중량",
-				dataIndex: "m",
-				key: "m",
-				sorter: (a, b) => a.m - b.m,
-			},
-			{
-				title: "지급단가",
-				dataIndex: "n",
-				key: "n",
-				sorter: (a, b) => a.n - b.n,
-				render: (value: number) => Math.round(value).toLocaleString("ko-KR"),
-			},
-			{
-				title: "금액",
-				dataIndex: "o",
-				key: "o",
-				sorter: (a, b) => a.o - b.o,
-				render: (value: number) => Math.round(value).toLocaleString("ko-KR"),
-			},
-			{
-				title: "비고",
-				dataIndex: "p",
-				key: "p",
-				sorter: (a, b) => (a.p || "").localeCompare(b.p || ""),
-			},
-		],
-		[
-			groupFilters,
-			vehicleNumberFilters,
-			handleSearch,
-			handleReset,
-			onVehicleClick,
-		],
-	);
+		},
+		{
+			title: "운송구간",
+			dataIndex: "route",
+			key: "route",
+			sorter: (a, b) => a.route.localeCompare(b.route),
+			width: "20%",
+		},
+		{
+			title: "지급중량",
+			dataIndex: "weight",
+			key: "weight",
+			sorter: (a, b) => a.weight - b.weight,
+			render: (weight) => weight.toLocaleString(),
+			width: "10%",
+		},
+		{
+			title: "지급단가",
+			dataIndex: "unitPrice",
+			key: "unitPrice",
+			sorter: (a, b) => a.unitPrice - b.unitPrice,
+			render: (unitPrice) => unitPrice.toLocaleString(),
+			width: "10%",
+		},
+		{
+			title: "금액",
+			dataIndex: "amount",
+			key: "amount",
+			sorter: (a, b) => a.amount - b.amount,
+			render: (amount) => amount.toLocaleString(),
+			width: "10%",
+		},
+		{
+			title: "비고",
+			dataIndex: "note",
+			key: "note",
+			width: "15%",
+		},
+	];
 
-	// 페이지네이션 설정 메모이제이션
-	const paginationConfig = useMemo(
-		() => ({
-			pageSize: 10,
-			showSizeChanger: true,
-			showTotal: (total: number) => `${total}개`,
-		}),
-		[],
-	);
+	const handleTableChange: TableProps<TableTransaction>["onChange"] = (
+		_pagination,
+		_filters,
+		_sorter,
+		extra,
+	) => {
+		setFilteredData(extra.currentDataSource);
+	};
+
+	const handleModalClose = () => {
+		setModalOpen(false);
+		setSelectedVehicle(null);
+	};
 
 	return (
-		<Table
-			columns={columns}
-			dataSource={rows}
-			rowKey={(row) => `${row.date}-${row.d}-${row.e}`}
-			loading={loading}
-			pagination={paginationConfig}
-		/>
+		<>
+			<SummaryCards data={filteredData.length > 0 ? filteredData : tableData} />
+			<Table
+				columns={columns}
+				dataSource={tableData}
+				onChange={handleTableChange}
+				loading={isLoading}
+				scroll={{ x: true }}
+				pagination={{ pageSize: 10 }}
+			/>
+			{selectedVehicle && (
+				<VehicleFuelRepairModal
+					open={modalOpen}
+					onClose={handleModalClose}
+					vehicleNumber={selectedVehicle}
+				/>
+			)}
+		</>
 	);
-}
+};

@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export async function fetchRepairByMonth(year: number, month: number) {
@@ -11,7 +11,14 @@ export async function fetchRepairByMonth(year: number, month: number) {
 		collection(db, "repair"),
 		where("date", ">=", start),
 		where("date", "<=", end),
+		orderBy("date", "asc"),
 	);
 	const snap = await getDocs(q);
-	return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+	return snap.docs.map((doc) => ({
+		id: doc.id,
+		date: doc.data().date,
+		vehicleNumber: doc.data().vehicleNumber,
+		detail: doc.data().detail,
+		cost: doc.data().cost,
+	}));
 }

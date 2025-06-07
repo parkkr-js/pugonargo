@@ -1,11 +1,12 @@
+import { TableOutlined } from "@ant-design/icons";
 import { message } from "antd";
 import { useState } from "react";
+import styled from "styled-components";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { useDriveFiles, useProcessExcelFile } from "../../../hooks/useSheets";
 import type { DriveFile } from "../../../types/sheets";
 import { AuthAlert } from "./components/AuthAlert";
 import { DriveFilesTable } from "./components/DriveFilesTable";
-import { PageHeader } from "./components/PageHeader";
 import { useGoogleAuth } from "./hooks/useGoogleAuth";
 
 export const SheetsPage = () => {
@@ -51,8 +52,14 @@ export const SheetsPage = () => {
 
 	return (
 		<AdminLayout>
-			<div>
-				<PageHeader />
+			<VerticalStack gap={32}>
+				<PageHeader>
+					<MainTitle>
+						<TableOutlined />
+						연동 시트 관리
+					</MainTitle>
+					<SubTitle>데이터를 불러올 시트를 관리하세요</SubTitle>
+				</PageHeader>
 				<AuthAlert
 					isAuthenticated={isAuthenticated}
 					onAuth={handleAuth}
@@ -67,7 +74,36 @@ export const SheetsPage = () => {
 					onRefresh={refetchFiles}
 					onProcessFile={handleProcessFile}
 				/>
-			</div>
+			</VerticalStack>
 		</AdminLayout>
 	);
 };
+const VerticalStack = styled.div<{ gap?: number }>`
+	display: flex;
+	flex-direction: column;
+	gap: ${({ gap }) => gap ?? 24}px;
+	width: 100%;
+`;
+
+const PageHeader = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 24px;
+`;
+
+const MainTitle = styled.h1`
+	font-size: ${({ theme }) => theme.fontSizes["2xl"]};
+	font-weight: 700;
+	color: ${({ theme }) => theme.colors.primary};
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+`;
+
+const SubTitle = styled.span`
+	font-size: 1rem;
+	color: ${({ theme }) => theme.colors.gray[600]};
+	font-weight: 400;
+`;

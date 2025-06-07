@@ -154,7 +154,7 @@ export class SheetsFirestoreService {
 		totalMonths: number;
 		latestMonth: string | null;
 	}> {
-		// 최근 12개월 통계만 조회
+		// 최근 12개월 통계만 조회하되, 필요한 필드만 선택
 		const q = query(
 			this.monthlyStatsCollection,
 			orderBy("id", "desc"),
@@ -162,7 +162,10 @@ export class SheetsFirestoreService {
 		);
 
 		const snapshot = await getDocs(q);
-		const stats = snapshot.docs.map((doc) => doc.data() as MonthlyStats);
+		const stats = snapshot.docs.map((doc) => ({
+			recordCount: doc.data().recordCount,
+			id: doc.data().id,
+		}));
 
 		return {
 			totalRecords: stats.reduce((sum, stat) => sum + stat.recordCount, 0),

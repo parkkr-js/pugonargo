@@ -2,7 +2,7 @@
 
 import { Divider, Table } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFuelRepairTable } from "../hooks/useFuelRepairTable";
 import { CostSummary } from "./CostSummary";
 
@@ -23,7 +23,19 @@ interface TableRow {
 
 export function CostTable({ monthId, driversMap }: CostTableProps) {
 	const { tableRows, isLoading } = useFuelRepairTable(monthId, driversMap);
+
+	const initialData = useMemo(() => {
+		return tableRows.map((row, index) => ({
+			key: `${row.type}-${row.date}-${row.vehicleNumber}-${index}`,
+			...row,
+		}));
+	}, [tableRows]);
+
 	const [filteredRows, setFilteredRows] = useState<TableRow[]>([]);
+
+	useEffect(() => {
+		setFilteredRows(initialData);
+	}, [initialData]);
 
 	const dataSource = useMemo(() => {
 		return tableRows.map((row, index) => ({
@@ -79,9 +91,9 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 	];
 
 	const handleTableChange: TableProps<TableRow>["onChange"] = (
-		pagination,
-		filters,
-		sorter,
+		_pagination,
+		_filters,
+		_sorter,
 		extra,
 	) => {
 		// 필터링된 데이터를 상태로 저장
@@ -90,7 +102,7 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 
 	return (
 		<>
-			<CostSummary rows={filteredRows.length > 0 ? filteredRows : []} />
+			<CostSummary rows={filteredRows} />
 			<Divider />
 			<Table<TableRow>
 				columns={columns}

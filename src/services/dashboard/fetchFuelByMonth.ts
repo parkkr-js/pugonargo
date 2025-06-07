@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import type { FuelRecord } from "../../pages/driver/components/FuelRecordCard";
 
@@ -15,10 +15,17 @@ export async function fetchFuelByMonth(
 		collection(db, "fuel"),
 		where("date", ">=", start),
 		where("date", "<=", end),
+		orderBy("date", "asc"),
 	);
 	const snap = await getDocs(q);
 	return snap.docs.map((doc) => ({
-		...(doc.data() as FuelRecord),
 		id: doc.id,
+		date: doc.data().date,
+		vehicleNumber: doc.data().vehicleNumber,
+		detail: doc.data().detail,
+		cost: doc.data().cost,
+		unitPrice: doc.data().unitPrice,
+		fuelAmount: doc.data().fuelAmount,
+		totalFuelCost: doc.data().totalFuelCost,
 	}));
 }
