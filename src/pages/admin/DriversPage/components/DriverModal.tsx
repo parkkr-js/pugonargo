@@ -15,23 +15,38 @@ interface DriverModalProps {
 		data: Omit<Driver, "id" | "createdAt" | "updatedAt">,
 	) => Promise<void>;
 	initialData?: Driver;
+	existingDrivers: Driver[];
+}
+
+interface FormValues {
+	vehicleNumber: string;
+	group: DriverGroup;
+	dumpWeight: number;
 }
 
 export const DriverModal = memo(
-	({ open, onClose, onSubmit, initialData }: DriverModalProps) => {
-		const [form] = Form.useForm();
+	({
+		open,
+		onClose,
+		onSubmit,
+		initialData,
+		existingDrivers,
+	}: DriverModalProps) => {
+		const [form] = Form.useForm<FormValues>();
 		const [generatedUserId, setGeneratedUserId] = useState<string>("");
 		const [generatedPassword, setGeneratedPassword] = useState<string>("");
 
-		// 차량번호 변경 시 userId와 password 자동 생성
+		/**
+		 * 차량번호 변경 시 ID와 비밀번호 자동 생성
+		 */
 		const handleVehicleNumberChange = (
 			e: React.ChangeEvent<HTMLInputElement>,
 		) => {
 			const vehicleNumber = e.target.value;
 			if (vehicleNumber.length === 4) {
 				const userId = generateDriverId(vehicleNumber);
-				setGeneratedUserId(userId);
 				const password = generateDriverPassword(vehicleNumber);
+				setGeneratedUserId(userId);
 				setGeneratedPassword(password);
 			} else {
 				setGeneratedUserId("");
@@ -39,7 +54,9 @@ export const DriverModal = memo(
 			}
 		};
 
-		// 초기 데이터 설정
+		/**
+		 * 초기 데이터 설정
+		 */
 		useEffect(() => {
 			if (initialData) {
 				form.setFieldsValue({
@@ -56,10 +73,29 @@ export const DriverModal = memo(
 			}
 		}, [form, initialData]);
 
-		// 폼 제출
+		/**
+		 * 차량번호 중복 체크
+		 */
+		const checkDuplicateVehicleNumber = (vehicleNumber: string): boolean => {
+			return existingDrivers.some(
+				(driver) =>
+					driver.vehicleNumber === vehicleNumber &&
+					(!initialData || driver.id !== initialData.id),
+			);
+		};
+
+		/**
+		 * 폼 제출 처리
+		 */
 		const handleSubmit = async () => {
 			try {
 				const values = await form.validateFields();
+
+				if (checkDuplicateVehicleNumber(values.vehicleNumber)) {
+					message.error("이미 존재하는 차량번호입니다.");
+					return;
+				}
+
 				await onSubmit({
 					userId: generatedUserId,
 					password: generatedPassword,
@@ -70,10 +106,13 @@ export const DriverModal = memo(
 				onClose();
 			} catch (error) {
 				console.error("Failed to submit form:", error);
+				message.error("폼 제출 중 오류가 발생했습니다.");
 			}
 		};
 
-		// 클립보드에 복사
+		/**
+		 * 클립보드에 복사
+		 */
 		const handleCopy = (text: string, label: string) => {
 			navigator.clipboard.writeText(text);
 			message.success(`${label}이(가) 클립보드에 복사되었습니다.`);
@@ -92,7 +131,6 @@ export const DriverModal = memo(
 					form={form}
 					layout="vertical"
 					initialValues={{
-						group: "#1 ~ #10" as DriverGroup,
 						dumpWeight: 0,
 					}}
 				>
@@ -116,7 +154,7 @@ export const DriverModal = memo(
 						name="group"
 						rules={[{ required: true, message: "그룹을 선택해주세요." }]}
 					>
-						<Select>
+						<Select placeholder="그룹을 선택하세요">
 							{DRIVER_GROUPS.map((group) => (
 								<Select.Option key={group} value={group}>
 									{group}

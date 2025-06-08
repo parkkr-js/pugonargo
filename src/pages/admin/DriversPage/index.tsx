@@ -1,5 +1,5 @@
 import { PlusOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Card, Table } from "antd";
+import { Button, Card, Modal, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -22,16 +22,25 @@ export const DriversPage = () => {
 	const updateDriver = useUpdateDriverMutation();
 	const deleteDriver = useDeleteDriverMutation();
 
+	/**
+	 * 모달 열기
+	 */
 	const handleOpenModal = useCallback((driver?: Driver) => {
 		setSelectedDriver(driver);
 		setModalOpen(true);
 	}, []);
 
+	/**
+	 * 모달 닫기
+	 */
 	const handleCloseModal = useCallback(() => {
 		setSelectedDriver(undefined);
 		setModalOpen(false);
 	}, []);
 
+	/**
+	 * 폼 제출 처리
+	 */
 	const handleSubmit = useCallback(
 		async (data: Omit<Driver, "id" | "createdAt" | "updatedAt">) => {
 			try {
@@ -42,23 +51,46 @@ export const DriversPage = () => {
 				}
 				handleCloseModal();
 			} catch (error) {
-				// 에러 처리
+				console.error("Failed to submit driver:", error);
+				Modal.error({
+					title: "오류",
+					content: "기사님 정보 저장 중 오류가 발생했습니다.",
+				});
 			}
 		},
 		[selectedDriver, updateDriver, createDriver, handleCloseModal],
 	);
 
+	/**
+	 * 기사님 삭제 처리
+	 */
 	const handleDelete = useCallback(
 		async (id: string) => {
-			try {
-				await deleteDriver.mutateAsync(id);
-			} catch (error) {
-				// 에러 처리
-			}
+			Modal.confirm({
+				title: "기사님 삭제",
+				content: `정말로 ${drivers.find((d) => d.id === id)?.vehicleNumber} 기사님을 삭제하시겠습니까?`,
+				okText: "삭제",
+				okType: "danger",
+				cancelText: "취소",
+				onOk: async () => {
+					try {
+						await deleteDriver.mutateAsync(id);
+					} catch (error) {
+						console.error("Failed to delete driver:", error);
+						Modal.error({
+							title: "오류",
+							content: "기사님 삭제 중 오류가 발생했습니다.",
+						});
+					}
+				},
+			});
 		},
-		[deleteDriver],
+		[deleteDriver, drivers],
 	);
 
+	/**
+	 * 테이블 컬럼 정의
+	 */
 	const columns: ColumnsType<Driver> = useMemo(
 		() => [
 			{
@@ -169,6 +201,7 @@ export const DriversPage = () => {
 					onClose={handleCloseModal}
 					onSubmit={handleSubmit}
 					initialData={selectedDriver}
+					existingDrivers={drivers}
 				/>
 			</VerticalStack>
 		</AdminLayout>
