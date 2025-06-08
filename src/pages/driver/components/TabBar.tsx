@@ -36,7 +36,7 @@ const StyledTabs = styled(Tabs)`
       border-bottom: 1px solid ${({ theme }) => theme.colors.border.default};
     }
     .ant-tabs-tab {
-      font-size: ${({ theme }) => theme.fontSizes.md};
+      font-size: ${({ theme }) => theme.fontSizes.lg};
       font-weight: ${({ theme }) => theme.fontWeights.medium};
     }
     .ant-tabs-tab-active .ant-tabs-tab-btn {

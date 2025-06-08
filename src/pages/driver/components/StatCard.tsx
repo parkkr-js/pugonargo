@@ -57,7 +57,7 @@ const CardContainer = styled.div`
 
 const Title = styled.div`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-size: ${({ theme }) => theme.fontSizes.xl};
   color: black;
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
@@ -67,6 +67,7 @@ const Row = styled.div`
   justify-content: space-between;
   margin-bottom: ${({ theme }) => theme.spacing.sm};
   color: ${({ theme }) => theme.colors.text.secondary};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
   
   &:last-child {
     margin-bottom: 0;
@@ -76,13 +77,13 @@ const Row = styled.div`
 const Amount = styled.span`
   color: ${({ theme }) => theme.colors.text.primary};
   font-weight: ${({ theme }) => theme.fontWeights.normal};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
 `;
 
 const AfterDeduction = styled.span`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
-  font-size: ${({ theme }) => theme.fontSizes.md};
+  font-size: ${({ theme }) => theme.fontSizes.lg};
 `;
 
 const StyledHr = styled.hr`

@@ -1,20 +1,11 @@
 import { DatePicker, Spin } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { useState } from "react";
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
 import { usePeriodStats } from "../hooks/usePeriodStats";
+import MobileCalendarStyle from "./MobileCalendarStyle";
 import { StatCard } from "./StatCard";
-
-const MobileCalendarStyle = createGlobalStyle`
-	.ant-picker-dropdown .ant-picker-panels {
-		display: flex !important;
-		flex-direction: column !important;
-	}
-	.ant-picker-dropdown .ant-picker-panel-container {
-		flex-direction: column !important;
-	}
-`;
 
 export function PeriodStatsTab() {
 	const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs(), dayjs()]);
@@ -45,6 +36,8 @@ export function PeriodStatsTab() {
 				disabledDate={disabledDate}
 				panelRender={(panel) => <PanelWrapper>{panel}</PanelWrapper>}
 				size="large"
+				inputReadOnly
+				allowClear={false}
 			/>
 			<Content>
 				{isLoading ? (
@@ -65,6 +58,9 @@ const Wrapper = styled.div`
 
 const StyledRangePicker = styled(DatePicker.RangePicker)`
 	width: 100%;
+	.ant-picker-input > input {
+		font-size: 16px;
+	}
 `;
 
 const PanelWrapper = styled.div`

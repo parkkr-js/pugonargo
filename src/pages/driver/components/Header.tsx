@@ -17,7 +17,7 @@ export function Header() {
 
 	return (
 		<HeaderContainer>
-			<StyledTitle level={5}>푸고나르고 (P&N)</StyledTitle>
+			<StyledTitle level={4}>푸고나르고 (P&N)</StyledTitle>
 			<StyledButton type="primary" onClick={handleLogout}>
 				로그아웃
 			</StyledButton>
@@ -45,5 +45,6 @@ const StyledButton = styled(Button)`
   && {
     background: #1e266f;
     border-color: #1e266f;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
   }
 `;

@@ -66,7 +66,7 @@ const InfoRow = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: ${({ theme }) => theme.spacing.xs};
-	font-size: ${({ theme }) => theme.fontSizes.md};
+	font-size: ${({ theme }) => theme.fontSizes.lg};
 	&:last-child {
 		margin-bottom: 0;
 	}
@@ -99,7 +99,7 @@ const ActionButton = styled.button`
 	border-radius: ${({ theme }) => theme.borderRadius.sm};
 	background: #fff;
 	color: ${({ theme }) => theme.colors.primary};
-	font-size: ${({ theme }) => theme.fontSizes.sm};
+	font-size: ${({ theme }) => theme.fontSizes.md};
 	font-weight: ${({ theme }) => theme.fontWeights.medium};
 	cursor: pointer;
 	transition: background 0.2s, color 0.2s;
@@ -116,7 +116,7 @@ const DeleteButton = styled.button`
 	border-radius: ${({ theme }) => theme.borderRadius.sm};
 	background: #fff;
 	color: ${({ theme }) => theme.colors.semantic.error};
-	font-size: ${({ theme }) => theme.fontSizes.sm};
+	font-size: ${({ theme }) => theme.fontSizes.md};
 	font-weight: ${({ theme }) => theme.fontWeights.medium};
 	cursor: pointer;
 	transition: background 0.2s, color 0.2s;

@@ -29,6 +29,7 @@ import { DailyDriveCard } from "./DailyDriveCard";
 import { FuelRecordCard } from "./FuelRecordCard";
 import type { FuelRecord } from "./FuelRecordCard";
 import { FuelRecordModal } from "./FuelRecordModal";
+import MobileCalendarStyle from "./MobileCalendarStyle";
 import { RepairRecordCard } from "./RepairRecordCard";
 import type { RepairRecord } from "./RepairRecordCard";
 import { RepairRecordModal } from "./RepairRecordModal";
@@ -173,6 +174,7 @@ export function DailyRecordsTab() {
 	return (
 		<Container>
 			{contextHolder}
+			<MobileCalendarStyle />
 			<StyledDatePicker
 				value={date}
 				onChange={(date) => {
@@ -181,6 +183,8 @@ export function DailyRecordsTab() {
 					}
 				}}
 				disabledDate={disabledDate}
+				inputReadOnly
+				allowClear={false}
 				size="large"
 			/>
 			<ContentContainer>
@@ -194,9 +198,9 @@ export function DailyRecordsTab() {
 						<StyledCard title="운행 내역">
 							{driveRecords.length === 0 ? (
 								<EmptyStateContainer justify="center" align="center">
-									<Text type="secondary">
+									<EmptyStateText type="secondary">
 										아직 입력된 운행 내역이 없습니다.
-									</Text>
+									</EmptyStateText>
 								</EmptyStateContainer>
 							) : (
 								<RecordsSpace direction="vertical" size="small">
@@ -211,16 +215,16 @@ export function DailyRecordsTab() {
 						<StyledCard
 							title="주유 내역"
 							extra={
-								<Button type="primary" size="middle" onClick={handleAddFuel}>
+								<Button type="primary" size="large" onClick={handleAddFuel}>
 									추가하기
 								</Button>
 							}
 						>
 							{fuelRecords.length === 0 ? (
 								<EmptyStateContainer justify="center" align="center">
-									<Text type="secondary">
+									<EmptyStateText type="secondary">
 										아직 입력된 주유 내역이 없습니다.
-									</Text>
+									</EmptyStateText>
 								</EmptyStateContainer>
 							) : (
 								<RecordsSpace direction="vertical" size="small">
@@ -250,16 +254,16 @@ export function DailyRecordsTab() {
 						<StyledCard
 							title="수리 내역"
 							extra={
-								<Button type="primary" size="middle" onClick={handleAddRepair}>
+								<Button type="primary" size="large" onClick={handleAddRepair}>
 									추가하기
 								</Button>
 							}
 						>
 							{repairRecords.length === 0 ? (
 								<EmptyStateContainer justify="center" align="center">
-									<Text type="secondary">
+									<EmptyStateText type="secondary">
 										아직 입력된 수리 내역이 없습니다.
-									</Text>
+									</EmptyStateText>
 								</EmptyStateContainer>
 							) : (
 								<RecordsSpace direction="vertical" size="small">
@@ -297,6 +301,9 @@ const Container = styled.div`
 
 const StyledDatePicker = styled(DatePicker)`
 	width: 100%;
+	.ant-picker-input > input {
+		font-size: 16px;
+	}
 `;
 
 const LoadingContainer = styled.div`
@@ -310,6 +317,9 @@ const StyledCard = styled(Card)`
 	border-radius: ${({ theme }) => theme.borderRadius.md};
 	box-shadow: ${({ theme }) => theme.shadows.card};
 	transition: box-shadow 0.3s ease;
+	.ant-card-head {
+		font-size: ${({ theme }) => theme.fontSizes.lg};
+	}
 
 	.ant-card-body {
 		padding: ${({ theme }) => theme.spacing.sm};
@@ -334,4 +344,8 @@ const ContentContainer = styled.div`
 
 const StyledSpace = styled(Space)`
 	width: 100%;
+`;
+
+const EmptyStateText = styled(Text)`
+	font-size: ${({ theme }) => theme.fontSizes.lg};
 `;

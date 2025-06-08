@@ -101,13 +101,13 @@ const StyledModal = styled(Modal)`
 `;
 
 const LabelText = styled.span`
-	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
 	font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const StyledInputNumber = styled(InputNumber)`
 	width: 100%;
-	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
 	padding: 8px 12px;
 `;
 
@@ -115,7 +115,7 @@ const TotalCostRow = styled.div`
 	font-weight: ${({ theme }) => theme.fontWeights.bold};
 	margin-top: ${({ theme }) => theme.spacing.md};
 	text-align: right;
-	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
 `;
 
 const TotalCostValue = styled.span`
@@ -133,4 +133,5 @@ const ModalFooter = styled.div`
 
 const StyledButton = styled(Button)`
 	min-width: 80px;
+	font-size: ${({ theme }) => theme.fontSizes.xl};
 `;

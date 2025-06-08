@@ -62,7 +62,7 @@ const InfoRow = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: ${({ theme }) => theme.spacing.xs};
-	font-size: ${({ theme }) => theme.fontSizes.md};
+	font-size: ${({ theme }) => theme.fontSizes.lg};
 	&:last-child {
 		margin-bottom: 0;
 	}
@@ -87,6 +87,6 @@ const PrimaryValue = styled(InfoValue)`
 `;
 
 const FinalValue = styled(PrimaryValue)`
-	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-size: ${({ theme }) => theme.fontSizes.xl};
 	font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
