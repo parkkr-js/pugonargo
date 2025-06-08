@@ -155,7 +155,12 @@ export const TransactionsTable = ({
 				onChange={handleTableChange}
 				loading={isLoading}
 				scroll={{ x: true }}
-				pagination={{ pageSize: 10 }}
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: false,
+					showQuickJumper: false,
+					showTotal: (total) => `${total}개`,
+				}}
 			/>
 			{selectedVehicle && (
 				<VehicleFuelRepairModal

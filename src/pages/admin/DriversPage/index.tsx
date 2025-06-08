@@ -190,8 +190,9 @@ export const DriversPage = () => {
 						loading={isLoading}
 						pagination={{
 							pageSize: 10,
-							showSizeChanger: true,
-							showTotal: (total) => `${total}개`,
+							showSizeChanger: false,
+							showQuickJumper: false,
+							showTotal: (total) => `${total}명`,
 						}}
 					/>
 				</StyledCard>

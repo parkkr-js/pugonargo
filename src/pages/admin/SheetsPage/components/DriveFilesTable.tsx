@@ -152,6 +152,7 @@ export const DriveFilesTable = memo(
 										pageSize: 10,
 										showSizeChanger: false,
 										showQuickJumper: false,
+										showTotal: (total) => `${total}개`,
 									}}
 								/>
 							)}

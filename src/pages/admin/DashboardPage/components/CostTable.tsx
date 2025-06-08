@@ -109,7 +109,12 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 				dataSource={dataSource}
 				onChange={handleTableChange}
 				loading={isLoading}
-				pagination={{ pageSize: 10 }}
+				pagination={{
+					pageSize: 10,
+					showSizeChanger: false,
+					showQuickJumper: false,
+					showTotal: (total) => `${total}개`,
+				}}
 			/>
 		</>
 	);

@@ -171,7 +171,9 @@ export function VehicleFuelRepairModal({
 						loading={isLoading}
 						pagination={{
 							pageSize: 10,
-							showSizeChanger: true,
+							showSizeChanger: false,
+							showQuickJumper: false,
+							showTotal: (total) => `${total}개`,
 						}}
 						size="middle"
 					/>
