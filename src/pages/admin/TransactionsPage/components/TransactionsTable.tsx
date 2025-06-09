@@ -35,8 +35,8 @@ export const TransactionsTable = ({
 			vehicleNumber: transaction.vehicleNumber,
 			route: transaction.route,
 			weight: transaction.weight,
-			unitPrice: transaction.unitPrice,
-			amount: transaction.amount,
+			unitPrice: Math.round(transaction.unitPrice),
+			amount: Math.round(transaction.amount),
 			note: transaction.note,
 			i: transaction.i,
 		}));
@@ -94,10 +94,39 @@ export const TransactionsTable = ({
 			},
 		},
 		{
+			// 컬럼의 제목 설정
 			title: "운송구간",
+
+			// 테이블 데이터에서 표시할 필드명 지정
 			dataIndex: "route",
+
+			// React에서 리스트 렌더링을 위한 고유 키 지정
 			key: "route",
+
+			// 정렬 함수: 문자열 비교를 위해 localeCompare 사용
+			// a.route와 b.route를 비교하여 알파벳/한글 순서로 정렬
 			sorter: (a, b) => a.route.localeCompare(b.route),
+
+			// 필터 옵션 생성
+			// 1. tableData.map으로 모든 route 값 추출
+			// 2. new Set으로 중복 제거
+			// 3. Array.from으로 Set을 배열로 변환
+			// 4. map으로 antd Table 필터 형식({text, value})으로 변환
+			filters: Array.from(new Set(tableData.map((row) => row.route))).map(
+				(route) => ({
+					text: route, // 필터 드롭다운에 표시될 텍스트
+					value: route, // 실제 필터링에 사용될 값
+				}),
+			),
+
+			// 필터 드롭다운에 검색 기능 활성화
+			filterSearch: true,
+
+			// 필터 적용 시 실행될 함수
+			// value: 선택된 필터 값
+			// record: 현재 행의 데이터
+			// record.route가 선택된 value와 일치하는지 확인
+			onFilter: (value, record) => record.route === value,
 			width: "20%",
 		},
 		{
