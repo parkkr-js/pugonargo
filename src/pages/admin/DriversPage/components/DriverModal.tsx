@@ -73,6 +73,15 @@ export const DriverModal = memo(
 			}
 		}, [form, initialData]);
 
+		// 모달이 닫힐 때 form 초기화
+		useEffect(() => {
+			if (!open) {
+				form.resetFields();
+				setGeneratedUserId("");
+				setGeneratedPassword("");
+			}
+		}, [open, form]);
+
 		/**
 		 * 차량번호 중복 체크
 		 */

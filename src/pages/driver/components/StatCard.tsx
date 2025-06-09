@@ -28,11 +28,6 @@ export function StatCard({ data }: StatCardProps) {
 				<span>지입료(5%)</span>
 				<Amount>{totalDeduction.toLocaleString()}원</Amount>
 			</Row>
-			<Row style={{ marginBottom: 12, fontWeight: 600 }}>
-				<span>공제 후 금액</span>
-				<AfterDeduction>{afterDeduction.toLocaleString()}원</AfterDeduction>
-			</Row>
-			<StyledHr />
 			<Row>
 				<span>총 유류비</span>
 				<Amount>{totalFuelCost.toLocaleString()}원</Amount>
@@ -40,6 +35,15 @@ export function StatCard({ data }: StatCardProps) {
 			<Row>
 				<span>총 정비비</span>
 				<Amount>{totalRepairCost.toLocaleString()}원</Amount>
+			</Row>
+			<StyledHr />
+			{/* 공제 후 금액 변경함: 원래 o 열의 합(afterDeduction) => afterDeduction - (총 유류비 + 총 정비비)*/}
+			<Row style={{ marginBottom: 12, fontWeight: 600 }}>
+				<span>공제 후 금액</span>
+				<AfterDeduction>
+					{(afterDeduction - totalFuelCost - totalRepairCost).toLocaleString()}
+					원
+				</AfterDeduction>
 			</Row>
 		</CardContainer>
 	);
