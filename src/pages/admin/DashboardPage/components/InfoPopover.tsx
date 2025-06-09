@@ -27,8 +27,10 @@ export const InfoPopover = ({ placement = "right" }: InfoPopoverProps) => (
 		}
 		placement={placement}
 		trigger="hover"
-		overlayInnerStyle={{
-			padding: 0,
+		styles={{
+			body: {
+				padding: 0,
+			},
 		}}
 	>
 		<StyledInfoIcon />
