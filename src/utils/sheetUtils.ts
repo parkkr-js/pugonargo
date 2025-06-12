@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import type { MonthlyStats, RawData } from "../types/sheets";
+import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
+import type { RawData } from "../types/sheets";
 
 /**
  * Excel 시리얼 날짜를 JavaScript Date로 변환
@@ -98,60 +99,6 @@ export const transformRowToRawData = (
 };
 
 /**
- * RawData 배열에서 월별 통계 계산
- */
-export const calculateMonthlyStats = (data: RawData[]): MonthlyStats[] => {
-	const monthlyMap = new Map<
-		string,
-		{
-			year: number;
-			month: number;
-			totalI: number;
-			totalO: number;
-			recordCount: number;
-			sourceFiles: Set<string>;
-			rawDataIds: Set<string>;
-		}
-	>();
-
-	for (const item of data) {
-		const date = new Date(item.date);
-		const year = date.getFullYear();
-		const month = date.getMonth() + 1; // 1-12
-		const key = `${year}-${month.toString().padStart(2, "0")}`;
-
-		if (!monthlyMap.has(key)) {
-			monthlyMap.set(key, {
-				year,
-				month,
-				totalI: 0,
-				totalO: 0,
-				recordCount: 0,
-				sourceFiles: new Set(),
-				rawDataIds: new Set(),
-			});
-		}
-
-		const monthData = monthlyMap.get(key);
-		if (monthData) {
-			monthData.totalI += item.i;
-			monthData.totalO += item.o;
-			monthData.recordCount += 1;
-			monthData.sourceFiles.add(item.fileName);
-			monthData.rawDataIds.add(item.id);
-		}
-	}
-
-	return Array.from(monthlyMap.entries()).map(([id, stats]) => ({
-		id,
-		...stats,
-		sourceFiles: Array.from(stats.sourceFiles),
-		rawDataIds: Array.from(stats.rawDataIds),
-		lastUpdated: new Date(),
-	}));
-};
-
-/**
  * 월별 데이터 필터링
  */
 export const filterDataByMonth = (
@@ -163,4 +110,39 @@ export const filterDataByMonth = (
 		const date = new Date(item.date);
 		return date.getFullYear() === year && date.getMonth() + 1 === month;
 	});
+};
+
+export const convertToDate = (value: unknown): Date => {
+	if (value instanceof Date) return value;
+	if (value && typeof value === "object" && "toDate" in value) {
+		return (value as { toDate: () => Date }).toDate();
+	}
+	if (typeof value === "string") return new Date(value);
+	return new Date();
+};
+
+export const formatDate = (date: Date): string => {
+	return date.toISOString().split("T")[0];
+};
+
+export const convertFirestoreDocToRawData = (
+	doc: QueryDocumentSnapshot<DocumentData>,
+): RawData => {
+	const data = doc.data();
+	return {
+		id: data.id,
+		fileId: data.fileId,
+		fileName: data.fileName,
+		date: formatDate(convertToDate(data.date)),
+		d: data.d,
+		e: data.e,
+		m: data.m,
+		n: data.n,
+		o: data.o,
+		p: data.p,
+		i: data.i,
+		q: data.q,
+		createdAt: convertToDate(data.createdAt),
+		updatedAt: convertToDate(data.updatedAt),
+	};
 };

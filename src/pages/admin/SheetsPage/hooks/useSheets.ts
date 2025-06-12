@@ -1,10 +1,19 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GoogleApiService } from "../services/googleApiService";
-import { SheetsFirestoreService } from "../services/sheetsFirestoreService";
-import type { DriveFile } from "../types/sheets";
-import { transformRowToRawData } from "../utils/sheetUtils";
+// src/pages/admin/SheetsPage/hooks/useSheets.ts
 
-// 서비스 인스턴스들
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GoogleApiService } from "../../../../services/googleSheet/googleApiService";
+import { SheetsFirestoreService } from "../../../../services/googleSheet/sheetsFirestoreService";
+import type { DriveFile } from "../../../../types/sheets";
+import { transformRowToRawData } from "../../../../utils/sheetUtils";
+
+// 상수 정의
+const STALE_TIME = {
+	DRIVE_FILES: 5 * 60 * 1000, // 5분
+	MONTHLY_STATS: 10 * 60 * 1000, // 10분
+	STATS_SUMMARY: 5 * 60 * 1000, // 5분
+} as const;
+
+// 서비스 인스턴스
 const firestoreService = new SheetsFirestoreService();
 
 // Query Keys
@@ -26,30 +35,26 @@ export const sheetsKeys = {
 			endMonth,
 		] as const,
 	statsSummary: () => [...sheetsKeys.all, "statsSummary"] as const,
+	rawData: (year: number, month: number) =>
+		[...sheetsKeys.all, "rawData", year, month] as const,
 };
 
-/**
- * Google Drive Excel 파일 목록 조회
- */
+// Google Drive Excel 파일 목록 조회
 export const useDriveFiles = (accessToken?: string) => {
 	return useQuery({
 		queryKey: sheetsKeys.driveFiles(),
 		queryFn: async (): Promise<DriveFile[]> => {
-			if (!accessToken) {
-				throw new Error("Access token is required");
-			}
+			if (!accessToken) throw new Error("Access token is required");
 			const apiService = new GoogleApiService(accessToken);
 			return apiService.getDriveExcelFiles();
 		},
 		enabled: !!accessToken,
-		staleTime: 5 * 60 * 1000, // 5분
+		staleTime: STALE_TIME.DRIVE_FILES,
 		refetchOnWindowFocus: false,
 	});
 };
 
-/**
- * 월별 통계 데이터 조회
- */
+// 월별 통계 데이터 조회
 export const useMonthlyStats = (
 	startYear: number,
 	startMonth: number,
@@ -65,24 +70,20 @@ export const useMonthlyStats = (
 				endYear,
 				endMonth,
 			),
-		staleTime: 10 * 60 * 1000, // 10분
+		staleTime: STALE_TIME.MONTHLY_STATS,
 	});
 };
 
-/**
- * 통계 요약 조회 (대시보드용)
- */
+// 통계 요약 조회 (대시보드용)
 export const useStatsSummary = () => {
 	return useQuery({
 		queryKey: sheetsKeys.statsSummary(),
 		queryFn: () => firestoreService.getStatsSummary(),
-		staleTime: 5 * 60 * 1000, // 5분
+		staleTime: STALE_TIME.STATS_SUMMARY,
 	});
 };
 
-/**
- * Excel 파일 처리 (단순화)
- */
+// Excel 파일 처리
 export const useProcessExcelFile = () => {
 	const queryClient = useQueryClient();
 
@@ -97,20 +98,15 @@ export const useProcessExcelFile = () => {
 			accessToken: string;
 		}) => {
 			const apiService = new GoogleApiService(accessToken);
-
-			// 1. 시트 데이터 읽기 (Excel 파일 자동 변환 및 임시 파일 정리 포함)
 			const rawRows = await apiService.getSheetData(fileId);
 
-			// 2. 기존 데이터 삭제 (같은 파일 재처리시)
 			await firestoreService.deleteFileData(fileId);
 
-			// 3. 데이터 변환 및 저장
 			const transformedData = rawRows.map((row, index) =>
 				transformRowToRawData(row, fileId, fileName, index + 14),
 			);
 
-			// 4. DB에 저장 (배치 처리)
-			await firestoreService.processAndSaveData(transformedData);
+			await firestoreService.processAndSaveData(transformedData, fileName);
 
 			return {
 				processedRows: transformedData.length,
@@ -119,7 +115,6 @@ export const useProcessExcelFile = () => {
 			};
 		},
 		onSuccess: () => {
-			// 캐시 무효화
 			void queryClient.invalidateQueries({
 				queryKey: sheetsKeys.statsSummary(),
 			});
@@ -130,14 +125,12 @@ export const useProcessExcelFile = () => {
 	});
 };
 
-/**
- * 특정 월의 원본 데이터 조회
- */
+// 특정 월의 원본 데이터 조회
 export const useRawDataByMonth = (year: number, month: number) => {
 	return useQuery({
-		queryKey: [...sheetsKeys.all, "rawData", year, month],
+		queryKey: sheetsKeys.rawData(year, month),
 		queryFn: () => firestoreService.getRawDataByMonth(year, month),
 		enabled: year > 0 && month > 0 && month <= 12,
-		staleTime: 10 * 60 * 1000, // 10분
+		staleTime: STALE_TIME.MONTHLY_STATS,
 	});
 };

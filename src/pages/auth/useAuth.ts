@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { AuthService } from "../services/authService";
-import { useAuthStore } from "../stores/authStore";
-import { useDriverStore } from "../stores/driverStore";
+import { AuthService } from "../../services/auth/authService";
+import { useAuthStore } from "../../stores/authStore";
+import { useDriverStore } from "../../stores/driverStore";
 import type {
 	AdminLoginRequest,
 	DriverLoginRequest,
 	UnifiedLoginRequest,
-} from "../types/auth";
+} from "../../types/auth";
 
 const authService = new AuthService();
 

@@ -2,9 +2,9 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Alert, Button, Card, Form, Input, Space, Typography } from "antd";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useUnifiedLogin } from "../../hooks/useAuth";
 import { useAuthStore } from "../../stores/authStore";
 import type { UnifiedLoginRequest } from "../../types/auth";
+import { useUnifiedLogin } from "./useAuth";
 
 const { Title } = Typography;
 

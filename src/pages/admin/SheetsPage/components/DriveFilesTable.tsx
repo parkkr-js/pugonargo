@@ -1,8 +1,13 @@
-import { PlayCircleOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Card, Empty, Spin, Table, Typography } from "antd";
+import {
+	PlayCircleOutlined,
+	ReloadOutlined,
+	SearchOutlined,
+} from "@ant-design/icons";
+import { Button, Card, Empty, Input, Spin, Table, Typography } from "antd";
 import dayjs from "dayjs";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import type { DriveFile } from "../../../../types/sheets";
+import { normalizeText } from "../../../../utils/normalizeText";
 
 const { Text } = Typography;
 
@@ -26,12 +31,29 @@ export const DriveFilesTable = memo(
 		onRefresh,
 		onProcessFile,
 	}: DriveFilesTableProps) => {
+		const [searchText, setSearchText] = useState("");
+
+		// 처리 버튼(case1-1 해당 월의 데이터가 없을 때)
 		const handleProcessFile = useCallback(
 			(file: DriveFile) => {
 				onProcessFile(file);
 			},
 			[onProcessFile],
 		);
+
+		const handleSearch = useCallback((value: string) => {
+			setSearchText(value);
+		}, []);
+
+		const filteredFiles = useMemo(() => {
+			if (!files) return [];
+			if (!searchText) return files;
+
+			const normalizedSearchText = normalizeText(searchText);
+			return files.filter((file) =>
+				normalizeText(file.name).includes(normalizedSearchText),
+			);
+		}, [files, searchText]);
 
 		const columns = useMemo(
 			() => [
@@ -93,15 +115,24 @@ export const DriveFilesTable = memo(
 			<Card
 				title="Google Drive Excel 파일"
 				extra={
-					<Button
-						icon={<ReloadOutlined />}
-						onClick={onRefresh}
-						loading={isLoading}
-						size="small"
-						disabled={!isAuthenticated}
-					>
-						새로고침
-					</Button>
+					<div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+						<Input
+							placeholder="파일명 검색"
+							prefix={<SearchOutlined />}
+							onChange={(e) => handleSearch(e.target.value)}
+							style={{ width: 200 }}
+							allowClear
+						/>
+						<Button
+							icon={<ReloadOutlined />}
+							onClick={onRefresh}
+							loading={isLoading}
+							size="small"
+							disabled={!isAuthenticated}
+						>
+							새로고침
+						</Button>
+					</div>
 				}
 			>
 				{!isAuthenticated ? (
@@ -145,7 +176,7 @@ export const DriveFilesTable = memo(
 							) : (
 								<Table
 									columns={columns}
-									dataSource={files}
+									dataSource={filteredFiles}
 									rowKey="id"
 									size="small"
 									pagination={{

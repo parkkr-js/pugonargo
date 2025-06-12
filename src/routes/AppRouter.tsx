@@ -1,8 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import DashboardPage from "../pages/admin/DashboardPage";
-import { DriversPage } from "../pages/admin/DriversPage";
-import { SheetsPage } from "../pages/admin/SheetsPage";
-import { TransactionsPage } from "../pages/admin/TransactionsPage";
+import DashboardPage from "../pages/admin/dashboardPage";
+import { DriversPage } from "../pages/admin/driversPage";
+import { SheetsPage } from "../pages/admin/sheetsPage";
+import { TransactionsPage } from "../pages/admin/transactionsPage";
 import { LoginPage } from "../pages/auth/LoginPage";
 import { OAuthCallbackPage } from "../pages/auth/OAuthCallbackPage";
 import DriverPage from "../pages/driver";

@@ -1,13 +1,13 @@
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { auth, db } from "../lib/firebase";
+import { auth, db } from "../../lib/firebase";
 import type {
 	AdminLoginRequest,
 	DriverAccount,
 	DriverLoginRequest,
 	UnifiedLoginRequest,
 	User,
-} from "../types/auth";
+} from "../../types/auth";
 
 export class AuthService {
 	/**

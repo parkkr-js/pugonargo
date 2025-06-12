@@ -8,7 +8,7 @@ import {
 import { Button, Layout, Menu, Space, Typography } from "antd";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useLogout } from "../../hooks/useAuth";
+import { useLogout } from "../../pages/auth/useAuth";
 import { useAuthStore } from "../../stores/authStore";
 
 const { Sider, Header, Content } = Layout;

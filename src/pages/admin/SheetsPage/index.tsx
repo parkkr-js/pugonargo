@@ -3,18 +3,17 @@ import { message } from "antd";
 import { useState } from "react";
 import styled from "styled-components";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
-import { useDriveFiles, useProcessExcelFile } from "../../../hooks/useSheets";
 import type { DriveFile } from "../../../types/sheets";
 import { AuthAlert } from "./components/AuthAlert";
 import { DriveFilesTable } from "./components/DriveFilesTable";
 import { useGoogleAuth } from "./hooks/useGoogleAuth";
+import { useDriveFiles, useProcessExcelFile } from "./hooks/useSheets";
 
 export const SheetsPage = () => {
 	const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
 	const { accessToken, isAuthenticated, handleAuth, handleLogout } =
 		useGoogleAuth();
 
-	// 훅들
 	const {
 		data: driveFiles,
 		isFetching: fetchingFiles,
@@ -22,7 +21,7 @@ export const SheetsPage = () => {
 	} = useDriveFiles(accessToken);
 	const processFileMutation = useProcessExcelFile();
 
-	// 파일 처리 실행
+	// 파일 처리 (case1-2 해당 월의 데이터가 없을 때)
 	const handleProcessFile = async (file: DriveFile) => {
 		if (!accessToken) {
 			message.error("Google 인증이 필요합니다.");
