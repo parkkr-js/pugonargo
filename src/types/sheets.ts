@@ -34,6 +34,8 @@ export interface MonthlyStats {
 	totalO: number; // O열 합계
 	recordCount: number; // 데이터 건수
 	lastUpdated: Date;
+	sourceFiles: string[]; // 데이터가 포함된 파일 목록
+	rawDataIds: string[]; // 해당 월의 rawData 문서 ID들
 }
 
 // API 응답 타입들

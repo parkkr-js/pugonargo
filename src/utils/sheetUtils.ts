@@ -109,6 +109,8 @@ export const calculateMonthlyStats = (data: RawData[]): MonthlyStats[] => {
 			totalI: number;
 			totalO: number;
 			recordCount: number;
+			sourceFiles: Set<string>;
+			rawDataIds: Set<string>;
 		}
 	>();
 
@@ -125,6 +127,8 @@ export const calculateMonthlyStats = (data: RawData[]): MonthlyStats[] => {
 				totalI: 0,
 				totalO: 0,
 				recordCount: 0,
+				sourceFiles: new Set(),
+				rawDataIds: new Set(),
 			});
 		}
 
@@ -133,12 +137,16 @@ export const calculateMonthlyStats = (data: RawData[]): MonthlyStats[] => {
 			monthData.totalI += item.i;
 			monthData.totalO += item.o;
 			monthData.recordCount += 1;
+			monthData.sourceFiles.add(item.fileName);
+			monthData.rawDataIds.add(item.id);
 		}
 	}
 
 	return Array.from(monthlyMap.entries()).map(([id, stats]) => ({
 		id,
 		...stats,
+		sourceFiles: Array.from(stats.sourceFiles),
+		rawDataIds: Array.from(stats.rawDataIds),
 		lastUpdated: new Date(),
 	}));
 };

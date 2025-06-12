@@ -1,7 +1,12 @@
 import {
+	type DocumentData,
+	type DocumentReference,
+	type QueryDocumentSnapshot,
 	Timestamp,
+	type WriteBatch,
 	collection,
 	doc,
+	getDoc,
 	getDocs,
 	limit,
 	orderBy,
@@ -13,9 +18,54 @@ import { db } from "../lib/firebase";
 import type { MonthlyStats, RawData } from "../types/sheets";
 import { calculateMonthlyStats } from "../utils/sheetUtils";
 
+// 유틸리티 함수
+const convertToDate = (value: unknown): Date => {
+	if (value instanceof Date) return value;
+	if (value && typeof value === "object" && "toDate" in value) {
+		return (value as { toDate: () => Date }).toDate();
+	}
+	if (typeof value === "string") return new Date(value);
+	return new Date();
+};
+
+const formatDate = (date: Date): string => {
+	return date.toISOString().split("T")[0];
+};
+
+const chunkArray = <T>(array: T[], size: number): T[][] => {
+	const chunks: T[][] = [];
+	for (let i = 0; i < array.length; i += size) {
+		chunks.push(array.slice(i, i + size));
+	}
+	return chunks;
+};
+
+const convertFirestoreDocToRawData = (
+	doc: QueryDocumentSnapshot<DocumentData>,
+): RawData => {
+	const data = doc.data();
+	return {
+		id: data.id,
+		fileId: data.fileId,
+		fileName: data.fileName,
+		date: formatDate(convertToDate(data.date)),
+		d: data.d,
+		e: data.e,
+		m: data.m,
+		n: data.n,
+		o: data.o,
+		p: data.p,
+		i: data.i,
+		q: data.q,
+		createdAt: convertToDate(data.createdAt),
+		updatedAt: convertToDate(data.updatedAt),
+	};
+};
+
 export class SheetsFirestoreService {
-	private rawDataCollection = collection(db, "rawData");
-	private monthlyStatsCollection = collection(db, "monthlyStats");
+	private readonly rawDataCollection = collection(db, "rawData");
+	private readonly monthlyStatsCollection = collection(db, "monthlyStats");
+	private readonly IN_OPERATOR_LIMIT = 30;
 
 	/**
 	 * 원본 데이터 일괄 저장 (batch write로 성능 최적화)
@@ -24,7 +74,6 @@ export class SheetsFirestoreService {
 		const batchSize = 500; // Firestore batch limit
 
 		for (let i = 0; i < data.length; i += batchSize) {
-			// 각 루프마다 새로운 batch 생성
 			const batch = writeBatch(db);
 			const batchData = data.slice(i, i + batchSize);
 
@@ -32,7 +81,6 @@ export class SheetsFirestoreService {
 				const docRef = doc(this.rawDataCollection, item.id);
 				batch.set(docRef, {
 					...item,
-					// date는 string 그대로 저장
 					createdAt: Timestamp.fromDate(item.createdAt),
 					updatedAt: Timestamp.fromDate(item.updatedAt),
 				});
@@ -50,17 +98,73 @@ export class SheetsFirestoreService {
 
 		for (const stat of stats) {
 			const docRef = doc(this.monthlyStatsCollection, stat.id);
-			batch.set(
-				docRef,
-				{
-					...stat,
-					lastUpdated: Timestamp.fromDate(stat.lastUpdated),
-				},
-				{ merge: true },
-			);
+			const existingDoc = await getDoc(docRef);
+
+			if (!existingDoc.exists()) {
+				await this.handleNewMonthlyStat(batch, docRef, stat);
+			} else {
+				await this.handleExistingMonthlyStat(batch, docRef, stat, existingDoc);
+			}
 		}
 
 		await batch.commit();
+	}
+
+	/**
+	 * 새로운 월별 통계 처리
+	 */
+	private async handleNewMonthlyStat(
+		batch: WriteBatch,
+		docRef: DocumentReference<DocumentData>,
+		stat: MonthlyStats,
+	): Promise<void> {
+		batch.set(docRef, {
+			...stat,
+			lastUpdated: Timestamp.fromDate(stat.lastUpdated),
+		});
+	}
+
+	/**
+	 * 기존 월별 통계 업데이트
+	 */
+	private async handleExistingMonthlyStat(
+		batch: WriteBatch,
+		docRef: DocumentReference<DocumentData>,
+		stat: MonthlyStats,
+		existingDoc: QueryDocumentSnapshot<DocumentData>,
+	): Promise<void> {
+		const existingData = existingDoc.data() as MonthlyStats;
+		const allIds = [...existingData.rawDataIds, ...stat.rawDataIds];
+		const idChunks = chunkArray(allIds, this.IN_OPERATOR_LIMIT);
+
+		const allRawData = await this.fetchRawDataInChunks(idChunks);
+		const mergedStats = calculateMonthlyStats(allRawData)[0];
+
+		batch.set(
+			docRef,
+			{
+				...mergedStats,
+				lastUpdated: Timestamp.fromDate(new Date()),
+			},
+			{ merge: true },
+		);
+	}
+
+	/**
+	 * 청크 단위로 RawData 조회
+	 */
+	private async fetchRawDataInChunks(idChunks: string[][]): Promise<RawData[]> {
+		let allRawData: RawData[] = [];
+
+		for (const chunk of idChunks) {
+			const q = query(this.rawDataCollection, where("id", "in", chunk));
+
+			const snapshot = await getDocs(q);
+			const chunkData = snapshot.docs.map(convertFirestoreDocToRawData);
+			allRawData = [...allRawData, ...chunkData];
+		}
+
+		return allRawData;
 	}
 
 	/**
@@ -78,15 +182,7 @@ export class SheetsFirestoreService {
 		);
 
 		const snapshot = await getDocs(q);
-		return snapshot.docs.map((doc) => {
-			const data = doc.data();
-			return {
-				...data,
-				date: data.date.toDate(),
-				createdAt: data.createdAt.toDate(),
-				updatedAt: data.updatedAt.toDate(),
-			} as RawData;
-		});
+		return snapshot.docs.map(convertFirestoreDocToRawData);
 	}
 
 	/**
@@ -136,13 +232,8 @@ export class SheetsFirestoreService {
 	 * 파일 데이터 처리 완료 후 월별 통계 자동 계산 및 저장
 	 */
 	async processAndSaveData(rawData: RawData[]): Promise<void> {
-		// 1. 원본 데이터 저장
 		await this.saveRawDataBatch(rawData);
-
-		// 2. 월별 통계 계산
 		const monthlyStats = calculateMonthlyStats(rawData);
-
-		// 3. 월별 통계 저장/업데이트
 		await this.saveMonthlyStats(monthlyStats);
 	}
 
@@ -154,7 +245,6 @@ export class SheetsFirestoreService {
 		totalMonths: number;
 		latestMonth: string | null;
 	}> {
-		// 최근 12개월 통계만 조회하되, 필요한 필드만 선택
 		const q = query(
 			this.monthlyStatsCollection,
 			orderBy("id", "desc"),
