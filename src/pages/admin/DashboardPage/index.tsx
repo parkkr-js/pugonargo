@@ -11,7 +11,7 @@ import { useDriversMap } from "./hooks/useDriversMap";
 import { useMonthList } from "./hooks/useMonthList";
 import { useMonthStats } from "./hooks/useMonthStats";
 
-export default function DashboardPage() {
+export const DashboardPage = () => {
 	const [monthId, setMonthId] = useState("");
 	const { data: months = [], isLoading: monthsLoading } = useMonthList();
 	const { data: driversMap, isLoading: driversLoading } = useDriversMap();
@@ -74,7 +74,7 @@ export default function DashboardPage() {
 			</VerticalStack>
 		</AdminLayout>
 	);
-}
+};
 
 const CenteredBox = styled.div`
 	display: flex;

@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import DashboardPage from "../pages/admin/dashboardPage";
+import { DashboardPage } from "../pages/admin/dashboardPage";
 import { DriversPage } from "../pages/admin/driversPage";
 import { SheetsPage } from "../pages/admin/sheetsPage";
 import { TransactionsPage } from "../pages/admin/transactionsPage";
