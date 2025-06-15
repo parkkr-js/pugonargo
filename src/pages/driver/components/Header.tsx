@@ -3,11 +3,13 @@ import { useCallback } from "react";
 import styled from "styled-components";
 import { useAuthStore } from "../../../stores/authStore";
 import { useDriverStore } from "../../../stores/driverStore";
+import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
 
 const { Title } = Typography;
 
 export function Header() {
 	const setVehicleNumber = useDriverStore((s) => s.setVehicleNumber);
+	const vehicleNumber = useCurrentDriverVehicleNumber();
 
 	const handleLogout = useCallback(() => {
 		setVehicleNumber("");
@@ -17,7 +19,7 @@ export function Header() {
 
 	return (
 		<HeaderContainer>
-			<StyledTitle level={4}>푸고나르고 (P&N)</StyledTitle>
+			<StyledTitle level={4}>{vehicleNumber} 기사님</StyledTitle>
 			<StyledButton type="primary" onClick={handleLogout}>
 				로그아웃
 			</StyledButton>
