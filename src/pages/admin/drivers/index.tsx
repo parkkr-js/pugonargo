@@ -189,7 +189,7 @@ export const DriversPage = () => {
 						rowKey="id"
 						loading={isLoading}
 						pagination={{
-							pageSize: 10,
+							pageSize: 30,
 							showSizeChanger: false,
 							showQuickJumper: false,
 							showTotal: (total) => `${total}명`,

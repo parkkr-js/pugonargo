@@ -185,7 +185,7 @@ export const TransactionsTable = ({
 				loading={isLoading}
 				scroll={{ x: true }}
 				pagination={{
-					pageSize: 10,
+					pageSize: 30,
 					showSizeChanger: false,
 					showQuickJumper: false,
 					showTotal: (total) => `${total}개`,
