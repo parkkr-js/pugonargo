@@ -97,13 +97,7 @@ export class AuthService {
 		} catch (error) {
 			console.error("로그아웃 실패:", error);
 			// 로그아웃은 실패해도 클라이언트에서 상태를 초기화함
+			throw error;
 		}
-	}
-
-	/**
-	 * 현재 Firebase 인증 상태 확인
-	 */
-	getCurrentFirebaseUser() {
-		return auth.currentUser;
 	}
 }

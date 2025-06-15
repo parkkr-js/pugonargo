@@ -1,13 +1,11 @@
 export class GoogleAuthService {
 	private clientId: string;
 	private redirectUri: string;
-	private apiKey: string;
 	private scope: string;
 
 	constructor() {
 		this.clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 		this.redirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI || "";
-		this.apiKey = process.env.REACT_APP_GOOGLE_API_KEY || "";
 		this.scope =
 			"https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets";
 	}
