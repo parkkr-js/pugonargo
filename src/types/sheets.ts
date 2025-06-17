@@ -15,6 +15,7 @@ export interface RawData {
 	date: string; // C열 (날짜, YYYY-MM-DD string)
 	d: string; // D열
 	e: string; // E열
+	l: string; // L열
 	m: number; // M열
 	n: number; // N열
 	o: number; // O열 (월별 집계용)

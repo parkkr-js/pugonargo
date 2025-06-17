@@ -3,6 +3,7 @@
 import { Divider, Table } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
 import { useEffect, useMemo, useState } from "react";
+import { cellStyle } from "../../../../styles";
 import { useFuelRepairTable } from "../hooks/useFuelRepairTable";
 import { CostSummary } from "./CostSummary";
 
@@ -49,7 +50,8 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 			title: "날짜",
 			dataIndex: "date",
 			sorter: (a, b) => a.date.localeCompare(b.date),
-			width: "15%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "그룹",
@@ -61,7 +63,8 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 				}),
 			),
 			onFilter: (value, record) => record.group === value,
-			width: "10%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "차량번호",
@@ -74,19 +77,22 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 			})),
 			filterSearch: true,
 			onFilter: (value, record) => record.vehicleNumber === value,
-			width: "15%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "정비 내역 · 주유 단가",
 			dataIndex: "detail",
-			width: "35%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "총 비용",
 			dataIndex: "cost",
 			sorter: (a, b) => a.cost - b.cost,
 			render: (cost: number) => `${cost.toLocaleString()}원`,
-			width: "20%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 	];
 

@@ -6,3 +6,9 @@ import "./styled.d.ts";
 export { colors } from "./colors";
 export { theme, customTheme } from "./theme";
 export type { Theme } from "./theme";
+
+export const cellStyle = {
+	maxWidth: "100%",
+	overflow: "auto",
+	whiteSpace: "nowrap",
+} as const;

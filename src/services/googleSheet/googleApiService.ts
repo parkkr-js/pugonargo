@@ -140,6 +140,7 @@ export class GoogleApiService {
 				"C14:C", // 날짜
 				"D14:D", // 차량번호
 				"E14:E", // 운송구간
+				"L14:L", // 매입처
 				"M14:M", // 지급 중량
 				"N14:N", // 지급 단가
 				"O14:O", // 금액 (O열)
@@ -189,16 +190,17 @@ export class GoogleApiService {
 				});
 			};
 
-			// 각 열별 데이터 추출 (이전 코드와 동일한 순서)
+			// 각 열별 데이터 추출
 			const dateValues = extractColumnData(0); // C열
 			const vehicleNumbers = extractColumnData(1); // D열
 			const transportRoutes = extractColumnData(2); // E열
-			const weights = extractColumnData(3); // M열
-			const unitPrices = extractColumnData(4); // N열
-			const columnOAmount = extractColumnData(5); // O열
-			const columnIAmount = extractColumnData(6); // I열
-			const memos = extractColumnData(7); // P열
-			const columnQAmount = extractColumnData(8); // Q열
+			const suppliers = extractColumnData(3); // L열
+			const weights = extractColumnData(4); // M열
+			const unitPrices = extractColumnData(5); // N열
+			const columnOAmount = extractColumnData(6); // O열
+			const columnIAmount = extractColumnData(7); // I열
+			const memos = extractColumnData(8); // P열
+			const columnQAmount = extractColumnData(9); // Q열
 
 			// 가장 긴 열을 기준으로 행 개수 결정
 			const maxLength = Math.max(
@@ -208,7 +210,7 @@ export class GoogleApiService {
 				weights.length,
 			);
 
-			// 데이터 변환 (이전 코드와 동일한 방식)
+			// 데이터 변환
 			const rows: (string | number)[][] = [];
 			for (let i = 0; i < maxLength; i++) {
 				const dateStr = dateValues[i]?.toString().trim();
@@ -227,6 +229,7 @@ export class GoogleApiService {
 				row[2] = dateValues[i] || ""; // C열 (string)
 				row[3] = vehicleNumbers[i] || ""; // D열 (string)
 				row[4] = transportRoutes[i] || ""; // E열 (string)
+				row[11] = suppliers[i] || ""; // L열 (string)
 				row[12] = Number(weights[i]) || 0; // M열 (number)
 				row[13] = Number(unitPrices[i]) || 0; // N열 (number)
 				row[14] = Number(columnOAmount[i]) || 0; // O열 (number)

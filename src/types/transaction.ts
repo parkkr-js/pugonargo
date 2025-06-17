@@ -3,6 +3,7 @@ export interface Transaction {
 	date: string;
 	vehicleNumber: string;
 	route: string;
+	supplier: string;
 	weight: number;
 	unitPrice: number;
 	amount: number;
@@ -20,6 +21,7 @@ export interface TableTransaction {
 	group: string | null;
 	vehicleNumber: string;
 	route: string;
+	supplier: string;
 	weight: number;
 	unitPrice: number;
 	amount: number;

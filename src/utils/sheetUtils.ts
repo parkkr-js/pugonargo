@@ -83,6 +83,7 @@ export const transformRowToRawData = (
 			date: dayjs(parseDate(row[2] || 0)).format("YYYY-MM-DD"), // 반드시 string으로 변환
 			d: row[3] as string,
 			e: row[4] as string,
+			l: row[11] as string,
 			i: row[8] as number,
 			m: row[12] as number,
 			n: row[13] as number,
@@ -136,6 +137,7 @@ export const convertFirestoreDocToRawData = (
 		date: formatDate(convertToDate(data.date)),
 		d: data.d,
 		e: data.e,
+		l: data.l,
 		m: data.m,
 		n: data.n,
 		o: data.o,

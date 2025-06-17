@@ -4,6 +4,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
+import { cellStyle } from "../../../styles";
 import type { Driver } from "../../../types/driver";
 import { DriverModal } from "./components/DriverModal";
 import {
@@ -106,6 +107,8 @@ export const DriversPage = () => {
 				filterSearch: true,
 				onFilter: (value, record) =>
 					record.userId.toLowerCase().includes(String(value).toLowerCase()),
+				ellipsis: true,
+				onCell: () => ({ style: cellStyle }),
 			},
 			{
 				title: "차량번호",
@@ -122,6 +125,8 @@ export const DriversPage = () => {
 					record.vehicleNumber
 						.toLowerCase()
 						.includes(String(value).toLowerCase()),
+				ellipsis: true,
+				onCell: () => ({ style: cellStyle }),
 			},
 			{
 				title: "그룹",
@@ -134,6 +139,8 @@ export const DriversPage = () => {
 					}),
 				),
 				onFilter: (value, record) => record.group === value,
+				ellipsis: true,
+				onCell: () => ({ style: cellStyle }),
 			},
 			{
 				title: "덤프 중량(루베)",
@@ -141,6 +148,8 @@ export const DriversPage = () => {
 				key: "dumpWeight",
 				sorter: (a, b) => a.dumpWeight - b.dumpWeight,
 				render: (weight: number) => weight.toFixed(1),
+				ellipsis: true,
+				onCell: () => ({ style: cellStyle }),
 			},
 			{
 				title: "작업",

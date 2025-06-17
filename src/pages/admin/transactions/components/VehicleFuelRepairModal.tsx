@@ -3,6 +3,7 @@ import type { ColumnsType, TableProps } from "antd/es/table";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import styled from "styled-components";
+import { cellStyle } from "../../../../styles";
 import type {
 	FuelRow,
 	RepairRow,
@@ -84,7 +85,8 @@ export function VehicleFuelRepairModal({
 			})),
 			onFilter: (value, record) =>
 				dayjs(record.date).format("YYYY-MM") === value,
-			width: "15%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "정비 · 유류비",
@@ -96,7 +98,8 @@ export function VehicleFuelRepairModal({
 				}
 				return `정비비 (${row.memo})`;
 			},
-			width: "35%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "총 비용",
@@ -110,7 +113,8 @@ export function VehicleFuelRepairModal({
 				const cost = row.type === "fuel" ? row.totalFuelCost : row.repairCost;
 				return cost ? `${cost.toLocaleString("ko-KR")} 원` : "";
 			},
-			width: "20%",
+			ellipsis: true,
+			onCell: () => ({ style: cellStyle }),
 		},
 	];
 

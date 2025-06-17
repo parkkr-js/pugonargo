@@ -6,6 +6,7 @@ import {
 import { Button, Card, Empty, Input, Spin, Table, Typography } from "antd";
 import dayjs from "dayjs";
 import { memo, useCallback, useMemo, useState } from "react";
+import { cellStyle } from "../../../../styles";
 import type { DriveFile } from "../../../../types/sheets";
 import { normalizeText } from "../../../../utils/normalizeText";
 
@@ -66,6 +67,8 @@ export const DriveFilesTable = memo(
 							{name}
 						</Text>
 					),
+					ellipsis: true,
+					onCell: () => ({ style: cellStyle }),
 				},
 				{
 					title: "수정일",
@@ -80,6 +83,8 @@ export const DriveFilesTable = memo(
 							</Text>
 						);
 					},
+					ellipsis: true,
+					onCell: () => ({ style: cellStyle }),
 				},
 				{
 					title: "크기",
@@ -90,6 +95,8 @@ export const DriveFilesTable = memo(
 							{size ? `${Math.round(Number(size) / 1024)} KB` : "-"}
 						</Text>
 					),
+					ellipsis: true,
+					onCell: () => ({ style: cellStyle }),
 				},
 				{
 					title: "작업",
@@ -106,6 +113,8 @@ export const DriveFilesTable = memo(
 							처리
 						</Button>
 					),
+					ellipsis: true,
+					onCell: () => ({ style: cellStyle }),
 				},
 			],
 			[isProcessing, selectedFileId, isAuthenticated, handleProcessFile],

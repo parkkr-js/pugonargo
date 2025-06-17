@@ -10,6 +10,7 @@ export function useTransactions(startDate: string, endDate: string) {
 			data.map((item) => ({
 				id: item.id,
 				date: item.date,
+				supplier: item.supplier,
 				vehicleNumber: item.vehicleNumber,
 				route: item.route,
 				weight: item.weight,
