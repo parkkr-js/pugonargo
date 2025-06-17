@@ -46,8 +46,7 @@ export const useAuthStore = create<AuthState>()(
 			},
 		}),
 		{
-			name: "auth-storage", // localStorage 키
-			// 저장할 상태 선택 (isLoading은 제외)
+			name: "auth-storage",
 			partialize: (state) => ({
 				user: state.user,
 				isAuthenticated: state.isAuthenticated,

@@ -1,7 +1,7 @@
 import { Alert, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthService } from "../../services/googleSheet/googleAuthService";
+import { GoogleAuthService } from "../../../../services/googleSheet/googleAuthService";
 
 const googleAuthService = new GoogleAuthService();
 

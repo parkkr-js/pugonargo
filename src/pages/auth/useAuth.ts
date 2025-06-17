@@ -16,11 +16,14 @@ export const useUnifiedLogin = () => {
 	const setVehicleNumber = useDriverStore((s) => s.setVehicleNumber);
 
 	return useMutation({
+		// 실제 로그인 API를 호출하는 함수
 		mutationFn: (credentials: UnifiedLoginRequest) =>
 			authService.unifiedLogin(credentials),
+		// API 호출 시작 전 실행
 		onMutate: () => {
 			setLoading(true);
 		},
+		// 로그인 성공 시 실행
 		onSuccess: (user) => {
 			login(user);
 			if (user.role === "driver" && user.vehicleNumber) {
@@ -29,10 +32,12 @@ export const useUnifiedLogin = () => {
 				setVehicleNumber(""); // 관리자 등
 			}
 		},
+		// 에러 발생 시 실행
 		onError: (error) => {
 			setLoading(false);
 			console.error("로그인 에러:", error);
 		},
+		// 성공/실패 상관없이 API 호출이 끝나면 실행
 		onSettled: () => {
 			setLoading(false);
 		},

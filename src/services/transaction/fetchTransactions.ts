@@ -19,6 +19,7 @@ export async function fetchTransactions(
 			date: data.date,
 			vehicleNumber: data.d,
 			route: data.e,
+			supplier: data.l,
 			weight: data.m,
 			unitPrice: data.n,
 			amount: data.o,

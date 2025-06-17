@@ -2,9 +2,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { DashboardPage } from "../pages/admin/dashboard";
 import { DriversPage } from "../pages/admin/drivers";
 import { SheetsPage } from "../pages/admin/sheets";
+import { OAuthCallbackPage } from "../pages/admin/sheets/components/OAuthCallbackPage";
 import { TransactionsPage } from "../pages/admin/transactions";
 import { LoginPage } from "../pages/auth/LoginPage";
-import { OAuthCallbackPage } from "../pages/auth/OAuthCallbackPage";
 import DriverPage from "../pages/driver";
 import { useAuthStore } from "../stores/authStore";
 
