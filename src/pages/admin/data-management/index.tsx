@@ -84,33 +84,9 @@ const SectionTitle = styled.h2`
 	margin: 0;
 `;
 
-const LabelWithSub = styled.div`
-	font-size: 1.125rem;
-	color: #333;
-	font-weight: 600;
-	text-align: center;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-`;
-const LabelSub = styled.span`
-	font-size: 0.92rem;
-	color: #ccc;
-	font-weight: 400;
-	margin-left: 4px;
-`;
-
 const VerticalStack = styled.div<{ gap?: number }>`
 	display: flex;
 	flex-direction: column;
 	gap: ${({ gap }) => (gap ? `${gap}px` : "24px")};
 	width: 100%;
-`;
-
-const HorizontalStack = styled.div`
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: flex-start;
 `;
