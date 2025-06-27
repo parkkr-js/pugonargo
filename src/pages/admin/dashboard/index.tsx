@@ -7,14 +7,12 @@ import { CostTable } from "./components/CostTable";
 import { InfoPopover } from "./components/InfoPopover";
 import { MonthNavigator } from "./components/MonthNavigator";
 import { StatsCards } from "./components/StatsCards";
-import { useDriversMap } from "./hooks/useDriversMap";
 import { useMonthList } from "./hooks/useMonthList";
 import { useMonthStats } from "./hooks/useMonthStats";
 
 export const DashboardPage = () => {
 	const [monthId, setMonthId] = useState("");
 	const { data: months = [], isLoading: monthsLoading } = useMonthList();
-	const { data: driversMap, isLoading: driversLoading } = useDriversMap();
 	const { data: monthStats, isLoading: statsLoading } = useMonthStats(monthId);
 
 	// 월 목록이 로드되면 가장 최근 월을 선택
@@ -24,7 +22,7 @@ export const DashboardPage = () => {
 		}
 	}, [months, monthId]);
 
-	const isLoading = monthsLoading || driversLoading || statsLoading;
+	const isLoading = monthsLoading || statsLoading;
 
 	return (
 		<AdminLayout>
@@ -66,7 +64,7 @@ export const DashboardPage = () => {
 										<LabelSub>(기사님들이 직접 입력한 값입니다.)</LabelSub>
 									</LabelWithSub>
 								</HorizontalStack>
-								<CostTable monthId={monthId} driversMap={driversMap} />
+								<CostTable monthId={monthId} />
 							</VerticalStack>
 						</Card>
 					</>

@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import type { FuelRecord } from "../../pages/driver/components/FuelRecordCard";
+import type { FuelRecord } from "../../types/driverRecord";
 
 export async function fetchFuelByMonth(
 	year: number,
@@ -22,6 +22,7 @@ export async function fetchFuelByMonth(
 		id: doc.id,
 		date: doc.data().date,
 		vehicleNumber: doc.data().vehicleNumber,
+		driversDbSupplier: doc.data().driversDbSupplier,
 		detail: doc.data().detail,
 		cost: doc.data().cost,
 		unitPrice: doc.data().unitPrice,

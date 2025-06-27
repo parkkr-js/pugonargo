@@ -1,25 +1,27 @@
 import { Button, Typography } from "antd";
 import { useCallback } from "react";
 import styled from "styled-components";
-import { useAuthStore } from "../../../stores/authStore";
-import { useDriverStore } from "../../../stores/driverStore";
+import { useLogout } from "../../auth/useAuth";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
+import { useCurrentDriversDbSupplier } from "../hooks/useCurrentDriversDbSupplier";
 
 const { Title } = Typography;
 
 export function Header() {
-	const setVehicleNumber = useDriverStore((s) => s.setVehicleNumber);
 	const vehicleNumber = useCurrentDriverVehicleNumber();
+	const driversDbSupplier = useCurrentDriversDbSupplier();
+	const logout = useLogout();
 
-	const handleLogout = useCallback(() => {
-		setVehicleNumber("");
-		useAuthStore.getState().logout();
+	const handleLogout = useCallback(async () => {
+		await logout.mutateAsync();
 		window.location.href = "/login";
-	}, [setVehicleNumber]);
+	}, [logout]);
 
 	return (
 		<HeaderContainer>
-			<StyledTitle level={4}>{vehicleNumber} 기사님</StyledTitle>
+			<StyledTitle level={4}>
+				{vehicleNumber} {driversDbSupplier} 기사님
+			</StyledTitle>
 			<StyledButton type="primary" onClick={handleLogout}>
 				로그아웃
 			</StyledButton>

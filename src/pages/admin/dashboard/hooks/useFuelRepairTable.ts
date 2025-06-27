@@ -2,23 +2,14 @@ import dayjs from "dayjs";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { db } from "../../../../lib/firebase";
-import type { FuelRecord } from "../../../driver/components/FuelRecordCard";
-import type { RepairRecord } from "../../../driver/components/RepairRecordCard";
-
-interface DriverInfo {
-	name: string;
-	group: string;
-}
+import type { FuelRecord, RepairRecord } from "../../../../types/driverRecord";
 
 interface DataState {
 	fuel: FuelRecord[];
 	repair: RepairRecord[];
 }
 
-export function useFuelRepairTable(
-	monthId: string,
-	driversMap: Record<string, DriverInfo> = {},
-) {
+export function useFuelRepairTable(monthId: string) {
 	const [data, setData] = useState<DataState>({ fuel: [], repair: [] });
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadedCollections, setLoadedCollections] = useState<Set<string>>(
@@ -95,7 +86,7 @@ export function useFuelRepairTable(
 		const fuelRows = data.fuel.map((f) => ({
 			type: "fuel" as const,
 			date: f.date,
-			group: driversMap[f.vehicleNumber]?.group || "-",
+			driversDbSupplier: f.driversDbSupplier,
 			vehicleNumber: f.vehicleNumber,
 			detail: f.unitPrice ? `${f.unitPrice.toLocaleString()}원` : "-",
 			cost: f.totalFuelCost ?? 0,
@@ -103,13 +94,13 @@ export function useFuelRepairTable(
 		const repairRows = data.repair.map((r) => ({
 			type: "repair" as const,
 			date: r.date,
-			group: driversMap[r.vehicleNumber]?.group || "-",
+			driversDbSupplier: r.driversDbSupplier,
 			vehicleNumber: r.vehicleNumber,
 			detail: r.memo || "-",
 			cost: r.repairCost ?? 0,
 		}));
 		return [...fuelRows, ...repairRows];
-	}, [data, driversMap]);
+	}, [data]);
 
 	return { tableRows, isLoading };
 }

@@ -13,7 +13,9 @@ import { useState } from "react";
 import styled from "styled-components";
 import type { FuelRecordInput } from "../../../services/client/createFuelRecord";
 import type { RepairRecordInput } from "../../../services/client/createRepairRecord";
+import type { FuelRecord, RepairRecord } from "../../../types/driverRecord";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
+import { useCurrentDriversDbSupplier } from "../hooks/useCurrentDriversDbSupplier";
 import { useDailyRecords } from "../hooks/useDailyRecords";
 import {
 	useCreateFuelRecordMutation,
@@ -27,11 +29,9 @@ import {
 } from "../hooks/useRepairRecords";
 import { DailyDriveCard } from "./DailyDriveCard";
 import { FuelRecordCard } from "./FuelRecordCard";
-import type { FuelRecord } from "./FuelRecordCard";
 import { FuelRecordModal } from "./FuelRecordModal";
 import MobileCalendarStyle from "./MobileCalendarStyle";
 import { RepairRecordCard } from "./RepairRecordCard";
-import type { RepairRecord } from "./RepairRecordCard";
 import { RepairRecordModal } from "./RepairRecordModal";
 
 const { Text } = Typography;
@@ -39,7 +39,12 @@ const { Text } = Typography;
 export function DailyRecordsTab() {
 	const [date, setDate] = useState<Dayjs>(dayjs());
 	const vehicleNumber = useCurrentDriverVehicleNumber();
-	const { data, isLoading } = useDailyRecords(vehicleNumber, date.toDate());
+	const driversDbSupplier = useCurrentDriversDbSupplier();
+	const { data, isLoading } = useDailyRecords(
+		vehicleNumber,
+		driversDbSupplier,
+		date.toDate(),
+	);
 	const driveRecords = data?.driveRecords ?? [];
 	const fuelRecords = data?.fuelRecords ?? [];
 	const repairRecords = data?.repairRecords ?? [];
@@ -54,28 +59,34 @@ export function DailyRecordsTab() {
 	// 주유 CRUD
 	const createFuelRecord = useCreateFuelRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 	const updateFuelRecord = useUpdateFuelRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 	const deleteFuelRecord = useDeleteFuelRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 
 	// 수리 CRUD
 	const createRepairRecord = useCreateRepairRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 	const updateRepairRecord = useUpdateRepairRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 	const deleteRepairRecord = useDeleteRepairRecordMutation(
 		vehicleNumber,
+		driversDbSupplier,
 		date.toDate(),
 	);
 
@@ -102,13 +113,14 @@ export function DailyRecordsTab() {
 		}
 	};
 	const handleSaveFuel = async (
-		data: Omit<FuelRecordInput, "date" | "vehicleNumber">,
+		data: Omit<FuelRecordInput, "date" | "vehicleNumber" | "driversDbSupplier">,
 	) => {
 		try {
 			const payload = {
 				...data,
 				date: date.format("YYYY-MM-DD"),
 				vehicleNumber,
+				driversDbSupplier,
 				totalFuelCost: data.unitPrice * data.fuelAmount,
 			};
 			if (editingFuel) {
@@ -146,13 +158,17 @@ export function DailyRecordsTab() {
 		}
 	};
 	const handleSaveRepair = async (
-		data: Omit<RepairRecordInput, "date" | "vehicleNumber">,
+		data: Omit<
+			RepairRecordInput,
+			"date" | "vehicleNumber" | "driversDbSupplier"
+		>,
 	) => {
 		try {
 			const payload = {
 				...data,
 				date: date.format("YYYY-MM-DD"),
 				vehicleNumber,
+				driversDbSupplier,
 			};
 			if (editingRepair) {
 				await updateRepairRecord.mutateAsync({
@@ -241,13 +257,22 @@ export function DailyRecordsTab() {
 						</StyledCard>
 						<FuelRecordModal
 							open={fuelModalOpen}
-							initialData={editingFuel || undefined}
+							initialData={
+								editingFuel
+									? {
+											...editingFuel,
+											vehicleNumber,
+											driversDbSupplier,
+										}
+									: undefined
+							}
 							onOk={handleSaveFuel}
 							onCancel={() => {
 								setFuelModalOpen(false);
 								setEditingFuel(null);
 							}}
 							vehicleNumber={vehicleNumber}
+							driversDbSupplier={driversDbSupplier}
 						/>
 
 						{/* 수리 내역 */}
@@ -280,13 +305,22 @@ export function DailyRecordsTab() {
 						</StyledCard>
 						<RepairRecordModal
 							open={repairModalOpen}
-							initialData={editingRepair || undefined}
+							initialData={
+								editingRepair
+									? {
+											...editingRepair,
+											vehicleNumber,
+											driversDbSupplier,
+										}
+									: undefined
+							}
 							onOk={handleSaveRepair}
 							onCancel={() => {
 								setRepairModalOpen(false);
 								setEditingRepair(null);
 							}}
 							vehicleNumber={vehicleNumber}
+							driversDbSupplier={driversDbSupplier}
 						/>
 					</StyledSpace>
 				)}

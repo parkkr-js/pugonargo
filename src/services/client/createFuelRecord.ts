@@ -3,6 +3,7 @@ import { db } from "../../lib/firebase";
 
 export interface FuelRecordInput {
 	vehicleNumber: string;
+	driversDbSupplier: string;
 	date: string; // YYYY-MM-DD
 	unitPrice: number;
 	fuelAmount: number;

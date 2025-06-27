@@ -7,28 +7,48 @@ import { deleteRepairRecord } from "../../../services/client/deleteRepairRecord"
 import { fetchDailyRecords } from "../../../services/client/fetchDailyRecords";
 import { updateRepairRecord } from "../../../services/client/updateRepairRecord";
 
-export function useRepairRecords(vehicleNumber: string, date: Date) {
+export function useRepairRecords(
+	vehicleNumber: string,
+	driversDbSupplier: string,
+	date: Date,
+) {
 	return useQuery({
-		queryKey: ["repairRecords", vehicleNumber, date.toISOString()],
-		queryFn: () => fetchDailyRecords(vehicleNumber, date),
+		queryKey: [
+			"repairRecords",
+			vehicleNumber,
+			driversDbSupplier,
+			date.toISOString(),
+		],
+		queryFn: () => fetchDailyRecords(vehicleNumber, driversDbSupplier, date),
 		select: (data) => data?.repairRecords ?? [],
-		enabled: !!vehicleNumber && !!date,
+		enabled: !!vehicleNumber && !!driversDbSupplier && !!date,
 	});
 }
 
 export function useCreateRepairRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
 	return useMutation(createRepairRecord, {
 		onSuccess: () => {
-			if (vehicleNumber && date) {
+			if (vehicleNumber && driversDbSupplier && date) {
 				queryClient.invalidateQueries({
-					queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"dailyRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 				queryClient.invalidateQueries({
-					queryKey: ["repairRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"repairRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["repairRecords"] });
@@ -39,6 +59,7 @@ export function useCreateRepairRecordMutation(
 
 export function useUpdateRepairRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
@@ -47,12 +68,22 @@ export function useUpdateRepairRecordMutation(
 			updateRepairRecord(id, data),
 		{
 			onSuccess: () => {
-				if (vehicleNumber && date) {
+				if (vehicleNumber && driversDbSupplier && date) {
 					queryClient.invalidateQueries({
-						queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+						queryKey: [
+							"dailyRecords",
+							vehicleNumber,
+							driversDbSupplier,
+							date.toISOString(),
+						],
 					});
 					queryClient.invalidateQueries({
-						queryKey: ["repairRecords", vehicleNumber, date.toISOString()],
+						queryKey: [
+							"repairRecords",
+							vehicleNumber,
+							driversDbSupplier,
+							date.toISOString(),
+						],
 					});
 				} else {
 					queryClient.invalidateQueries({ queryKey: ["repairRecords"] });
@@ -64,17 +95,28 @@ export function useUpdateRepairRecordMutation(
 
 export function useDeleteRepairRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
 	return useMutation(deleteRepairRecord, {
 		onSuccess: () => {
-			if (vehicleNumber && date) {
+			if (vehicleNumber && driversDbSupplier && date) {
 				queryClient.invalidateQueries({
-					queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"dailyRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 				queryClient.invalidateQueries({
-					queryKey: ["repairRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"repairRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["repairRecords"] });

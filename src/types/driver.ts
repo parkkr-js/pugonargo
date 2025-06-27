@@ -1,4 +1,4 @@
-export type DriverGroup =
+export type DriversDbSupplier =
 	| "#1"
 	| "#2"
 	| "#3"
@@ -10,7 +10,7 @@ export type DriverGroup =
 	| "#9"
 	| "#10";
 
-export const DRIVER_GROUPS: DriverGroup[] = [
+export const DRIVERS_DB_SUPPLIERS: DriversDbSupplier[] = [
 	"#1",
 	"#2",
 	"#3",
@@ -25,10 +25,10 @@ export const DRIVER_GROUPS: DriverGroup[] = [
 
 export interface Driver {
 	id: string;
-	userId: string; // D + 차량번호
+	userId: string; // 차량번호 + 매입처(driversDbSupplier)
 	password: string; // 자동 생성된 비밀번호
 	vehicleNumber: string; // 4자리 차량번호
-	group: DriverGroup;
+	driversDbSupplier: DriversDbSupplier; // 매입처
 	dumpWeight: number; // 소수점 가능한 덤프 중량
 	createdAt: Date;
 	updatedAt: Date;

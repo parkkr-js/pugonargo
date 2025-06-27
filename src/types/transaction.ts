@@ -12,13 +12,15 @@ export interface Transaction {
 }
 
 export interface DriversMap {
-	[vehicleNumber: string]: string | null;
+	[vehicleNumber: string]: {
+		driversDbSupplier: string;
+		vehicleNumber: string;
+	};
 }
 
 export interface TableTransaction {
 	key: string;
 	date: string;
-	group: string | null;
 	vehicleNumber: string;
 	route: string;
 	supplier: string;

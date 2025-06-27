@@ -33,7 +33,6 @@ export const TransactionsTable = ({
 			key: transaction.id,
 			date: transaction.date,
 			supplier: transaction.supplier,
-			group: driversMap[transaction.vehicleNumber] || null,
 			vehicleNumber: transaction.vehicleNumber,
 			route: transaction.route,
 			weight: transaction.weight,
@@ -42,7 +41,7 @@ export const TransactionsTable = ({
 			note: transaction.note,
 			i: transaction.i,
 		}));
-	}, [transactions, driversMap, isLoading]);
+	}, [transactions, isLoading]);
 
 	const columns: ColumnsType<TableTransaction> = [
 		{
@@ -62,20 +61,6 @@ export const TransactionsTable = ({
 			onCell: () => ({ style: cellStyle }),
 		},
 		{
-			title: "그룹",
-			dataIndex: "group",
-			key: "group",
-			filters: Array.from(
-				new Set(tableData.map((row) => row.group).filter(Boolean)),
-			).map((group) => ({
-				text: group || "-",
-				value: group || "-",
-			})),
-			onFilter: (value, record) => record.group === value,
-			ellipsis: true,
-			onCell: () => ({ style: cellStyle }),
-		},
-		{
 			title: "차량번호",
 			dataIndex: "vehicleNumber",
 			key: "vehicleNumber",
@@ -90,7 +75,12 @@ export const TransactionsTable = ({
 			ellipsis: true,
 			onCell: () => ({ style: cellStyle }),
 			render: (vehicleNumber, record) => {
-				const hasGroup = record.group !== "-" && record.group !== null;
+				const driverData = driversMap[vehicleNumber];
+				const hasMatchingDriver =
+					driverData &&
+					driverData.driversDbSupplier === record.supplier &&
+					driverData.vehicleNumber === vehicleNumber;
+
 				return (
 					<Button
 						type="link"
@@ -98,8 +88,8 @@ export const TransactionsTable = ({
 							setSelectedVehicle(vehicleNumber);
 							setModalOpen(true);
 						}}
-						disabled={!hasGroup}
-						style={{ color: hasGroup ? "inherit" : "#999" }}
+						disabled={!hasMatchingDriver}
+						style={{ color: hasMatchingDriver ? "inherit" : "#999" }}
 					>
 						{vehicleNumber}
 					</Button>

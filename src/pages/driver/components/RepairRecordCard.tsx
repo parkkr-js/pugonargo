@@ -1,17 +1,12 @@
 import styled from "styled-components";
+import type { RepairRecord } from "../../../types/driverRecord";
 
-export interface RepairRecord {
-	id: string;
-	repairCost: number;
-	memo: string;
-	date: string;
-	vehicleNumber: string;
-}
 interface RepairRecordCardProps {
 	record: RepairRecord;
 	onEdit?: (record: RepairRecord) => void;
 	onDelete?: (id: string) => void;
 }
+
 export function RepairRecordCard({
 	record,
 	onEdit,

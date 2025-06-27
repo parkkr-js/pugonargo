@@ -1,9 +1,10 @@
 import { CopyOutlined } from "@ant-design/icons";
 import { Button, Form, Input, InputNumber, Modal, Select, message } from "antd";
 import { memo, useEffect, useState } from "react";
-import type { Driver, DriverGroup } from "../../../../types/driver";
-import { DRIVER_GROUPS } from "../../../../types/driver";
+import type { Driver, DriversDbSupplier } from "../../../../types/driver";
+import { DRIVERS_DB_SUPPLIERS } from "../../../../types/driver";
 import {
+	checkDuplicateDriver,
 	generateDriverId,
 	generateDriverPassword,
 } from "../../../../utils/driverUtils";
@@ -20,7 +21,7 @@ interface DriverModalProps {
 
 interface FormValues {
 	vehicleNumber: string;
-	group: DriverGroup;
+	driversDbSupplier: DriversDbSupplier;
 	dumpWeight: number;
 }
 
@@ -43,9 +44,32 @@ export const DriverModal = memo(
 			e: React.ChangeEvent<HTMLInputElement>,
 		) => {
 			const vehicleNumber = e.target.value;
-			if (vehicleNumber.length === 4) {
-				const userId = generateDriverId(vehicleNumber);
-				const password = generateDriverPassword(vehicleNumber);
+			const currentSupplier = form.getFieldValue("driversDbSupplier");
+
+			if (vehicleNumber.length === 4 && currentSupplier) {
+				const userId = generateDriverId(vehicleNumber, currentSupplier);
+				const password = generateDriverPassword(vehicleNumber, currentSupplier);
+				setGeneratedUserId(userId);
+				setGeneratedPassword(password);
+			} else {
+				setGeneratedUserId("");
+				setGeneratedPassword("");
+			}
+		};
+
+		/**
+		 * 매입처 변경 시 ID와 비밀번호 자동 생성
+		 */
+		const handleSupplierChange = (supplier: DriversDbSupplier) => {
+			const currentVehicleNumber = form.getFieldValue("vehicleNumber");
+
+			if (
+				currentVehicleNumber &&
+				currentVehicleNumber.length === 4 &&
+				supplier
+			) {
+				const userId = generateDriverId(currentVehicleNumber, supplier);
+				const password = generateDriverPassword(currentVehicleNumber, supplier);
 				setGeneratedUserId(userId);
 				setGeneratedPassword(password);
 			} else {
@@ -61,7 +85,7 @@ export const DriverModal = memo(
 			if (initialData) {
 				form.setFieldsValue({
 					vehicleNumber: initialData.vehicleNumber,
-					group: initialData.group,
+					driversDbSupplier: initialData.driversDbSupplier,
 					dumpWeight: initialData.dumpWeight,
 				});
 				setGeneratedUserId(initialData.userId);
@@ -83,25 +107,21 @@ export const DriverModal = memo(
 		}, [open, form]);
 
 		/**
-		 * 차량번호 중복 체크
-		 */
-		const checkDuplicateVehicleNumber = (vehicleNumber: string): boolean => {
-			return existingDrivers.some(
-				(driver) =>
-					driver.vehicleNumber === vehicleNumber &&
-					(!initialData || driver.id !== initialData.id),
-			);
-		};
-
-		/**
 		 * 폼 제출 처리
 		 */
 		const handleSubmit = async () => {
 			try {
 				const values = await form.validateFields();
 
-				if (checkDuplicateVehicleNumber(values.vehicleNumber)) {
-					message.error("이미 존재하는 차량번호입니다.");
+				if (
+					checkDuplicateDriver(
+						values.vehicleNumber,
+						values.driversDbSupplier,
+						existingDrivers,
+						initialData?.id,
+					)
+				) {
+					message.error("이미 존재하는 차량번호와 매입처 조합입니다.");
 					return;
 				}
 
@@ -109,7 +129,7 @@ export const DriverModal = memo(
 					userId: generatedUserId,
 					password: generatedPassword,
 					vehicleNumber: values.vehicleNumber,
-					group: values.group,
+					driversDbSupplier: values.driversDbSupplier,
 					dumpWeight: values.dumpWeight,
 				});
 				onClose();
@@ -124,7 +144,7 @@ export const DriverModal = memo(
 		 */
 		const handleCopy = (text: string, label: string) => {
 			navigator.clipboard.writeText(text);
-			message.success(`${label}이(가) 클립보드에 복사되었습니다.`);
+			message.success(`${label}가 클립보드에 복사되었습니다.`);
 		};
 
 		return (
@@ -159,14 +179,27 @@ export const DriverModal = memo(
 					</Form.Item>
 
 					<Form.Item
-						label="그룹"
-						name="group"
-						rules={[{ required: true, message: "그룹을 선택해주세요." }]}
+						label="매입처"
+						name="driversDbSupplier"
+						rules={[
+							{
+								required: true,
+								message:
+									"매입처를 선택해주세요. 구글시트의 매입처와 동일하게 선택해야 합니다.",
+							},
+						]}
 					>
-						<Select placeholder="그룹을 선택하세요">
-							{DRIVER_GROUPS.map((group) => (
-								<Select.Option key={group} value={group}>
-									{group}
+						<Select
+							placeholder="매입처를 선택하세요. 구글시트의 매입처와 동일하게 선택해야 합니다."
+							style={{ width: "100%" }}
+							onChange={handleSupplierChange}
+						>
+							{DRIVERS_DB_SUPPLIERS.map((driversDbSupplier) => (
+								<Select.Option
+									key={driversDbSupplier}
+									value={driversDbSupplier}
+								>
+									{driversDbSupplier}
 								</Select.Option>
 							))}
 						</Select>

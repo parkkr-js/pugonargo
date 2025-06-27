@@ -7,7 +7,7 @@ export interface User {
 	role: UserRole;
 	email?: string; // 관리자의 경우
 	vehicleNumber?: string; // 기사의 경우
-	group?: string; // 기사의 경우
+	driversDbSupplier?: string; // 기사의 경우
 }
 
 // 통합 로그인 요청
@@ -28,13 +28,13 @@ export interface DriverLoginRequest {
 	password: string;
 }
 
-// 기사 계정 정보 (DB에 저장되는 형태)
+// 기사 계정 정보
 export interface DriverAccount {
 	id: string;
 	vehicleNumber: string;
 	userId: string;
 	password: string;
-	group: string;
+	driversDbSupplier: string;
 	dumpWeight: number;
 	createdAt: string;
 }

@@ -74,7 +74,7 @@ export class AuthService {
 				id: driverDoc.id,
 				role: "driver",
 				vehicleNumber: driverData.vehicleNumber,
-				group: driverData.group,
+				driversDbSupplier: driverData.driversDbSupplier,
 			};
 		} catch (error) {
 			console.error("기사 로그인 실패:", error);

@@ -1,18 +1,12 @@
 import styled from "styled-components";
+import type { FuelRecord } from "../../../types/driverRecord";
 
-export interface FuelRecord {
-	id: string;
-	unitPrice: number;
-	fuelAmount: number;
-	totalFuelCost: number;
-	date: string;
-	vehicleNumber: string;
-}
 interface FuelRecordCardProps {
 	record: FuelRecord;
 	onEdit?: (record: FuelRecord) => void;
 	onDelete?: (id: string) => void;
 }
+
 export function FuelRecordCard({
 	record,
 	onEdit,

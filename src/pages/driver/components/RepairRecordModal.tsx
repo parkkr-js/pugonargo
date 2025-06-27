@@ -10,6 +10,8 @@ interface RepairRecordModalProps {
 	initialData?: RepairRecordInput;
 	onOk: (data: RepairRecordInput) => void;
 	onCancel: () => void;
+	vehicleNumber: string;
+	driversDbSupplier: string;
 }
 
 interface RepairRecordForm {
@@ -24,7 +26,8 @@ export function RepairRecordModal({
 	onOk,
 	onCancel,
 	vehicleNumber,
-}: RepairRecordModalProps & { vehicleNumber: string }) {
+	driversDbSupplier,
+}: RepairRecordModalProps) {
 	const [form] = Form.useForm<RepairRecordForm>();
 
 	const repairCost = Form.useWatch("repairCost", form) ?? 0;
@@ -60,6 +63,7 @@ export function RepairRecordModal({
 									...values,
 									date: dayjs(values.date).format("YYYY-MM-DD"),
 									vehicleNumber,
+									driversDbSupplier,
 									memo: safeMemo,
 								});
 								form.resetFields();

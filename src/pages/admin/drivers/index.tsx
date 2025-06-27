@@ -1,5 +1,5 @@
 import { PlusOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Card, Modal, Table } from "antd";
+import { Button, Card, Modal, Table, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -47,8 +47,10 @@ export const DriversPage = () => {
 			try {
 				if (selectedDriver) {
 					await updateDriver.mutateAsync({ id: selectedDriver.id, data });
+					message.success("기사님 정보가 성공적으로 수정되었습니다.");
 				} else {
 					await createDriver.mutateAsync(data);
+					message.success("기사님이 성공적으로 추가되었습니다.");
 				}
 				handleCloseModal();
 			} catch (error) {
@@ -76,6 +78,9 @@ export const DriversPage = () => {
 				onOk: async () => {
 					try {
 						await deleteDriver.mutateAsync(id);
+						message.success(
+							`${drivers.find((d) => d.id === id)?.vehicleNumber} 기사님이 성공적으로 삭제되었습니다.`,
+						);
 					} catch (error) {
 						console.error("Failed to delete driver:", error);
 						Modal.error({
@@ -129,16 +134,16 @@ export const DriversPage = () => {
 				onCell: () => ({ style: cellStyle }),
 			},
 			{
-				title: "그룹",
-				dataIndex: "group",
-				key: "group",
-				filters: Array.from(new Set(drivers.map((d) => d.group))).map(
-					(group) => ({
-						text: group,
-						value: group,
-					}),
-				),
-				onFilter: (value, record) => record.group === value,
+				title: "매입처",
+				dataIndex: "driversDbSupplier",
+				key: "driversDbSupplier",
+				filters: Array.from(
+					new Set(drivers.map((d) => d.driversDbSupplier)),
+				).map((driversDbSupplier) => ({
+					text: driversDbSupplier,
+					value: driversDbSupplier,
+				})),
+				onFilter: (value, record) => record.driversDbSupplier === value,
 				ellipsis: true,
 				onCell: () => ({ style: cellStyle }),
 			},

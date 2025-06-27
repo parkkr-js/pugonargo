@@ -7,28 +7,48 @@ import { deleteFuelRecord } from "../../../services/client/deleteFuelRecord";
 import { fetchDailyRecords } from "../../../services/client/fetchDailyRecords";
 import { updateFuelRecord } from "../../../services/client/updateFuelRecord";
 
-export function useFuelRecords(vehicleNumber: string, date: Date) {
+export function useFuelRecords(
+	vehicleNumber: string,
+	driversDbSupplier: string,
+	date: Date,
+) {
 	return useQuery({
-		queryKey: ["fuelRecords", vehicleNumber, date.toISOString()],
-		queryFn: () => fetchDailyRecords(vehicleNumber, date),
+		queryKey: [
+			"fuelRecords",
+			vehicleNumber,
+			driversDbSupplier,
+			date.toISOString(),
+		],
+		queryFn: () => fetchDailyRecords(vehicleNumber, driversDbSupplier, date),
 		select: (data) => data?.fuelRecords ?? [],
-		enabled: !!vehicleNumber && !!date,
+		enabled: !!vehicleNumber && !!driversDbSupplier && !!date,
 	});
 }
 
 export function useCreateFuelRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
 	return useMutation(createFuelRecord, {
 		onSuccess: () => {
-			if (vehicleNumber && date) {
+			if (vehicleNumber && driversDbSupplier && date) {
 				queryClient.invalidateQueries({
-					queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"dailyRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 				queryClient.invalidateQueries({
-					queryKey: ["fuelRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"fuelRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });
@@ -39,6 +59,7 @@ export function useCreateFuelRecordMutation(
 
 export function useUpdateFuelRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
@@ -47,12 +68,22 @@ export function useUpdateFuelRecordMutation(
 			updateFuelRecord(id, data),
 		{
 			onSuccess: () => {
-				if (vehicleNumber && date) {
+				if (vehicleNumber && driversDbSupplier && date) {
 					queryClient.invalidateQueries({
-						queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+						queryKey: [
+							"dailyRecords",
+							vehicleNumber,
+							driversDbSupplier,
+							date.toISOString(),
+						],
 					});
 					queryClient.invalidateQueries({
-						queryKey: ["fuelRecords", vehicleNumber, date.toISOString()],
+						queryKey: [
+							"fuelRecords",
+							vehicleNumber,
+							driversDbSupplier,
+							date.toISOString(),
+						],
 					});
 				} else {
 					queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });
@@ -64,17 +95,28 @@ export function useUpdateFuelRecordMutation(
 
 export function useDeleteFuelRecordMutation(
 	vehicleNumber?: string,
+	driversDbSupplier?: string,
 	date?: Date,
 ) {
 	const queryClient = useQueryClient();
 	return useMutation(deleteFuelRecord, {
 		onSuccess: () => {
-			if (vehicleNumber && date) {
+			if (vehicleNumber && driversDbSupplier && date) {
 				queryClient.invalidateQueries({
-					queryKey: ["dailyRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"dailyRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 				queryClient.invalidateQueries({
-					queryKey: ["fuelRecords", vehicleNumber, date.toISOString()],
+					queryKey: [
+						"fuelRecords",
+						vehicleNumber,
+						driversDbSupplier,
+						date.toISOString(),
+					],
 				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });

@@ -3,6 +3,7 @@ import { db } from "../../lib/firebase";
 
 export interface RepairRecordInput {
 	vehicleNumber: string;
+	driversDbSupplier: string;
 	date: string; // YYYY-MM-DD
 	repairCost: number;
 	memo: string;

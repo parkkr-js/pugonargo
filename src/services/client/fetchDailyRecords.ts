@@ -7,12 +7,17 @@ import type {
 	RepairRecord,
 } from "../../types/driverRecord";
 
-export async function fetchDailyRecords(vehicleNumber: string, date: Date) {
+export async function fetchDailyRecords(
+	vehicleNumber: string,
+	driversDbSupplier: string,
+	date: Date,
+) {
 	const dateStr = dayjs(date).format("YYYY-MM-DD");
 
 	const rowQ = query(
 		collection(db, "rawData"),
 		where("d", "==", vehicleNumber),
+		where("l", "==", driversDbSupplier),
 		where("date", "==", dateStr),
 	);
 	const rowSnap = await getDocs(rowQ);
@@ -29,6 +34,7 @@ export async function fetchDailyRecords(vehicleNumber: string, date: Date) {
 	const fuelQ = query(
 		collection(db, "fuel"),
 		where("vehicleNumber", "==", vehicleNumber),
+		where("driversDbSupplier", "==", driversDbSupplier),
 		where("date", "==", dateStr),
 	);
 	const fuelSnap = await getDocs(fuelQ);
@@ -45,6 +51,7 @@ export async function fetchDailyRecords(vehicleNumber: string, date: Date) {
 	const repairQ = query(
 		collection(db, "repair"),
 		where("vehicleNumber", "==", vehicleNumber),
+		where("driversDbSupplier", "==", driversDbSupplier),
 		where("date", "==", dateStr),
 	);
 	const repairSnap = await getDocs(repairQ);

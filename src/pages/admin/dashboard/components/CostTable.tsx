@@ -9,21 +9,20 @@ import { CostSummary } from "./CostSummary";
 
 interface CostTableProps {
 	monthId: string;
-	driversMap: Record<string, { name: string; group: string }>;
 }
 
 interface TableRow {
 	key: string;
 	type: "fuel" | "repair";
 	date: string;
-	group: string;
+	driversDbSupplier: string;
 	vehicleNumber: string;
 	detail: string;
 	cost: number;
 }
 
-export function CostTable({ monthId, driversMap }: CostTableProps) {
-	const { tableRows, isLoading } = useFuelRepairTable(monthId, driversMap);
+export function CostTable({ monthId }: CostTableProps) {
+	const { tableRows, isLoading } = useFuelRepairTable(monthId);
 
 	const initialData = useMemo(() => {
 		return tableRows.map((row, index) => ({
@@ -54,15 +53,15 @@ export function CostTable({ monthId, driversMap }: CostTableProps) {
 			onCell: () => ({ style: cellStyle }),
 		},
 		{
-			title: "그룹",
-			dataIndex: "group",
-			filters: Array.from(new Set(tableRows.map((row) => row.group))).map(
-				(group) => ({
-					text: group,
-					value: group,
-				}),
-			),
-			onFilter: (value, record) => record.group === value,
+			title: "매입처",
+			dataIndex: "driversDbSupplier",
+			filters: Array.from(
+				new Set(tableRows.map((row) => row.driversDbSupplier)),
+			).map((group) => ({
+				text: group,
+				value: group,
+			})),
+			onFilter: (value, record) => record.driversDbSupplier === value,
 			ellipsis: true,
 			onCell: () => ({ style: cellStyle }),
 		},

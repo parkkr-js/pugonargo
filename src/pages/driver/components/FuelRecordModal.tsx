@@ -10,6 +10,8 @@ interface FuelRecordModalProps {
 	initialData?: FuelRecordInput;
 	onOk: (data: FuelRecordInput) => void;
 	onCancel: () => void;
+	vehicleNumber: string;
+	driversDbSupplier: string;
 }
 
 interface FuelRecordForm {
@@ -24,7 +26,8 @@ export function FuelRecordModal({
 	onOk,
 	onCancel,
 	vehicleNumber,
-}: FuelRecordModalProps & { vehicleNumber: string }) {
+	driversDbSupplier,
+}: FuelRecordModalProps) {
 	const [form] = Form.useForm<FuelRecordForm>();
 
 	const unitPrice = Form.useWatch("unitPrice", form) ?? 0;
@@ -56,6 +59,7 @@ export function FuelRecordModal({
 									date: dayjs(values.date).format("YYYY-MM-DD"),
 									totalFuelCost: values.unitPrice * values.fuelAmount,
 									vehicleNumber,
+									driversDbSupplier,
 								});
 							} catch {}
 						}}

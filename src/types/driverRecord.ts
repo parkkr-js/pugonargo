@@ -9,6 +9,7 @@ export interface DailyDriveRecord {
 export interface FuelRecord {
 	id: string;
 	vehicleNumber: string;
+	driversDbSupplier: string;
 	date: string;
 	unitPrice: number;
 	fuelAmount: number;
@@ -18,6 +19,7 @@ export interface FuelRecord {
 export interface RepairRecord {
 	id: string;
 	vehicleNumber: string;
+	driversDbSupplier: string;
 	date: string;
 	repairCost: number;
 	memo: string;
