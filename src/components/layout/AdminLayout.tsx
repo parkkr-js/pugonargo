@@ -1,5 +1,6 @@
 import {
 	DashboardOutlined,
+	DatabaseOutlined,
 	FileTextOutlined,
 	LogoutOutlined,
 	TableOutlined,
@@ -32,6 +33,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 		if (path === "/transactions") return "transactions";
 		if (path === "/drivers") return "drivers";
 		if (path === "/sheets") return "sheets";
+		if (path === "/data-management") return "data-management";
 		return "dashboard";
 	};
 
@@ -60,6 +62,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 			icon: <TableOutlined />,
 			label: "연동 시트 관리",
 			onClick: () => navigate("/sheets"),
+		},
+		{
+			key: "data-management",
+			icon: <DatabaseOutlined />,
+			label: "데이터 관리",
+			onClick: () => navigate("/data-management"),
 		},
 	];
 

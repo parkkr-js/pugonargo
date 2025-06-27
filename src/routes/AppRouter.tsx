@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { DashboardPage } from "../pages/admin/dashboard";
+import { DataManagementPage } from "../pages/admin/data-management";
 import { DriversPage } from "../pages/admin/drivers";
 import { SheetsPage } from "../pages/admin/sheets";
 import { OAuthCallbackPage } from "../pages/admin/sheets/components/OAuthCallbackPage";
@@ -45,6 +46,7 @@ export const AppRouter = () => {
 				<Route path="/transactions" element={<TransactionsPage />} />
 				<Route path="/drivers" element={<DriversPage />} />
 				<Route path="/sheets" element={<SheetsPage />} />
+				<Route path="/data-management" element={<DataManagementPage />} />
 
 				{/* 기사 페이지 */}
 				<Route path="/driver" element={<DriverPage />} />
