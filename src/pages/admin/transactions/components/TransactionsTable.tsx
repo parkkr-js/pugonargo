@@ -57,6 +57,14 @@ export const TransactionsTable = ({
 			dataIndex: "supplier",
 			key: "supplier",
 			sorter: (a, b) => a.supplier.localeCompare(b.supplier),
+			filters: Array.from(new Set(tableData.map((row) => row.supplier))).map(
+				(supplier) => ({
+					text: supplier,
+					value: supplier,
+				}),
+			),
+			filterSearch: true,
+			onFilter: (value, record) => record.supplier === value,
 			ellipsis: true,
 			onCell: () => ({ style: cellStyle }),
 		},
