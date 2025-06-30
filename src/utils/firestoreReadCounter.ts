@@ -23,9 +23,6 @@ class FirestoreReadCounter {
 			count,
 			timestamp: new Date(),
 		});
-		console.log(
-			`[Firestore Read] ${operation}: +${count} reads (Total: ${this.readCount})`,
-		);
 	}
 
 	getTotalReads(): number {
@@ -43,12 +40,12 @@ class FirestoreReadCounter {
 	reset(): void {
 		this.readCount = 0;
 		this.operationLogs = [];
-		console.log("[Firestore Read] Counter reset");
+		// console.log("[Firestore Read] Counter reset");
 	}
 
 	printSummary(): void {
 		console.group("Firestore Read Operations Summary");
-		console.log(`Total Reads: ${this.readCount}`);
+		// console.log(`Total Reads: ${this.readCount}`);
 		console.table(this.operationLogs);
 		console.groupEnd();
 	}
