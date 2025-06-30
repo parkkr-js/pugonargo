@@ -4,6 +4,7 @@ import { db } from "../../lib/firebase";
 
 export async function fetchPeriodStats(
 	vehicleNumber: string,
+	driversDbSupplier: string,
 	start: Date,
 	end: Date,
 ) {
@@ -14,6 +15,7 @@ export async function fetchPeriodStats(
 	const rowQ = query(
 		collection(db, "rawData"),
 		where("d", "==", vehicleNumber),
+		where("l", "==", driversDbSupplier),
 		where("date", ">=", startStr),
 		where("date", "<=", endStr),
 	);
@@ -36,6 +38,7 @@ export async function fetchPeriodStats(
 	const fuelQ = query(
 		collection(db, "fuel"),
 		where("vehicleNumber", "==", vehicleNumber),
+		where("driversDbSupplier", "==", driversDbSupplier),
 		where("date", ">=", startStr),
 		where("date", "<=", endStr),
 	);
@@ -49,6 +52,7 @@ export async function fetchPeriodStats(
 	const repairQ = query(
 		collection(db, "repair"),
 		where("vehicleNumber", "==", vehicleNumber),
+		where("driversDbSupplier", "==", driversDbSupplier),
 		where("date", ">=", startStr),
 		where("date", "<=", endStr),
 	);

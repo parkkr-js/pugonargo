@@ -50,8 +50,12 @@ export function useCreateFuelRecordMutation(
 						date.toISOString(),
 					],
 				});
+				queryClient.invalidateQueries({
+					queryKey: ["periodStats"],
+				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });
+				queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 			}
 		},
 	});
@@ -85,8 +89,12 @@ export function useUpdateFuelRecordMutation(
 							date.toISOString(),
 						],
 					});
+					queryClient.invalidateQueries({
+						queryKey: ["periodStats"],
+					});
 				} else {
 					queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });
+					queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 				}
 			},
 		},
@@ -118,8 +126,12 @@ export function useDeleteFuelRecordMutation(
 						date.toISOString(),
 					],
 				});
+				queryClient.invalidateQueries({
+					queryKey: ["periodStats"],
+				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["fuelRecords"] });
+				queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 			}
 		},
 	});

@@ -3,6 +3,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { useState } from "react";
 import styled from "styled-components";
 import { useCurrentDriverVehicleNumber } from "../hooks/useCurrentDriverVehicleNumber";
+import { useCurrentDriversDbSupplier } from "../hooks/useCurrentDriversDbSupplier";
 import { usePeriodStats } from "../hooks/usePeriodStats";
 import MobileCalendarStyle from "./MobileCalendarStyle";
 import { StatCard } from "./StatCard";
@@ -10,8 +11,11 @@ import { StatCard } from "./StatCard";
 export function PeriodStatsTab() {
 	const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs(), dayjs()]);
 	const vehicleNumber = useCurrentDriverVehicleNumber();
+	const driversDbSupplier = useCurrentDriversDbSupplier();
+
 	const { data, isLoading, isError } = usePeriodStats(
 		vehicleNumber,
+		driversDbSupplier,
 		range[0].toDate(),
 		range[1].toDate(),
 	);

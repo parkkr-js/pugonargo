@@ -50,8 +50,12 @@ export function useCreateRepairRecordMutation(
 						date.toISOString(),
 					],
 				});
+				queryClient.invalidateQueries({
+					queryKey: ["periodStats"],
+				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["repairRecords"] });
+				queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 			}
 		},
 	});
@@ -85,8 +89,12 @@ export function useUpdateRepairRecordMutation(
 							date.toISOString(),
 						],
 					});
+					queryClient.invalidateQueries({
+						queryKey: ["periodStats"],
+					});
 				} else {
 					queryClient.invalidateQueries({ queryKey: ["repairRecords"] });
+					queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 				}
 			},
 		},
@@ -118,8 +126,12 @@ export function useDeleteRepairRecordMutation(
 						date.toISOString(),
 					],
 				});
+				queryClient.invalidateQueries({
+					queryKey: ["periodStats"],
+				});
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["repairRecords"] });
+				queryClient.invalidateQueries({ queryKey: ["periodStats"] });
 			}
 		},
 	});
