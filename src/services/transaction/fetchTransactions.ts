@@ -19,12 +19,13 @@ export async function fetchTransactions(
 			date: data.date,
 			vehicleNumber: data.d,
 			route: data.e,
+			weight: data.g,
+			billingUnitPrices: data.h,
 			supplier: data.l,
-			weight: data.m,
+			payOutweights: data.m,
 			unitPrice: data.n,
-			amount: data.o,
 			note: data.p,
-			i: data.i,
+			payoutAmount: data.q,
 		};
 	});
 }

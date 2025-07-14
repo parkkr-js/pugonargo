@@ -7,10 +7,10 @@ interface InfoPopoverProps {
 }
 
 const INFO_LIST = [
-	"총 청구금액 (부가세 포함) - I13 * 1.1",
-	"총 청구금액 (공급가) - I13",
-	"총 지급금액  - O13 * 1.1",
-	"총 지급금액(공급가) - O13",
+	"총 청구금액 (부가세 포함) - G13 * H13 * 1.1",
+	"총 청구금액 (공급가) - G13 * H13",
+	"총 지급금액  - M13 * N13 * 1.1",
+	"총 지급금액(공급가) - M13 * N13",
 ];
 
 export const InfoPopover = ({ placement = "right" }: InfoPopoverProps) => (

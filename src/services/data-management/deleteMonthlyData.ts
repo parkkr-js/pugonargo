@@ -14,10 +14,10 @@ export const deleteMonthlyData = async (monthId: string): Promise<void> => {
 		const monthlyStatsRef = doc(db, "monthlyStats", monthId);
 		await deleteDoc(monthlyStatsRef);
 
-		// 2. rowdata에서 해당 년월의 모든 데이터 삭제
-		const rowdataRef = collection(db, "rowdata");
+		// 2. rawdata에서 해당 년월의 모든 데이터 삭제
+		const rawDataRef = collection(db, "rawData");
 		const q = query(
-			rowdataRef,
+			rawDataRef,
 			where("date", ">=", `${monthId}-01`),
 			where("date", "<=", `${monthId}-31`),
 		);

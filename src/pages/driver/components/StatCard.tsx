@@ -4,7 +4,6 @@ interface StatCardProps {
 	data?: {
 		totalAmount: number;
 		totalDeduction: number;
-		afterDeduction: number;
 		totalFuelCost: number;
 		totalRepairCost: number;
 	};
@@ -13,7 +12,6 @@ interface StatCardProps {
 export function StatCard({ data }: StatCardProps) {
 	const totalAmount = data?.totalAmount ?? 0;
 	const totalDeduction = data?.totalDeduction ?? 0;
-	const afterDeduction = Math.round(data?.afterDeduction ?? 0);
 	const totalFuelCost = data?.totalFuelCost ?? 0;
 	const totalRepairCost = data?.totalRepairCost ?? 0;
 
@@ -37,11 +35,16 @@ export function StatCard({ data }: StatCardProps) {
 				<Amount>{totalRepairCost.toLocaleString()}원</Amount>
 			</Row>
 			<StyledHr />
-			{/* 공제 후 금액 변경함: 원래 o 열의 합(afterDeduction) => afterDeduction - (총 유류비 + 총 정비비)*/}
+			{/* 공제 후 금액: q * m - (지입료 + 총 유류비 + 총 정비비)*/}
 			<Row style={{ marginBottom: 12, fontWeight: 600 }}>
 				<span>공제 후 금액</span>
 				<AfterDeduction>
-					{(afterDeduction - totalFuelCost - totalRepairCost).toLocaleString()}
+					{(
+						totalAmount -
+						totalDeduction -
+						totalFuelCost -
+						totalRepairCost
+					).toLocaleString()}
 					원
 				</AfterDeduction>
 			</Row>

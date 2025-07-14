@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { calculateDriveAmount } from "../../../utils/calculationUtils";
 
 interface DailyDriveCardProps {
 	record: {
@@ -6,19 +7,11 @@ interface DailyDriveCardProps {
 		e: string; // 운송구간
 		m: number; // 지급중량 (number)
 		q: number; // 단가 (number)
-		o: number; // 공제 후 금액 (number)
 	};
 }
 
 export function DailyDriveCard({ record }: DailyDriveCardProps) {
-	const m = typeof record.m === "number" ? record.m : Number(record.m) || 0;
-	const q = typeof record.q === "number" ? record.q : Number(record.q) || 0;
-	const o = Math.round(
-		typeof record.o === "number" ? record.o : Number(record.o) || 0,
-	);
-
-	const totalAmount = Math.round(q * m);
-	const deduction = Math.round(totalAmount * 0.05);
+	const calculation = calculateDriveAmount(record.m, record.q);
 
 	return (
 		<Card>
@@ -28,19 +21,19 @@ export function DailyDriveCard({ record }: DailyDriveCardProps) {
 			</InfoRow>
 			<InfoRow>
 				<InfoLabel>지급중량</InfoLabel>
-				<InfoValue>{m.toLocaleString()}</InfoValue>
+				<InfoValue>{record.m.toLocaleString()}</InfoValue>
 			</InfoRow>
 			<InfoRow>
 				<InfoLabel>총 금액</InfoLabel>
-				<PrimaryValue>{totalAmount.toLocaleString()}원</PrimaryValue>
+				<PrimaryValue>{calculation.amount.toLocaleString()}원</PrimaryValue>
 			</InfoRow>
 			<InfoRow>
 				<InfoLabel>지입료(5%)</InfoLabel>
-				<PrimaryValue>{deduction.toLocaleString()}원</PrimaryValue>
+				<PrimaryValue>{calculation.deduction.toLocaleString()}원</PrimaryValue>
 			</InfoRow>
 			<InfoRow>
 				<InfoLabelStrong>공제 후 금액</InfoLabelStrong>
-				<FinalValue>{o.toLocaleString()}원</FinalValue>
+				<FinalValue>{calculation.afterDeduction.toLocaleString()}원</FinalValue>
 			</InfoRow>
 		</Card>
 	);

@@ -26,7 +26,6 @@ export function PeriodStatsTab() {
 	const zeroData = {
 		totalAmount: 0,
 		totalDeduction: 0,
-		afterDeduction: 0,
 		totalFuelCost: 0,
 		totalRepairCost: 0,
 	};

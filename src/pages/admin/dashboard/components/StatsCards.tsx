@@ -2,36 +2,40 @@ import styled from "styled-components";
 
 interface StatsCardsProps {
 	stats?: {
-		totalI: number;
-		totalO: number;
+		totalGH: number;
+		totalMN: number;
 	} | null;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-	const totalI = stats?.totalI ?? 0;
-	const totalO = stats?.totalO ?? 0;
-	const totalISupply = Math.round(totalI);
-	const totalIWithTax = Math.round(totalI * 1.1);
-	const totalOSupply = Math.round(totalO);
-	const totalOWithTax = Math.round(totalO * 1.1);
+	const totalGH = stats?.totalGH ?? 0;
+	const totalMN = stats?.totalMN ?? 0;
+
+	// 공급가 (G*H의 합, M*N의 합)
+	const totalGHSupply = Math.round(totalGH);
+	const totalMNSupply = Math.round(totalMN);
+
+	// 부가세 포함 (공급가 * 1.1)
+	const totalGHWithTax = Math.round(totalGHSupply * 1.1);
+	const totalMNWithTax = Math.round(totalMNSupply * 1.1);
 
 	return (
 		<CardRow>
 			<StatCard>
 				<StatLabel>총 청구금액(부가세 포함)</StatLabel>
-				<StatValue>{totalIWithTax.toLocaleString()} 원</StatValue>
+				<StatValue>{totalGHWithTax.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 청구금액(공급가)</StatLabel>
-				<StatValue>{totalISupply.toLocaleString()} 원</StatValue>
+				<StatValue>{totalGHSupply.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 지급금액</StatLabel>
-				<StatValue>{totalOWithTax.toLocaleString()} 원</StatValue>
+				<StatValue>{totalMNWithTax.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 지급금액(공급가)</StatLabel>
-				<StatValue>{totalOSupply.toLocaleString()} 원</StatValue>
+				<StatValue>{totalMNSupply.toLocaleString()} 원</StatValue>
 			</StatCard>
 		</CardRow>
 	);

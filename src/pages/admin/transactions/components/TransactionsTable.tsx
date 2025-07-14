@@ -36,10 +36,11 @@ export const TransactionsTable = ({
 			vehicleNumber: transaction.vehicleNumber,
 			route: transaction.route,
 			weight: transaction.weight,
+			billingUnitPrices: transaction.billingUnitPrices,
+			payOutweights: transaction.payOutweights,
 			unitPrice: Math.round(transaction.unitPrice),
-			amount: Math.round(transaction.amount),
+			payoutAmount: Math.round(transaction.payoutAmount),
 			note: transaction.note,
-			i: transaction.i,
 		}));
 	}, [transactions, isLoading]);
 
@@ -139,11 +140,11 @@ export const TransactionsTable = ({
 			onCell: () => ({ style: cellStyle }),
 		},
 		{
-			title: "금액",
-			dataIndex: "amount",
-			key: "amount",
-			sorter: (a, b) => a.amount - b.amount,
-			render: (amount) => amount.toLocaleString(),
+			title: "지급금액",
+			dataIndex: "payoutAmount",
+			key: "payoutAmount",
+			sorter: (a, b) => a.payoutAmount - b.payoutAmount,
+			render: (payoutAmount) => payoutAmount.toLocaleString(),
 			ellipsis: true,
 			onCell: () => ({ style: cellStyle }),
 		},

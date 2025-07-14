@@ -8,37 +8,51 @@ interface SummaryCardsProps {
 
 export function SummaryCards({ data }: SummaryCardsProps) {
 	const summary = useMemo(() => {
-		const totalI = data.reduce((sum, record) => sum + record.i, 0);
-		const totalO = data.reduce((sum, record) => sum + record.amount, 0);
+		// G*H 계산 (weight * billingUnitPrices)
+		const totalGH = data.reduce((sum, record) => {
+			const ghAmount = record.weight * record.billingUnitPrices;
+
+			return sum + ghAmount;
+		}, 0);
+
+		// M*N 계산 (payOutweights * unitPrice)
+		const totalMN = data.reduce((sum, record) => {
+			const mnAmount = record.payOutweights * record.unitPrice;
+
+			return sum + mnAmount;
+		}, 0);
 
 		return {
-			totalI,
-			totalO,
+			totalGH,
+			totalMN,
 		};
 	}, [data]);
 
-	const totalISupply = Math.round(summary.totalI);
-	const totalIWithTax = Math.round(summary.totalI * 1.1);
-	const totalOSupply = Math.round(summary.totalO);
-	const totalOWithTax = Math.round(summary.totalO * 1.1);
+	// 공급가 (G*H의 합, M*N의 합)
+	const totalGHSupply = Math.round(summary.totalGH);
+	const totalMNSupply = Math.round(summary.totalMN);
+
+	// 부가세 포함 (공급가 * 1.1)
+	const totalGHWithTax = Math.round(totalGHSupply * 1.1);
+	const totalMNWithTax = Math.round(totalMNSupply * 1.1);
 
 	return (
 		<CardRow>
 			<StatCard>
 				<StatLabel>총 청구금액(부가세 포함)</StatLabel>
-				<StatValue>{totalIWithTax.toLocaleString()} 원</StatValue>
+				<StatValue>{totalGHWithTax.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 청구금액(공급가)</StatLabel>
-				<StatValue>{totalISupply.toLocaleString()} 원</StatValue>
+				<StatValue>{totalGHSupply.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 지급금액</StatLabel>
-				<StatValue>{totalOWithTax.toLocaleString()} 원</StatValue>
+				<StatValue>{totalMNWithTax.toLocaleString()} 원</StatValue>
 			</StatCard>
 			<StatCard>
 				<StatLabel>총 지급금액(공급가)</StatLabel>
-				<StatValue>{totalOSupply.toLocaleString()} 원</StatValue>
+				<StatValue>{totalMNSupply.toLocaleString()} 원</StatValue>
 			</StatCard>
 		</CardRow>
 	);

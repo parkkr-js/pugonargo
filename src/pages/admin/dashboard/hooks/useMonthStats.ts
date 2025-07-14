@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { db } from "../../../../lib/firebase";
 
 export function useMonthStats(monthId: string) {
-	const [data, setData] = useState<{ totalI: number; totalO: number } | null>(
+	const [data, setData] = useState<{ totalGH: number; totalMN: number } | null>(
 		null,
 	);
 	const [isLoading, setIsLoading] = useState(true);
@@ -24,8 +24,8 @@ export function useMonthStats(monthId: string) {
 				} else {
 					const stats = doc.data();
 					setData({
-						totalI: stats.totalI ?? 0,
-						totalO: stats.totalO ?? 0,
+						totalGH: stats.totalGH ?? 0,
+						totalMN: stats.totalMN ?? 0,
 					});
 				}
 				setIsLoading(false);

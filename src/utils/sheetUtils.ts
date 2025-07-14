@@ -83,13 +83,13 @@ export const transformRowToRawData = (
 			date: dayjs(parseDate(row[2] || 0)).format("YYYY-MM-DD"), // 반드시 string으로 변환
 			d: row[3] as string,
 			e: row[4] as string,
+			g: parseNumber(row[6]), // G열 (중량)
+			h: parseNumber(row[7]), // H열 (청구 단가)
 			l: row[11] as string,
-			i: row[8] as number,
-			m: row[12] as number,
-			n: row[13] as number,
-			o: row[14] as number,
+			m: parseNumber(row[12]), // M열 (지급 중량)
+			n: parseNumber(row[13]), // N열 (지급 단가)
 			p: row[15] as string,
-			q: row[16] as number,
+			q: parseNumber(row[16]), // Q열 (지급 금액)
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};
@@ -137,12 +137,12 @@ export const convertFirestoreDocToRawData = (
 		date: formatDate(convertToDate(data.date)),
 		d: data.d,
 		e: data.e,
+		g: data.g,
+		h: data.h,
 		l: data.l,
 		m: data.m,
 		n: data.n,
-		o: data.o,
 		p: data.p,
-		i: data.i,
 		q: data.q,
 		createdAt: convertToDate(data.createdAt),
 		updatedAt: convertToDate(data.updatedAt),

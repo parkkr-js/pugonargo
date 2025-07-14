@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { calculatePeriodStats } from "../../utils/calculationUtils";
 
 export async function fetchPeriodStats(
 	vehicleNumber: string,
@@ -12,6 +13,7 @@ export async function fetchPeriodStats(
 	const startStr = dayjs(start).format("YYYY-MM-DD");
 	const endStr = dayjs(end).format("YYYY-MM-DD");
 
+	// 운송 데이터 조회
 	const rowQ = query(
 		collection(db, "rawData"),
 		where("d", "==", vehicleNumber),
@@ -20,21 +22,15 @@ export async function fetchPeriodStats(
 		where("date", "<=", endStr),
 	);
 	const rowSnap = await getDocs(rowQ);
-	let totalAmount = 0;
-	let totalDeduction = 0;
-	let afterDeduction = 0;
-	for (const doc of rowSnap.docs) {
+	const driveRecords = rowSnap.docs.map((doc) => {
 		const data = doc.data();
-		const q = Number(data.q) || 0;
-		const m = Number(data.m) || 0;
-		const o = Number(data.o) || 0;
-		const amount = q * m;
-		totalAmount += amount;
-		totalDeduction += amount * 0.05;
-		afterDeduction += o;
-	}
+		return {
+			q: Number(data.q) || 0,
+			m: Number(data.m) || 0,
+		};
+	});
 
-	// fuel
+	// 연료 데이터 조회
 	const fuelQ = query(
 		collection(db, "fuel"),
 		where("vehicleNumber", "==", vehicleNumber),
@@ -43,12 +39,14 @@ export async function fetchPeriodStats(
 		where("date", "<=", endStr),
 	);
 	const fuelSnap = await getDocs(fuelQ);
-	let totalFuelCost = 0;
-	for (const doc of fuelSnap.docs) {
-		totalFuelCost += Number(doc.data().totalFuelCost) || 0;
-	}
+	const fuelRecords = fuelSnap.docs.map((doc) => {
+		const data = doc.data();
+		return {
+			totalFuelCost: Number(data.totalFuelCost) || 0,
+		};
+	});
 
-	// repair
+	// 정비 데이터 조회
 	const repairQ = query(
 		collection(db, "repair"),
 		where("vehicleNumber", "==", vehicleNumber),
@@ -57,16 +55,20 @@ export async function fetchPeriodStats(
 		where("date", "<=", endStr),
 	);
 	const repairSnap = await getDocs(repairQ);
-	let totalRepairCost = 0;
-	for (const doc of repairSnap.docs) {
-		totalRepairCost += Number(doc.data().repairCost) || 0;
-	}
+	const repairRecords = repairSnap.docs.map((doc) => {
+		const data = doc.data();
+		return {
+			repairCost: Number(data.repairCost) || 0,
+		};
+	});
+
+	// 중앙화된 계산 유틸리티 사용
+	const stats = calculatePeriodStats(driveRecords, fuelRecords, repairRecords);
 
 	return {
-		totalAmount,
-		totalDeduction: Math.round(totalDeduction),
-		afterDeduction,
-		totalFuelCost,
-		totalRepairCost,
+		totalAmount: stats.totalAmount,
+		totalDeduction: stats.totalDeduction,
+		totalFuelCost: stats.totalFuelCost,
+		totalRepairCost: stats.totalRepairCost,
 	};
 }

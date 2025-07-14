@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import type { MonthlyStats, RawData } from "../../types/sheets";
+import { calculateMonthlyStats } from "../../utils/calculationUtils";
 import { readCounter } from "../../utils/firestoreReadCounter";
 import { convertFirestoreDocToRawData } from "../../utils/sheetUtils";
 
@@ -254,8 +255,8 @@ export class SheetsFirestoreService {
 			{
 				...existingStats,
 				recordCount: existingStats.recordCount + newStats.recordCount,
-				totalI: existingStats.totalI + newStats.totalI,
-				totalO: existingStats.totalO + newStats.totalO,
+				totalGH: existingStats.totalGH + newStats.totalGH,
+				totalMN: existingStats.totalMN + newStats.totalMN,
 				lastUpdated: new Date(),
 				sourceFiles: Array.from(
 					new Set([...existingStats.sourceFiles, fileName]),
@@ -271,23 +272,24 @@ export class SheetsFirestoreService {
 	// 월별 통계 계산
 	private calculateMonthlyStats(rawData: RawData[]): MonthlyStats {
 		const date = new Date(rawData[0].date);
-		const stats = rawData.reduce(
-			(acc, data) => {
-				acc.recordCount++;
-				acc.totalI += data.i;
-				acc.totalO += data.o;
-				return acc;
-			},
-			{ recordCount: 0, totalI: 0, totalO: 0 },
+
+		// 새로운 계산 방식 적용
+		const calculation = calculateMonthlyStats(
+			rawData.map((data) => ({
+				g: data.g,
+				h: data.h,
+				m: data.m,
+				n: data.n,
+			})),
 		);
 
 		return {
 			id: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`,
 			year: date.getFullYear(),
 			month: date.getMonth() + 1,
-			recordCount: stats.recordCount,
-			totalI: stats.totalI,
-			totalO: stats.totalO,
+			recordCount: rawData.length,
+			totalGH: calculation.totalGH,
+			totalMN: calculation.totalMN,
 			lastUpdated: new Date(),
 			sourceFiles: [rawData[0].fileName],
 			rawDataIds: rawData.map((data) => data.id),

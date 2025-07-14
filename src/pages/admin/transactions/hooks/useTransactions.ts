@@ -14,10 +14,11 @@ export function useTransactions(startDate: string, endDate: string) {
 				vehicleNumber: item.vehicleNumber,
 				route: item.route,
 				weight: item.weight,
+				billingUnitPrices: item.billingUnitPrices,
+				payOutweights: item.payOutweights,
 				unitPrice: item.unitPrice,
-				amount: item.amount,
+				payoutAmount: item.payoutAmount,
 				note: item.note,
-				i: item.i,
 			})),
 	});
 }

@@ -5,10 +5,11 @@ export interface Transaction {
 	route: string;
 	supplier: string;
 	weight: number;
+	billingUnitPrices: number;
+	payOutweights: number;
 	unitPrice: number;
-	amount: number;
+	payoutAmount: number;
 	note: string;
-	i: number;
 }
 
 export interface DriversMap {
@@ -25,10 +26,11 @@ export interface TableTransaction {
 	route: string;
 	supplier: string;
 	weight: number;
+	billingUnitPrices: number;
+	payOutweights: number;
 	unitPrice: number;
-	amount: number;
+	payoutAmount: number;
 	note: string;
-	i: number;
 }
 
 export interface Summary {

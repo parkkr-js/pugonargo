@@ -135,18 +135,18 @@ export class GoogleApiService {
 				actualSpreadsheetId = tempFileId;
 			}
 
-			// 필요한 범위들 정의 (14행부터 끝까지) - 이전 코드와 동일
+			// 필요한 범위들 정의 (14행부터 끝까지)
 			const ranges = [
 				"C14:C", // 날짜
 				"D14:D", // 차량번호
 				"E14:E", // 운송구간
+				"G14:G", // 중량
+				"H14:H", // 청구 단가
 				"L14:L", // 매입처
 				"M14:M", // 지급 중량
 				"N14:N", // 지급 단가
-				"O14:O", // 금액 (O열)
-				"I14:I", // 금액 (I열)
 				"P14:P", // 비고
-				"Q14:Q", // 금액 (Q열)
+				"Q14:Q", // 지급 금액
 			];
 
 			const response = await fetch(
@@ -173,7 +173,7 @@ export class GoogleApiService {
 			const batchData = await response.json();
 			const valueRanges = batchData.valueRanges || [];
 
-			// 각 열의 데이터 추출 (이전 코드와 동일한 방식)
+			// 각 열의 데이터 추출
 			const extractColumnData = (rangeIndex: number): (string | number)[] => {
 				const range = valueRanges[rangeIndex];
 				if (!range?.values) return [];
@@ -194,13 +194,13 @@ export class GoogleApiService {
 			const dateValues = extractColumnData(0); // C열
 			const vehicleNumbers = extractColumnData(1); // D열
 			const transportRoutes = extractColumnData(2); // E열
-			const suppliers = extractColumnData(3); // L열
-			const weights = extractColumnData(4); // M열
-			const unitPrices = extractColumnData(5); // N열
-			const columnOAmount = extractColumnData(6); // O열
-			const columnIAmount = extractColumnData(7); // I열
+			const weights = extractColumnData(3); // G열
+			const billingUnitPrices = extractColumnData(4); // H열
+			const suppliers = extractColumnData(5); // L열
+			const payOutweights = extractColumnData(6); // M열
+			const unitPrices = extractColumnData(7); // N열
 			const memos = extractColumnData(8); // P열
-			const columnQAmount = extractColumnData(9); // Q열
+			const payoutAmount = extractColumnData(9); // Q열
 
 			// 가장 긴 열을 기준으로 행 개수 결정
 			const maxLength = Math.max(
@@ -229,13 +229,13 @@ export class GoogleApiService {
 				row[2] = dateValues[i] || ""; // C열 (string)
 				row[3] = vehicleNumbers[i] || ""; // D열 (string)
 				row[4] = transportRoutes[i] || ""; // E열 (string)
+				row[6] = Number(weights[i]) || 0; // G열 (number)
+				row[7] = Number(billingUnitPrices[i]) || 0; // H열 (number)
 				row[11] = suppliers[i] || ""; // L열 (string)
-				row[12] = Number(weights[i]) || 0; // M열 (number)
+				row[12] = Number(payOutweights[i]) || 0; // M열 (number)
 				row[13] = Number(unitPrices[i]) || 0; // N열 (number)
-				row[14] = Number(columnOAmount[i]) || 0; // O열 (number)
-				row[8] = Number(columnIAmount[i]) || 0; // I열 (number)
 				row[15] = memos[i] || ""; // P열 (string)
-				row[16] = Number(columnQAmount[i]) || 0; // Q열 (number)
+				row[16] = Number(payoutAmount[i]) || 0; // Q열 (number)
 
 				rows.push(row);
 			}
