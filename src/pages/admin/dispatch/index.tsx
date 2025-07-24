@@ -3,7 +3,7 @@ import { Card, Spin, message } from "antd";
 import { useRef, useState } from "react";
 import styled from "styled-components";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
-import type { DriveFile } from "../../../types/sheets";
+import type { DriveFile } from "../../../types/dispatch";
 import { AuthAlert } from "./components/AuthAlert";
 import { DispatchDataTable } from "./components/DispatchDataTable";
 import { DriveFilesTable } from "./components/DriveFilesTable";

@@ -9,21 +9,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-
-// 배차 데이터 타입 정의
-export interface DispatchData {
-	id: string;
-	date: string;
-	sheetId: string;
-	supplier: string;
-	vehicleNumber: string;
-	dispatchType: string;
-	loadingLocation: string;
-	unloadingLocation: string;
-	rotationCount: number;
-	loadingMemo?: string;
-	unloadingMemo?: string;
-}
+import type { DispatchData } from "../../types/dispatch";
 
 /**
  * 배차 데이터를 Firebase에 저장 (배열로 저장)

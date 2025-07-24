@@ -1,5 +1,4 @@
-import type { DispatchData } from "./firebaseService";
-import type { SheetDataResponse } from "./sheetDataService";
+import type { DispatchData, SheetDataResponse } from "../../types/dispatch";
 
 /**
  * 파일명에서 년도 추출

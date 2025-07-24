@@ -1,19 +1,7 @@
 /**
  * Google Sheets API를 사용하여 시트 데이터를 추출하는 서비스
  */
-
-export interface SheetDataResponse {
-	sheets?: {
-		data?: {
-			rowData?: {
-				values?: {
-					formattedValue?: string;
-					note?: string;
-				}[];
-			}[];
-		}[];
-	}[];
-}
+import type { SheetDataResponse } from "../../types/dispatch";
 
 /**
  * 시트 데이터 추출

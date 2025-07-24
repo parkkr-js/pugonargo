@@ -1,4 +1,4 @@
-import type { DriveFile } from "../../types/sheets";
+import type { DriveFile } from "../../types/dispatch";
 
 export class GoogleApiService {
 	private accessToken: string;

@@ -7,7 +7,7 @@ import { Button, Card, Empty, Input, Spin, Table, Typography } from "antd";
 import dayjs from "dayjs";
 import { memo, useCallback, useMemo, useState } from "react";
 import { cellStyle } from "../../../../styles";
-import type { DriveFile } from "../../../../types/sheets";
+import type { DriveFile } from "../../../../types/dispatch";
 import { isDispatchFile } from "../../../../utils/fileValidation";
 import { normalizeText } from "../../../../utils/normalizeText";
 

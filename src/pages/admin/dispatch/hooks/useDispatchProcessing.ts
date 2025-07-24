@@ -3,18 +3,10 @@ import { message } from "antd";
 import { saveDispatchData } from "../../../../services/dispatch/firebaseService";
 import { fetchSheetData } from "../../../../services/dispatch/sheetDataService";
 import { parseSheetToDispatchData } from "../../../../services/dispatch/sheetParserService";
-import type { DriveFile } from "../../../../types/sheets";
-
-interface ProcessDispatchParams {
-	file: DriveFile;
-	sheetName: string;
-	accessToken: string;
-}
-
-interface ProcessDispatchResult {
-	docId: string;
-	processedCount: number;
-}
+import type {
+	ProcessDispatchParams,
+	ProcessDispatchResult,
+} from "../../../../types/dispatch";
 
 /**
  * 배차 데이터 처리 훅

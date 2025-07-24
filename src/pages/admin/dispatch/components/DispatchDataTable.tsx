@@ -1,18 +1,17 @@
 import { Card, Select, Table, Tag } from "antd";
 import type React from "react";
 import { useState } from "react";
-import type { DispatchData } from "../../../../services/dispatch/firebaseService";
 import { cellStyle } from "../../../../styles";
+import type {
+	DispatchData,
+	DispatchDataTableProps,
+} from "../../../../types/dispatch";
 import {
 	useDispatchData,
 	useDispatchDataByVehicleAndSupplier,
 } from "../hooks/useDispatchData";
 
 const { Option } = Select;
-
-interface DispatchDataTableProps {
-	docId: string;
-}
 
 export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 	docId,
