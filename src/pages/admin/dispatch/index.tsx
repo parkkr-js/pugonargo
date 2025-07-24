@@ -1,6 +1,6 @@
 import { CarOutlined } from "@ant-design/icons";
 import { Card, Spin, message } from "antd";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styled from "styled-components";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import type { DriveFile } from "../../../types/sheets";
@@ -16,6 +16,10 @@ export const DispatchPage = () => {
 	const [selectedDate, setSelectedDate] = useState<string | null>(null);
 	const { accessToken, isAuthenticated, handleAuth, handleLogout } =
 		useGoogleAuth();
+
+	// 스크롤 참조
+	const sheetNamesRef = useRef<HTMLDivElement>(null);
+	const dispatchDataRef = useRef<HTMLDivElement>(null);
 
 	// Google Drive 파일 목록 가져오기
 	const {
@@ -37,11 +41,27 @@ export const DispatchPage = () => {
 		setSelectedFile(file);
 		setSelectedDate(null); // 파일이 변경되면 날짜 초기화
 		message.success(`${file.name} 파일이 선택되었습니다.`);
+
+		// 시트 목록으로 스크롤
+		setTimeout(() => {
+			sheetNamesRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
+		}, 100);
 	};
 
 	// 날짜 선택 처리
 	const handleDateSelect = (date: string) => {
 		setSelectedDate(date);
+
+		// 배차 데이터 테이블로 스크롤
+		setTimeout(() => {
+			dispatchDataRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
+		}, 100);
 	};
 
 	return (
@@ -69,18 +89,24 @@ export const DispatchPage = () => {
 					filesError={filesError}
 				/>
 
-				{selectedFile && (
-					<SheetNamesCard
-						selectedFile={selectedFile}
-						sheetNames={sheetNames}
-						isLoadingSheets={isLoadingSheets}
-						sheetsError={sheetsError}
-						accessToken={accessToken}
-						onDateSelect={handleDateSelect}
-					/>
+				{selectedFile && isAuthenticated && (
+					<div ref={sheetNamesRef}>
+						<SheetNamesCard
+							selectedFile={selectedFile}
+							sheetNames={sheetNames}
+							isLoadingSheets={isLoadingSheets}
+							sheetsError={sheetsError}
+							accessToken={accessToken}
+							onDateSelect={handleDateSelect}
+						/>
+					</div>
 				)}
 
-				{selectedDate && <DispatchDataTable docId={selectedDate} />}
+				{selectedDate && (
+					<div ref={dispatchDataRef}>
+						<DispatchDataTable docId={selectedDate} />
+					</div>
+				)}
 			</VerticalStack>
 		</AdminLayout>
 	);

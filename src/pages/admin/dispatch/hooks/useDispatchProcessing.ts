@@ -29,27 +29,20 @@ export const useDispatchProcessing = () => {
 			accessToken,
 		}: ProcessDispatchParams): Promise<ProcessDispatchResult> => {
 			try {
-				console.log(`배차 데이터 처리 시작: ${file.name} - ${sheetName}`);
-
 				// 1. 시트 데이터 가져오기
 				const { sheetData, originalData } = await fetchSheetData(
 					file.id,
 					sheetName,
 					accessToken,
 				);
-				console.log("시트 데이터 가져오기 완료:", sheetData.length, "행");
 
 				// 2. 시트 데이터 파싱
 				const dispatchDataList = parseSheetToDispatchData(
 					sheetData,
 					file.id,
 					file.name,
+					sheetName,
 					originalData,
-				);
-				console.log(
-					"시트 데이터 파싱 완료:",
-					dispatchDataList.length,
-					"개 배차 데이터",
 				);
 
 				// 3. Firebase에 저장
@@ -59,14 +52,11 @@ export const useDispatchProcessing = () => {
 				// 모든 배차 데이터를 한 번에 저장
 				await saveDispatchData(docId, dispatchDataList);
 
-				console.log("Firebase 저장 완료");
-
 				return {
 					docId,
 					processedCount: dispatchDataList.length,
 				};
 			} catch (error) {
-				console.error("배차 데이터 처리 실패:", error);
 				throw new Error(`배차 데이터 처리 실패: ${error}`);
 			}
 		},

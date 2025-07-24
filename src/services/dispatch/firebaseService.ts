@@ -42,9 +42,7 @@ export async function saveDispatchData(
 			},
 			{ merge: true },
 		);
-		console.log(`${dispatchDataList.length}개의 배차 데이터 저장 완료`);
 	} catch (error) {
-		console.error("배차 데이터 저장 실패:", error);
 		throw new Error(`배차 데이터 저장 실패: ${error}`);
 	}
 }
@@ -70,7 +68,6 @@ export async function getDispatchByDate(date: string): Promise<DispatchData[]> {
 		}
 		return [];
 	} catch (error) {
-		console.error("배차 데이터 조회 실패:", error);
 		throw new Error(`배차 데이터 조회 실패: ${error}`);
 	}
 }
@@ -90,7 +87,6 @@ export async function getDispatchByVehicleAndSupplier(
 				data.vehicleNumber === vehicleNumber && data.supplier === supplier,
 		);
 	} catch (error) {
-		console.error("특정 차량/매입처 배차 데이터 조회 실패:", error);
 		throw new Error(`특정 차량/매입처 배차 데이터 조회 실패: ${error}`);
 	}
 }
@@ -121,7 +117,6 @@ export async function getDispatchByVehicle(
 
 		return results;
 	} catch (error) {
-		console.error("차량별 배차 데이터 조회 실패:", error);
 		throw new Error(`차량별 배차 데이터 조회 실패: ${error}`);
 	}
 }

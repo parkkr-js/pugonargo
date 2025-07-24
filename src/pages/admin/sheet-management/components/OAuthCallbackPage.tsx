@@ -1,6 +1,6 @@
 import { Alert, Spin } from "antd";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { DispatchGoogleAuthService } from "../../../../services/dispatch/dispatchGoogleAuthService";
 import { GoogleAuthService } from "../../../../services/sheet-management/googleAuthService";
 
@@ -9,7 +9,6 @@ const dispatchGoogleAuthService = new DispatchGoogleAuthService();
 
 export const OAuthCallbackPage = () => {
 	const navigate = useNavigate();
-	const location = useLocation();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -42,19 +41,13 @@ export const OAuthCallbackPage = () => {
 
 				if (isFromDispatch) {
 					// 배차 페이지용 토큰 저장
-					dispatchGoogleAuthService.storeAccessToken(
-						result.access_token,
-						result.expires_in,
-					);
+					dispatchGoogleAuthService.storeAccessToken(result.access_token);
 
 					// 배차 페이지로 이동
 					navigate("/dispatch", { replace: true });
 				} else {
 					// 시트 관리 페이지용 토큰 저장
-					googleAuthService.storeAccessToken(
-						result.access_token,
-						result.expires_in,
-					);
+					googleAuthService.storeAccessToken(result.access_token);
 
 					// 연동 시트 관리 페이지로 이동
 					navigate("/sheets", { replace: true });

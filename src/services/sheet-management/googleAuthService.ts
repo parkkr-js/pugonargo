@@ -56,13 +56,8 @@ export class GoogleAuthService {
 	/**
 	 * 액세스 토큰 저장
 	 */
-	storeAccessToken(token: string, expiresIn?: number): void {
+	storeAccessToken(token: string): void {
 		localStorage.setItem("google_access_token", token);
-
-		if (expiresIn) {
-			const expirationTime = Date.now() + expiresIn * 1000;
-			localStorage.setItem("google_token_expires", expirationTime.toString());
-		}
 	}
 
 	/**
@@ -70,29 +65,13 @@ export class GoogleAuthService {
 	 */
 	removeAccessToken(): void {
 		localStorage.removeItem("google_access_token");
-		localStorage.removeItem("google_token_expires");
 	}
 
 	/**
-	 * 토큰 만료 확인
-	 */
-	isTokenExpired(): boolean {
-		const expirationTime = localStorage.getItem("google_token_expires");
-		if (!expirationTime) return false;
-
-		return Date.now() >= Number.parseInt(expirationTime);
-	}
-
-	/**
-	 * 토큰 유효성 검사
+	 * 토큰 유효성 검사 (Google 서버와 실시간 통신)
 	 */
 	async validateToken(token: string): Promise<boolean> {
 		try {
-			// 만료 시간 확인
-			if (this.isTokenExpired()) {
-				return false;
-			}
-
 			const response = await fetch(
 				`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`,
 			);

@@ -30,7 +30,6 @@ export class GoogleApiService {
 			const data: { files: DriveFile[] } = await response.json();
 			return data.files || [];
 		} catch (error) {
-			console.error("Failed to get drive files:", error);
 			throw new Error(`Failed to get drive files: ${error}`);
 		}
 	}
@@ -52,7 +51,7 @@ export class GoogleApiService {
 				},
 				body: JSON.stringify({
 					mimeType: "application/vnd.google-apps.spreadsheet",
-					name: `임시변환_${originalName}`,
+					name: `변환된_${originalName}`,
 				}),
 			},
 		);
@@ -91,8 +90,7 @@ export class GoogleApiService {
 				headers: { Authorization: `Bearer ${this.accessToken}` },
 			});
 		} catch (error) {
-			console.error("임시 파일 삭제 실패:", error);
-			// 에러가 발생해도 메인 로직에는 영향 없도록 함
+			// 임시 파일 삭제 실패는 무시
 		}
 	}
 
@@ -159,12 +157,6 @@ export class GoogleApiService {
 			);
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				console.error("Sheet data fetch failed:", {
-					status: response.status,
-					statusText: response.statusText,
-					error: errorText,
-				});
 				throw new Error(
 					`시트 데이터 가져오기 실패: ${response.status} ${response.statusText}`,
 				);
@@ -242,7 +234,6 @@ export class GoogleApiService {
 
 			return rows;
 		} catch (error) {
-			console.error("Failed to get sheet data:", error);
 			throw new Error(`Failed to get sheet data: ${error}`);
 		} finally {
 			// 임시 변환 파일이 있다면 정리
@@ -281,7 +272,6 @@ export class GoogleApiService {
 
 			if (!response.ok) {
 				const errorText = await response.text();
-				console.error("Error response:", errorText);
 				throw new Error(
 					`Failed to get sheet names: ${response.status} - ${errorText}`,
 				);
@@ -296,11 +286,17 @@ export class GoogleApiService {
 				)
 				.map(
 					(sheet: { properties: { title: string } }) => sheet.properties.title,
-				);
+				)
+				.filter((sheetName: string) => {
+					// mm월dd일 형식이 포함되어 있는지 확인 (예: "7월15일", "7월1일 (화)")
+					const datePattern = /\d{1,2}월\d{1,2}일/;
+					const isValidDateSheet = datePattern.test(sheetName);
+
+					return isValidDateSheet;
+				});
 
 			return sheetNames;
 		} catch (error) {
-			console.error("Failed to get sheet names:", error);
 			throw new Error(`Failed to get sheet names: ${error}`);
 		} finally {
 			// 임시 변환 파일이 있다면 정리
@@ -320,7 +316,6 @@ export class GoogleApiService {
 				headers: { Authorization: `Bearer ${this.accessToken}` },
 			});
 		} catch (error) {
-			console.error("Failed to delete file:", error);
 			throw new Error(`Failed to delete file: ${error}`);
 		}
 	}
@@ -343,7 +338,6 @@ export class GoogleApiService {
 
 			return response.json();
 		} catch (error) {
-			console.error("Failed to get sheet metadata:", error);
 			throw new Error(`Failed to get sheet metadata: ${error}`);
 		}
 	}

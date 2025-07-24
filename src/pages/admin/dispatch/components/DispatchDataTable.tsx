@@ -1,13 +1,13 @@
-import { Card, Select, Space, Table, Tag, Typography } from "antd";
+import { Card, Select, Table, Tag } from "antd";
 import type React from "react";
 import { useState } from "react";
 import type { DispatchData } from "../../../../services/dispatch/firebaseService";
+import { cellStyle } from "../../../../styles";
 import {
 	useDispatchData,
 	useDispatchDataByVehicleAndSupplier,
 } from "../hooks/useDispatchData";
 
-const { Title } = Typography;
 const { Option } = Select;
 
 interface DispatchDataTableProps {
@@ -39,73 +39,163 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 	const displayData =
 		selectedSupplier && selectedVehicle ? filteredData : allDispatchData;
 
+	// 텍스트 개행 처리 함수
+	const formatTextWithLineBreaks = (text: string) => {
+		const lines = text.split("\n");
+		return lines.map((line, index) => (
+			<div
+				key={`line-${line.length}-${line.substring(0, 10)}-${index}`}
+				style={{
+					marginBottom: index < lines.length - 1 ? "4px" : 0,
+				}}
+			>
+				{line}
+			</div>
+		));
+	};
+
 	const columns = [
 		{
 			title: "매입처",
 			dataIndex: "supplier",
 			key: "supplier",
-			width: 120,
+			width: 60,
+			render: (text: string) => (
+				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+					{formatTextWithLineBreaks(text)}
+				</div>
+			),
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "차량번호",
 			dataIndex: "vehicleNumber",
 			key: "vehicleNumber",
-			width: 100,
+			width: 70,
+			render: (text: string) => (
+				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+					{formatTextWithLineBreaks(text)}
+				</div>
+			),
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "배차타입",
 			dataIndex: "dispatchType",
 			key: "dispatchType",
-			width: 100,
+			width: 60,
+			render: (text: string) => (
+				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+					{formatTextWithLineBreaks(text)}
+				</div>
+			),
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "상차지",
 			dataIndex: "loadingLocation",
 			key: "loadingLocation",
-			width: 150,
+			width: 120,
 			render: (text: string, record: DispatchData) => (
 				<div>
-					<div>{text}</div>
-					{record.loadingMemo && <Tag color="blue">{record.loadingMemo}</Tag>}
+					<div
+						style={{
+							whiteSpace: "pre-wrap",
+							wordBreak: "break-word",
+							marginBottom: "4px",
+						}}
+					>
+						{formatTextWithLineBreaks(text)}
+					</div>
+					{record.loadingMemo && (
+						<Tag
+							color="blue"
+							style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+						>
+							{formatTextWithLineBreaks(record.loadingMemo)}
+						</Tag>
+					)}
 				</div>
 			),
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
 			title: "하차지",
 			dataIndex: "unloadingLocation",
 			key: "unloadingLocation",
-			width: 150,
+			width: 120,
 			render: (text: string, record: DispatchData) => (
 				<div>
-					<div>{text}</div>
+					<div
+						style={{
+							whiteSpace: "pre-wrap",
+							wordBreak: "break-word",
+							marginBottom: "4px",
+						}}
+					>
+						{formatTextWithLineBreaks(text)}
+					</div>
 					{record.unloadingMemo && (
-						<Tag color="green">{record.unloadingMemo}</Tag>
+						<Tag
+							color="green"
+							style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+						>
+							{formatTextWithLineBreaks(record.unloadingMemo)}
+						</Tag>
 					)}
 				</div>
 			),
+			onCell: () => ({ style: cellStyle }),
 		},
 		{
-			title: "로테이션",
+			title: "회전 수",
 			dataIndex: "rotationCount",
 			key: "rotationCount",
-			width: 80,
+			width: 40,
 			render: (count: number) => (
 				<Tag color={count > 0 ? "red" : "default"}>{count}회</Tag>
 			),
+			onCell: () => ({ style: cellStyle }),
 		},
 	];
 
+	// docId를 날짜 형식으로 변환 (YYYY-MM-DD -> YYYY년 MM월 DD일)
+	const formatDate = (docId: string) => {
+		const date = new Date(docId);
+		const year = date.getFullYear();
+		const month = date.getMonth() + 1;
+		const day = date.getDate();
+		return `${year}년 ${month}월 ${day}일`;
+	};
+
 	return (
-		<Card title="배차 데이터" style={{ marginTop: 16 }}>
-			<Space direction="vertical" style={{ width: "100%", marginBottom: 16 }}>
-				<Title level={5}>매입처 + 차량번호 조합으로 조회</Title>
-				<Space>
+		<Card
+			title={`배차 데이터 (${formatDate(docId)})`}
+			extra={
+				<div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+					<div
+						style={{
+							fontSize: "12px",
+							color: "#666",
+							fontWeight: "normal",
+							marginRight: "8px",
+							whiteSpace: "nowrap",
+						}}
+					>
+						매입처와 차량번호를 함께 선택해야 합니다.
+					</div>
 					<Select
 						placeholder="매입처 선택"
-						style={{ width: 200 }}
-						value={selectedSupplier}
+						style={{ width: 140 }}
+						value={selectedSupplier || undefined}
 						onChange={setSelectedSupplier}
 						allowClear
+						showSearch
+						filterOption={(input, option) =>
+							(option?.children as unknown as string)
+								?.toLowerCase()
+								.includes(input.toLowerCase())
+						}
 					>
 						{suppliers.map((supplier) => (
 							<Option key={supplier} value={supplier}>
@@ -115,10 +205,16 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 					</Select>
 					<Select
 						placeholder="차량번호 선택"
-						style={{ width: 150 }}
-						value={selectedVehicle}
+						style={{ width: 140 }}
+						value={selectedVehicle || undefined}
 						onChange={setSelectedVehicle}
 						allowClear
+						showSearch
+						filterOption={(input, option) =>
+							(option?.children as unknown as string)
+								?.toLowerCase()
+								.includes(input.toLowerCase())
+						}
 					>
 						{vehicles.map((vehicle) => (
 							<Option key={vehicle} value={vehicle}>
@@ -126,24 +222,66 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 							</Option>
 						))}
 					</Select>
-				</Space>
-			</Space>
-
-			<Table
-				columns={columns}
-				dataSource={displayData || []}
-				rowKey={(record) =>
-					`${record.supplier}-${record.vehicleNumber}-${record.loadingLocation}-${record.unloadingLocation}`
-				}
-				loading={isLoading}
-				pagination={{
-					pageSize: 20,
-					showSizeChanger: true,
-					showQuickJumper: true,
-				}}
-				scroll={{ x: 800 }}
-				size="small"
-			/>
+				</div>
+			}
+		>
+			<div style={{ position: "relative", minHeight: 240 }}>
+				{/* 오버레이 스피너 */}
+				{isLoading && (
+					<div
+						style={{
+							position: "absolute",
+							zIndex: 2,
+							top: 0,
+							left: 0,
+							width: "100%",
+							height: "100%",
+							background: "rgba(255,255,255,0.7)",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}}
+					>
+						<div style={{ textAlign: "center" }}>
+							<div style={{ marginBottom: "8px" }}>
+								배차 데이터를 불러오는 중...
+							</div>
+						</div>
+					</div>
+				)}
+				{/* 테이블 */}
+				<div
+					style={{
+						filter: isLoading ? "blur(2px)" : "none",
+						pointerEvents: isLoading ? "none" : "auto",
+					}}
+				>
+					{!displayData || displayData.length === 0 ? (
+						<div style={{ textAlign: "center", padding: "48px 0" }}>
+							{selectedSupplier && selectedVehicle
+								? "선택한 조건에 맞는 배차 데이터가 없습니다."
+								: "배차 데이터가 없습니다."}
+						</div>
+					) : (
+						<Table
+							columns={columns}
+							dataSource={displayData}
+							rowKey={(record) =>
+								`${record.supplier}-${record.vehicleNumber}-${record.loadingLocation}-${record.unloadingLocation}`
+							}
+							loading={false}
+							pagination={{
+								pageSize: 10,
+								showSizeChanger: false,
+								showQuickJumper: false,
+								showTotal: (total) => `${total}개`,
+							}}
+							scroll={{ x: 1000 }}
+							size="small"
+						/>
+					)}
+				</div>
+			</div>
 		</Card>
 	);
 };

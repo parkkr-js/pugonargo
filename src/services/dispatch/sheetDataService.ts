@@ -38,6 +38,7 @@ export async function fetchSheetData(
 
 		const fileData = await fileResponse.json();
 		const mimeType = fileData.mimeType;
+		const originalName = fileData.name || "unknown";
 		let actualSpreadsheetId = spreadsheetId;
 
 		// Excel 파일인 경우 Google Sheets로 변환
@@ -46,8 +47,6 @@ export async function fetchSheetData(
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
 			mimeType === "application/vnd.ms-excel"
 		) {
-			console.log("Excel 파일을 Google Sheets로 변환 중...");
-
 			const convertResponse = await fetch(
 				`https://www.googleapis.com/drive/v3/files/${spreadsheetId}/copy`,
 				{
@@ -58,7 +57,7 @@ export async function fetchSheetData(
 					},
 					body: JSON.stringify({
 						mimeType: "application/vnd.google-apps.spreadsheet",
-						name: `임시변환_${Date.now()}`,
+						name: `변환된_${originalName}`,
 					}),
 				},
 			);
@@ -69,7 +68,6 @@ export async function fetchSheetData(
 
 			const convertedFile = await convertResponse.json();
 			actualSpreadsheetId = convertedFile.id;
-			console.log("변환된 파일 ID:", actualSpreadsheetId);
 
 			// 임시 파일이므로 나중에 삭제
 			setTimeout(async () => {
@@ -81,9 +79,8 @@ export async function fetchSheetData(
 							headers: { Authorization: `Bearer ${accessToken}` },
 						},
 					);
-					console.log("임시 변환 파일 삭제 완료");
 				} catch (error) {
-					console.error("임시 파일 삭제 실패:", error);
+					// 임시 파일 삭제 실패는 무시
 				}
 			}, 30000); // 30초 후 삭제
 		}
@@ -98,7 +95,6 @@ export async function fetchSheetData(
 
 		if (!response.ok) {
 			const errorText = await response.text();
-			console.error("API 응답:", errorText);
 			throw new Error(`API 호출 실패: ${response.status} - ${errorText}`);
 		}
 
@@ -111,9 +107,6 @@ export async function fetchSheetData(
 		// 2차원 배열로 변환
 		const sheetData: unknown[][] = [];
 		const rowData = data.sheets[0].data[0].rowData;
-
-		console.log("=== 시트 데이터 변환 시작 ===");
-		console.log("원본 rowData 길이:", rowData.length);
 
 		for (let i = 0; i < rowData.length; i++) {
 			const row = rowData[i];
@@ -131,41 +124,10 @@ export async function fetchSheetData(
 			}
 
 			sheetData.push(rowValues);
-
-			// 처음 몇 행만 로그 출력
-			if (i < 10) {
-				console.log(`행 ${i}:`, rowValues.slice(0, 10)); // 처음 10개 셀만 출력
-			}
 		}
-
-		console.log("=== 시트 데이터 변환 완료 ===");
-		console.log("변환된 sheetData 길이:", sheetData.length);
 
 		return { sheetData, originalData: data };
 	} catch (error) {
-		console.error("시트 데이터 가져오기 실패:", error);
 		throw new Error(`시트 데이터 가져오기 실패: ${error}`);
-	}
-}
-
-/**
- * 셀 메모 추출
- */
-export function extractCellMemo(
-	sheetData: SheetDataResponse,
-	colIndex: number,
-	rowIndex: number,
-): string | undefined {
-	try {
-		const rowData = sheetData.sheets?.[0]?.data?.[0]?.rowData;
-		if (!rowData || !rowData[rowIndex]?.values?.[colIndex]) {
-			return undefined;
-		}
-
-		const cell = rowData[rowIndex]?.values?.[colIndex];
-		return cell?.note || undefined;
-	} catch (error) {
-		console.error("셀 메모 추출 실패:", error);
-		return undefined;
 	}
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DispatchGoogleAuthService } from "../../../../services/dispatch/dispatchGoogleAuthService";
 
 const dispatchGoogleAuthService = new DispatchGoogleAuthService();
-const TOKEN_CHECK_INTERVAL = 1000;
+const TOKEN_CHECK_INTERVAL = 5000; // 5초마다 체크 (더 자주 체크)
 
 export const useGoogleAuth = () => {
 	const [accessToken, setAccessToken] = useState<string>("");
@@ -13,10 +13,7 @@ export const useGoogleAuth = () => {
 		const tokenData = dispatchGoogleAuthService.extractTokenFromUrl();
 
 		if (tokenData.access_token) {
-			dispatchGoogleAuthService.storeAccessToken(
-				tokenData.access_token,
-				tokenData.expires_in,
-			);
+			dispatchGoogleAuthService.storeAccessToken(tokenData.access_token);
 			// URL에서 해시 제거
 			window.history.replaceState(null, "", window.location.pathname);
 			return true;

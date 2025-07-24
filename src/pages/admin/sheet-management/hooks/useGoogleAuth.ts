@@ -3,8 +3,8 @@ import { GoogleAuthService } from "../../../../services/sheet-management/googleA
 
 const googleAuthService = new GoogleAuthService();
 
-// 토큰 만료 체크 간격 (1초)
-const TOKEN_CHECK_INTERVAL = 1000;
+// 토큰 만료 체크 간격 (5초)
+const TOKEN_CHECK_INTERVAL = 5000;
 
 export const useGoogleAuth = () => {
 	const [accessToken, setAccessToken] = useState<string>("");
