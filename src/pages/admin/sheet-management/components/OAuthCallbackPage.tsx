@@ -1,8 +1,8 @@
 import { Alert, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { DispatchGoogleAuthService } from "../../../../services/googleSheet/dispatchGoogleAuthService";
-import { GoogleAuthService } from "../../../../services/googleSheet/googleAuthService";
+import { DispatchGoogleAuthService } from "../../../../services/dispatch/dispatchGoogleAuthService";
+import { GoogleAuthService } from "../../../../services/sheet-management/googleAuthService";
 
 const googleAuthService = new GoogleAuthService();
 const dispatchGoogleAuthService = new DispatchGoogleAuthService();

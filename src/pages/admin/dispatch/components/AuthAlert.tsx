@@ -1,32 +1,42 @@
-import { GoogleOutlined } from "@ant-design/icons";
 import { Alert, Button } from "antd";
-import styled from "styled-components";
+import { memo } from "react";
 
 interface AuthAlertProps {
+	isAuthenticated: boolean;
 	onAuth: () => void;
+	onLogout: () => void;
 }
 
-export const AuthAlert = ({ onAuth }: AuthAlertProps) => (
-	<AlertContainer>
-		<Alert
-			message="Google 계정 연동 필요"
-			description="배차 데이터를 읽기 위해 Google 계정 연동이 필요합니다."
-			type="info"
-			showIcon
-			action={
-				<Button
-					size="small"
-					type="primary"
-					icon={<GoogleOutlined />}
-					onClick={onAuth}
-				>
-					Google 계정 연동
-				</Button>
-			}
-		/>
-	</AlertContainer>
+export const AuthAlert = memo(
+	({ isAuthenticated, onAuth, onLogout }: AuthAlertProps) => {
+		if (!isAuthenticated) {
+			return (
+				<Alert
+					message="Google 인증 필요"
+					description="Google Drive와 Sheets API 사용을 위한 인증이 필요합니다."
+					type="warning"
+					showIcon
+					style={{ marginBottom: "24px" }}
+					action={
+						<Button type="primary" onClick={onAuth}>
+							Google 인증하기
+						</Button>
+					}
+				/>
+			);
+		}
+
+		return (
+			<Alert
+				message="Google 인증 완료"
+				description="Google Drive와 Sheets API에 성공적으로 연결되었습니다."
+				type="success"
+				showIcon
+				style={{ marginBottom: "24px" }}
+				action={<Button onClick={onLogout}>인증 해제</Button>}
+			/>
+		);
+	},
 );
 
-const AlertContainer = styled.div`
-	margin-bottom: 24px;
-`;
+AuthAlert.displayName = "AuthAlert";

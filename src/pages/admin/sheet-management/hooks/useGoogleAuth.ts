@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { GoogleAuthService } from "../../../../services/googleSheet/googleAuthService";
+import { GoogleAuthService } from "../../../../services/sheet-management/googleAuthService";
 
 const googleAuthService = new GoogleAuthService();
 

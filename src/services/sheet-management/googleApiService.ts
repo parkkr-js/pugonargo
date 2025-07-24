@@ -256,21 +256,40 @@ export class GoogleApiService {
 	 * 구글 시트의 시트 목록 가져오기
 	 */
 	async getSheetNames(sheetId: string): Promise<string[]> {
+		let actualSpreadsheetId = sheetId;
+		let tempFileId: string | null = null;
+
 		try {
+			// 파일 타입 확인
+			const mimeType = await this.getFileMimeType(sheetId);
+
+			// Excel 파일인 경우 변환 수행
+			if (
+				mimeType ===
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+			) {
+				tempFileId = await this.convertExcelToGoogleSheet(sheetId, "temp");
+				actualSpreadsheetId = tempFileId;
+			}
+
 			const response = await fetch(
-				`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title`,
+				`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}?fields=sheets.properties.title`,
 				{
 					headers: { Authorization: `Bearer ${this.accessToken}` },
 				},
 			);
 
 			if (!response.ok) {
-				throw new Error(`Failed to get sheet names: ${response.status}`);
+				const errorText = await response.text();
+				console.error("Error response:", errorText);
+				throw new Error(
+					`Failed to get sheet names: ${response.status} - ${errorText}`,
+				);
 			}
 
 			const data = await response.json();
 			const sheets = data.sheets || [];
-			return sheets
+			const sheetNames = sheets
 				.filter(
 					(sheet: { properties?: { title?: string } }) =>
 						sheet.properties?.title,
@@ -278,9 +297,16 @@ export class GoogleApiService {
 				.map(
 					(sheet: { properties: { title: string } }) => sheet.properties.title,
 				);
+
+			return sheetNames;
 		} catch (error) {
 			console.error("Failed to get sheet names:", error);
 			throw new Error(`Failed to get sheet names: ${error}`);
+		} finally {
+			// 임시 변환 파일이 있다면 정리
+			if (tempFileId) {
+				await this.deleteTemporaryFile(tempFileId);
+			}
 		}
 	}
 

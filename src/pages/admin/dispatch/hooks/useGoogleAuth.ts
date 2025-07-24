@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { DispatchGoogleAuthService } from "../../../../services/googleSheet/dispatchGoogleAuthService";
+import { DispatchGoogleAuthService } from "../../../../services/dispatch/dispatchGoogleAuthService";
 
 const dispatchGoogleAuthService = new DispatchGoogleAuthService();
 const TOKEN_CHECK_INTERVAL = 1000;

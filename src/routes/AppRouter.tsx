@@ -4,8 +4,8 @@ import { DataManagementPage } from "../pages/admin/data-management";
 import { DispatchPage } from "../pages/admin/dispatch";
 
 import { DriversPage } from "../pages/admin/drivers";
-import { SheetsPage } from "../pages/admin/sheets";
-import { OAuthCallbackPage } from "../pages/admin/sheets/components/OAuthCallbackPage";
+import { SheetsPage } from "../pages/admin/sheet-management";
+import { OAuthCallbackPage } from "../pages/admin/sheet-management/components/OAuthCallbackPage";
 import { TransactionsPage } from "../pages/admin/transactions";
 import { LoginPage } from "../pages/auth/LoginPage";
 import DriverPage from "../pages/driver";

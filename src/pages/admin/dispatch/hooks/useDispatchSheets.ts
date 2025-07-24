@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { GoogleApiService } from "../../../../services/googleSheet/googleApiService";
+import { GoogleApiService } from "../../../../services/sheet-management/googleApiService";
 
 // Query Keys
 export const dispatchKeys = {
