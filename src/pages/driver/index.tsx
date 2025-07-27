@@ -1,6 +1,7 @@
 import { Card, Layout } from "antd";
 import { useState } from "react";
 import { DailyRecordsTab } from "./components/DailyRecordsTab";
+import { DispatchTab } from "./components/DispatchTab";
 import { Header } from "./components/Header";
 import { PeriodStatsTab } from "./components/PeriodStatsTab";
 import { TabBar } from "./components/TabBar";
@@ -9,7 +10,9 @@ import { useCurrentDriverVehicleNumber } from "./hooks/useCurrentDriverVehicleNu
 const { Content } = Layout;
 
 export default function DriverPage() {
-	const [activeTab, setActiveTab] = useState<"period" | "daily">("period");
+	const [activeTab, setActiveTab] = useState<"period" | "daily" | "dispatch">(
+		"dispatch",
+	);
 	const vehicleNumber = useCurrentDriverVehicleNumber();
 
 	// vehicleNumber가 없으면 로그인 페이지로 리다이렉트
@@ -53,8 +56,10 @@ export default function DriverPage() {
 						>
 							{activeTab === "period" ? (
 								<PeriodStatsTab />
-							) : (
+							) : activeTab === "daily" ? (
 								<DailyRecordsTab />
+							) : (
+								<DispatchTab />
 							)}
 						</Content>
 					</Layout>
