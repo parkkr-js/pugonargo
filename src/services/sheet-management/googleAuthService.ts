@@ -1,11 +1,11 @@
+import { getGoogleRedirectUri } from "../../utils/redirectUtils";
+
 export class GoogleAuthService {
 	private clientId: string;
-	private redirectUri: string;
 	private scope: string;
 
 	constructor() {
 		this.clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
-		this.redirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI || "";
 		this.scope =
 			"https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets";
 	}
@@ -14,9 +14,10 @@ export class GoogleAuthService {
 	 * Google OAuth 로그인 URL 생성 (Implicit Flow)
 	 */
 	getAuthUrl(): string {
+		const redirectUri = getGoogleRedirectUri();
 		const params = new URLSearchParams({
 			client_id: this.clientId,
-			redirect_uri: this.redirectUri,
+			redirect_uri: redirectUri,
 			scope: this.scope,
 			response_type: "token", // Code 대신 token으로 직접 받기
 			include_granted_scopes: "true",
