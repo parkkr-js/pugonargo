@@ -252,14 +252,14 @@ const SummaryList = styled.div`
 `;
 
 const SummaryItem = styled.div`
-	font-size: ${({ theme }) => theme.fontSizes.md};
+	font-size: ${({ theme }) => theme.fontSizes.lg};
 	color: black;
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
 	line-height: 1.5;
 `;
 
 const SummaryEmptyText = styled.div`
-	font-size: ${({ theme }) => theme.fontSizes.md};
-	color: ${({ theme }) => theme.colors.text.secondary};
+	font-size: ${({ theme }) => theme.fontSizes["2xl"]};
 	text-align: center;
 	padding: 20px 0;
 `;
@@ -388,20 +388,16 @@ const SummaryBadge = styled.span`
 `;
 
 const WarningText = styled.div`
-	font-size: ${({ theme }) => theme.fontSizes.md};
-	color: black;
-	background: ${({ theme }) => theme.colors.semantic.warning}10;
-	padding: 8px 12px;
-	border-radius: ${({ theme }) => theme.borderRadius.sm};
-	border: 1px solid ${({ theme }) => theme.colors.semantic.warning}30;
-	line-height: 1.5;
+	font-size: ${({ theme }) => theme.fontSizes.lg};
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	color: #D10003;
+	background: transparent;
+	line-height: 1.5; 
 	white-space: pre-wrap;
 	word-break: break-word;
+	letter-spacing: 0.5px;
 	margin-bottom: 8px;
 `;
 
 const WarningLabel = styled.span`
-	font-weight: ${({ theme }) => theme.fontWeights.bold};
-	color: ${({ theme }) => theme.colors.semantic.warning};
-	margin-right: 8px;
 `;
