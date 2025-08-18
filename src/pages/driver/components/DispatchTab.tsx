@@ -116,8 +116,8 @@ export const DispatchTab = () => {
 								<SummaryList>
 									{routeSummary.map((route) => (
 										<SummaryItem key={route.key}>
-											- {route.loadingLocation} → {route.unloadingLocation} (
-											{route.rotationCount}회전)
+											• {route.loadingLocation} → {route.unloadingLocation}{" "}
+											<SummaryBadge>{route.rotationCount}회전</SummaryBadge>
 										</SummaryItem>
 									))}
 								</SummaryList>
@@ -148,6 +148,13 @@ export const DispatchTab = () => {
 												</DispatchType>
 												<RotationCount>{item.rotationCount}회전</RotationCount>
 											</DispatchHeader>
+
+											{item.warning && (
+												<WarningText>
+													<WarningLabel>⚠️ </WarningLabel>
+													{item.warning}
+												</WarningText>
+											)}
 
 											<LocationInfo>
 												<LocationSection>
@@ -246,7 +253,7 @@ const SummaryList = styled.div`
 
 const SummaryItem = styled.div`
 	font-size: ${({ theme }) => theme.fontSizes.md};
-	color: ${({ theme }) => theme.colors.text.primary};
+	color: black;
 	line-height: 1.5;
 `;
 
@@ -302,7 +309,7 @@ const DispatchHeader = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 20px;
+	margin-bottom: 12px;
 	padding-bottom: 16px;
 	border-bottom: 2px solid ${({ theme }) => theme.colors.primary}20;
 `;
@@ -368,4 +375,33 @@ const MemoText = styled.div`
 	line-height: 1.5;
 	white-space: pre-wrap;
 	word-break: break-word;
+`;
+
+const SummaryBadge = styled.span`
+  margin-left: 6px;
+  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.primary}10;
+  padding: 4px 8px;
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
+`;
+
+const WarningText = styled.div`
+	font-size: ${({ theme }) => theme.fontSizes.md};
+	color: black;
+	background: ${({ theme }) => theme.colors.semantic.warning}10;
+	padding: 8px 12px;
+	border-radius: ${({ theme }) => theme.borderRadius.sm};
+	border: 1px solid ${({ theme }) => theme.colors.semantic.warning}30;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-bottom: 8px;
+`;
+
+const WarningLabel = styled.span`
+	font-weight: ${({ theme }) => theme.fontWeights.bold};
+	color: ${({ theme }) => theme.colors.semantic.warning};
+	margin-right: 8px;
 `;

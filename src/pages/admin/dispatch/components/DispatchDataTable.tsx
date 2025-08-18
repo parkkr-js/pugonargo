@@ -156,6 +156,14 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			),
 			onCell: () => ({ style: cellStyle }),
 		},
+		{
+			title: "경고사항",
+			dataIndex: "warning",
+			key: "warning",
+			width: 120,
+			render: (text: string) => <Tag color="red">{text}</Tag>,
+			onCell: () => ({ style: cellStyle }),
+		},
 	];
 
 	// docId를 날짜 형식으로 변환 (YYYY-MM-DD -> YYYY년 MM월 DD일)

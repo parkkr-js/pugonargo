@@ -15,6 +15,7 @@ export interface DispatchData {
 	rotationCount: number;
 	loadingMemo?: string;
 	unloadingMemo?: string;
+	warning?: string;
 }
 
 /**
