@@ -1,8 +1,8 @@
 // src/pages/admin/SheetsPage/hooks/useSheets.ts
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GoogleApiService } from "../../../../services/googleSheet/googleApiService";
-import { SheetsFirestoreService } from "../../../../services/googleSheet/sheetsFirestoreService";
+import { GoogleApiService } from "../../../../services/sheet-management/googleApiService";
+import { SheetsFirestoreService } from "../../../../services/sheet-management/sheetsFirestoreService";
 import type { DriveFile } from "../../../../types/sheets";
 import { transformRowToRawData } from "../../../../utils/sheetUtils";
 

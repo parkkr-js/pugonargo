@@ -1,4 +1,5 @@
 import {
+	CarOutlined,
 	DashboardOutlined,
 	DatabaseOutlined,
 	FileTextOutlined,
@@ -32,6 +33,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 		if (path === "/dashboard") return "dashboard";
 		if (path === "/transactions") return "transactions";
 		if (path === "/drivers") return "drivers";
+		if (path === "/dispatch") return "dispatch";
 		if (path === "/sheets") return "sheets";
 		if (path === "/data-management") return "data-management";
 		return "dashboard";
@@ -56,6 +58,12 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
 			icon: <TeamOutlined />,
 			label: "기사님 관리",
 			onClick: () => navigate("/drivers"),
+		},
+		{
+			key: "dispatch",
+			icon: <CarOutlined />,
+			label: "배차 관리",
+			onClick: () => navigate("/dispatch"),
 		},
 		{
 			key: "sheets",

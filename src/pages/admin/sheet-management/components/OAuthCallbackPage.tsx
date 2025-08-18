@@ -1,9 +1,11 @@
 import { Alert, Spin } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleAuthService } from "../../../../services/googleSheet/googleAuthService";
+import { DispatchGoogleAuthService } from "../../../../services/dispatch/dispatchGoogleAuthService";
+import { GoogleAuthService } from "../../../../services/sheet-management/googleAuthService";
 
 const googleAuthService = new GoogleAuthService();
+const dispatchGoogleAuthService = new DispatchGoogleAuthService();
 
 export const OAuthCallbackPage = () => {
 	const navigate = useNavigate();
@@ -28,11 +30,28 @@ export const OAuthCallbackPage = () => {
 					return;
 				}
 
-				// 토큰 저장
-				googleAuthService.storeAccessToken(
-					result.access_token,
-					result.expires_in,
+				// URL의 state 파라미터를 확인하여 어디서 온 요청인지 판단
+				const urlParams = new URLSearchParams(
+					window.location.hash.substring(1),
 				);
+				const state = urlParams.get("state");
+
+				// 배차 페이지에서 온 요청인지 확인 (state에 dispatch가 포함되어 있는지)
+				const isFromDispatch = state?.includes("dispatch");
+
+				if (isFromDispatch) {
+					// 배차 페이지용 토큰 저장
+					dispatchGoogleAuthService.storeAccessToken(result.access_token);
+
+					// 배차 페이지로 이동
+					navigate("/dispatch", { replace: true });
+				} else {
+					// 시트 관리 페이지용 토큰 저장
+					googleAuthService.storeAccessToken(result.access_token);
+
+					// 연동 시트 관리 페이지로 이동
+					navigate("/sheets", { replace: true });
+				}
 
 				// URL 해시 정리 (보안)
 				window.history.replaceState(
@@ -40,9 +59,6 @@ export const OAuthCallbackPage = () => {
 					document.title,
 					window.location.pathname,
 				);
-
-				// 연동 시트 관리 페이지로 이동
-				navigate("/sheets", { replace: true });
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "토큰 처리 실패");
 				setLoading(false);
