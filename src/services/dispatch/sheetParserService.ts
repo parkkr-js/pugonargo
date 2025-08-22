@@ -47,8 +47,18 @@ export function extractDateFromSheetName(
 /**
  * 셀 메모 추출 (셀병합 고려)
  *
- * Google Sheets에서 셀병합된 경우 주석이 첫 번째 셀에만 있을 수 있어서,
- * 현재 셀에 주석이 없으면 이전/다음 행에서 주석을 찾아 반환합니다.
+ * Google Sheets API 특성: 셀병합된 경우 첫 번째 행만 값과 주석을 가짐
+ * 나머지 행들은 모두 undefined이므로, 첫 번째 행에서 주석을 찾아야 함
+ *
+ * 🎯 정확한 로직:
+ * 1. 현재 셀에 주석이 있으면 바로 반환
+ * 2. 셀병합된 경우: 위로 올라가면서 첫 번째 행(값이 있는 행) 찾기
+ * 3. 첫 번째 행에서 주석 검색
+ *
+ * 💡 셀병합 예시: 7행~16행이 병합된 경우
+ * - 7행: formattedValue="상차지A", note="주석내용" ✅
+ * - 8~16행: formattedValue=undefined, note=undefined ❌
+ * - 모든 행에서 호출해도 7행의 주석을 가져옴
  *
  * 처리 대상: 상차지(B열), 하차지(C열)
  * 제외 대상: 경고사항(D열) - 셀 값 자체를 사용하므로 주석 불필요
@@ -65,52 +75,30 @@ function extractCellMemo(
 ): string | undefined {
 	try {
 		const rowData = originalData.sheets?.[0]?.data?.[0]?.rowData;
+		if (!rowData) return undefined;
 
-		if (!rowData || !rowData[rowIndex]?.values?.[colIndex]) {
-			return undefined;
+		const currentCell = rowData[rowIndex]?.values?.[colIndex];
+
+		// 1. 현재 셀에 주석이 있으면 바로 반환
+		if (currentCell?.note) {
+			return currentCell.note;
 		}
 
-		const cell = rowData[rowIndex]?.values?.[colIndex];
-
-		// 셀병합된 셀의 경우 주석이 없을 수 있으므로, 이전 행에서 주석을 찾아보기
-		let result = cell?.note || undefined;
-
-		// 상차지(B열), 하차지(C열)이고 주석이 없는 경우, 이전 행에서 주석 찾기
-		// 경고사항(D열)은 주석이 아니라 셀 값 자체를 사용하므로 제외
-		if ((colIndex === 1 || colIndex === 2) && !result) {
-			const currentCellValue = cell?.formattedValue || "";
-
-			// 1. 현재 셀에 값이 있는 경우: 같은 셀값을 가진 이전 행에서 주석 찾기
-			if (currentCellValue) {
-				for (let i = rowIndex - 1; i >= 0; i--) {
-					const prevCell = rowData[i]?.values?.[colIndex];
-					const prevCellValue = prevCell?.formattedValue || "";
-
-					// 같은 셀값을 가진 행에서만 주석을 가져오기
-					if (prevCellValue === currentCellValue && prevCell?.note) {
-						result = prevCell.note;
-						break;
-					}
+		// 2. 셀병합된 경우: 위로 올라가면서 첫 번째 행(값이 있는 행) 찾기
+		for (let i = rowIndex - 1; i >= 0; i--) {
+			const cell = rowData[i]?.values?.[colIndex];
+			// 값이 있는 행을 찾으면 해당 행에서 주석 검색
+			if (cell?.formattedValue) {
+				if (cell.note) {
+					return cell.note;
 				}
-			}
-			// 2. 현재 셀에 값이 없는 경우 (셀병합의 첫 번째 행): 다음 행에서 주석 찾기
-			if (!currentCellValue) {
-				// 다음 행부터 셀병합 범위를 찾아서 주석 가져오기
-				for (let i = rowIndex + 1; i < rowData.length; i++) {
-					const nextCell = rowData[i]?.values?.[colIndex];
-					const nextCellNote = nextCell?.note;
-
-					// 다음 행에 주석이 있으면 가져옴
-					if (nextCellNote) {
-						result = nextCellNote;
-						break;
-					}
-				}
+				break; // 값이 있는 행을 찾았으므로 더 이상 위로 올라가지 않음
 			}
 		}
 
-		return result;
+		return undefined;
 	} catch (error) {
+		console.error("extractCellMemo 에러:", error);
 		return undefined;
 	}
 }

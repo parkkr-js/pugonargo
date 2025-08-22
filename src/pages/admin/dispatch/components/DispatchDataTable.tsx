@@ -58,7 +58,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "매입처",
 			dataIndex: "supplier",
 			key: "supplier",
-			width: 60,
+			width: "auto",
 			render: (text: string) => (
 				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
 					{formatTextWithLineBreaks(text)}
@@ -70,7 +70,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "차량번호",
 			dataIndex: "vehicleNumber",
 			key: "vehicleNumber",
-			width: 70,
+			width: "auto",
 			render: (text: string) => (
 				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
 					{formatTextWithLineBreaks(text)}
@@ -82,7 +82,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "배차타입",
 			dataIndex: "dispatchType",
 			key: "dispatchType",
-			width: 60,
+			width: "auto",
 			render: (text: string) => (
 				<div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
 					{formatTextWithLineBreaks(text)}
@@ -94,7 +94,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "상차지",
 			dataIndex: "loadingLocation",
 			key: "loadingLocation",
-			width: 120,
+			width: "auto",
 			render: (text: string, record: DispatchData) => (
 				<div>
 					<div
@@ -122,7 +122,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "하차지",
 			dataIndex: "unloadingLocation",
 			key: "unloadingLocation",
-			width: 120,
+			width: "auto",
 			render: (text: string, record: DispatchData) => (
 				<div>
 					<div
@@ -150,7 +150,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "회전 수",
 			dataIndex: "rotationCount",
 			key: "rotationCount",
-			width: 40,
+			width: "auto",
 			render: (count: number) => (
 				<Tag color={count > 0 ? "red" : "default"}>{count}회</Tag>
 			),
@@ -160,7 +160,7 @@ export const DispatchDataTable: React.FC<DispatchDataTableProps> = ({
 			title: "경고사항",
 			dataIndex: "warning",
 			key: "warning",
-			width: 120,
+			width: "auto",
 			render: (text: string) => <Tag color="red">{text}</Tag>,
 			onCell: () => ({ style: cellStyle }),
 		},
