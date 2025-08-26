@@ -65,8 +65,7 @@ export const DispatchTab = () => {
 		}
 	};
 
-	const disabledDate = (current: Dayjs) =>
-		current && current > dayjs().endOf("day");
+	const disabledDate = (current: Dayjs) => false;
 
 	// 메모 텍스트 포맷팅 함수
 	const formatMemoText = (text: string): string => {
