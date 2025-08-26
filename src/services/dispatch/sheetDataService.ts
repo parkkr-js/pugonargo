@@ -1,10 +1,13 @@
 /**
- * Google Sheets API를 사용하여 시트 데이터를 추출하는 서비스
+ * 배차 시트 데이터 수집
+ * - Drive 파일 타입 확인(Excel → Google Sheets 변환 필요시 변환)
+ * - Sheets API로 values(formattedValue, note) + merges 메타데이터 조회
+ * - merges 범위를 좌상단 값으로 채워 2차원 배열로 반환
  */
 import type { SheetDataResponse } from "../../types/dispatch";
 
 /**
- * 시트 데이터 추출
+ * 지정 시트의 values와 원본 응답 반환
  */
 export async function fetchSheetData(
 	spreadsheetId: string,
@@ -12,7 +15,7 @@ export async function fetchSheetData(
 	accessToken: string,
 ): Promise<{ sheetData: unknown[][]; originalData: SheetDataResponse }> {
 	try {
-		// 먼저 파일 타입 확인
+		// 파일 타입 확인 (Excel → Google Sheets 변환 처리)
 		const fileResponse = await fetch(
 			`https://www.googleapis.com/drive/v3/files/${spreadsheetId}?fields=mimeType`,
 			{
@@ -29,7 +32,6 @@ export async function fetchSheetData(
 		const originalName = fileData.name || "unknown";
 		let actualSpreadsheetId = spreadsheetId;
 
-		// Excel 파일인 경우 Google Sheets로 변환
 		if (
 			mimeType ===
 				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
@@ -57,7 +59,7 @@ export async function fetchSheetData(
 			const convertedFile = await convertResponse.json();
 			actualSpreadsheetId = convertedFile.id;
 
-			// 임시 파일이므로 나중에 삭제
+			// 임시 파일 삭제는 실패해도 무시
 			setTimeout(async () => {
 				try {
 					await fetch(
@@ -67,15 +69,13 @@ export async function fetchSheetData(
 							headers: { Authorization: `Bearer ${accessToken}` },
 						},
 					);
-				} catch (error) {
-					// 임시 파일 삭제 실패는 무시
-				}
-			}, 30000); // 30초 후 삭제
+				} catch {}
+			}, 3000);
 		}
 
-		// 시트 데이터 가져오기
+		// values + merges 조회
 		const response = await fetch(
-			`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}?ranges=${encodeURIComponent(`${sheetName}!A:Z`)}&fields=sheets.data.rowData.values.formattedValue,sheets.data.rowData.values.note`,
+			`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}?ranges=${encodeURIComponent(`${sheetName}!A:Z`)}&fields=sheets.merges,sheets.data.rowData.values.formattedValue,sheets.data.rowData.values.note`,
 			{
 				headers: { Authorization: `Bearer ${accessToken}` },
 			},
@@ -87,31 +87,41 @@ export async function fetchSheetData(
 		}
 
 		const data: SheetDataResponse = await response.json();
-
 		if (!data.sheets?.[0]?.data?.[0]?.rowData) {
 			throw new Error("시트 데이터를 찾을 수 없습니다.");
 		}
 
-		// 2차원 배열로 변환
+		// values → 2차원 배열
 		const sheetData: unknown[][] = [];
 		const rowData = data.sheets[0].data[0].rowData;
-
 		for (let i = 0; i < rowData.length; i++) {
 			const row = rowData[i];
 			const rowValues: unknown[] = [];
-
 			if (row.values) {
 				for (let j = 0; j < row.values.length; j++) {
 					const cell = row.values[j];
-					if (cell.formattedValue !== undefined) {
-						rowValues.push(cell.formattedValue);
-					} else {
-						rowValues.push("");
-					}
+					rowValues.push(
+						cell.formattedValue !== undefined ? cell.formattedValue : "",
+					);
 				}
 			}
-
 			sheetData.push(rowValues);
+		}
+
+		// merges로 병합 영역 채우기 (좌상단 값으로)
+		const merges = data.sheets?.[0]?.merges ?? [];
+		for (const merge of merges) {
+			const sr = merge.startRowIndex ?? 0;
+			const er = merge.endRowIndex ?? 0;
+			const sc = merge.startColumnIndex ?? 0;
+			const ec = merge.endColumnIndex ?? 0;
+			const master = sheetData[sr]?.[sc];
+			for (let r = sr; r < er; r++) {
+				for (let c = sc; c < ec; c++) {
+					if (r === sr && c === sc) continue;
+					if (sheetData[r]) sheetData[r][c] = master ?? sheetData[r][c];
+				}
+			}
 		}
 
 		return { sheetData, originalData: data };

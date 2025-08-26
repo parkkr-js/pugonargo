@@ -52,6 +52,12 @@ export type { DriveFile };
  */
 export interface SheetDataResponse {
 	sheets?: {
+		merges?: {
+			startRowIndex?: number;
+			endRowIndex?: number;
+			startColumnIndex?: number;
+			endColumnIndex?: number;
+		}[];
 		data?: {
 			rowData?: {
 				values?: {
