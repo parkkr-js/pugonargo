@@ -150,6 +150,8 @@ npm install
 npm run deploy
 ```
 
+자세한 배포 플로우는 `DEPLOYMENT_GUIDE.md`를 참고하세요.
+
 ## 서비스 레이어(예시)
 
 - `services/dispatch/*`: 시트 데이터 수집/파싱/저장
