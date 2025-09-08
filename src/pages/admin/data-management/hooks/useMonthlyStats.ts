@@ -7,7 +7,7 @@ import type { MonthlyStatsListItem } from "../../../../types/dataManagement";
 export const useMonthlyStats = () => {
 	const queryClient = useQueryClient();
 
-	// 1시간 캐싱 (1000 * 60 * 60 = 1시간)
+	// 1시간 캐싱
 	const {
 		data: monthlyStats = [],
 		refetch,

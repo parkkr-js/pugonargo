@@ -1,5 +1,3 @@
-// src/pages/admin/DashboardPage/components/CostTable.tsx
-
 import { Divider, Table } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
 import { useEffect, useMemo, useState } from "react";

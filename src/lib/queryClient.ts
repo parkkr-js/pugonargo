@@ -19,11 +19,11 @@ export const queryClient = new QueryClient({
 				}
 				return failureCount < 3;
 			},
-			// 재시도 간격 (exponential backoff)
+			// 재시도 간격
 			retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 		},
 		mutations: {
-			// 뮤테이션은 기본적으로 재시도 안함
+			// 뮤테이션은 디폴트 재시도 안함
 			retry: false,
 		},
 	},

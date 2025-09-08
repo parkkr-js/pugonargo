@@ -30,7 +30,7 @@ export function useFuelRepairTable(monthId: string) {
 		setLoadedCollections(new Set());
 		setIsLoading(true);
 
-		// Fuel 데이터 실시간 구독
+		// Fuel 데이터 구독
 		const fuelQuery = query(
 			collection(db, "fuel"),
 			where("date", ">=", start),

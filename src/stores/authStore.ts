@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthState, User } from "../types/auth";
 
-// 인증 스토어 생성 (localStorage persistence 포함)
+// 인증 스토어 (localStorage persistence 포함)
 export const useAuthStore = create<AuthState>()(
 	persist(
 		(set, get) => ({

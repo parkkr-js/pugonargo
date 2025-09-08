@@ -1,12 +1,9 @@
-// src/pages/admin/SheetsPage/hooks/useSheets.ts
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GoogleApiService } from "../../../../services/sheet-management/googleApiService";
 import { SheetsFirestoreService } from "../../../../services/sheet-management/sheetsFirestoreService";
 import type { DriveFile } from "../../../../types/sheets";
 import { transformRowToRawData } from "../../../../utils/sheetUtils";
 
-// 상수 정의
 const STALE_TIME = {
 	DRIVE_FILES: 5 * 60 * 1000, // 5분
 	MONTHLY_STATS: 10 * 60 * 1000, // 10분
