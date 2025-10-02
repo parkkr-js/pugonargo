@@ -73,9 +73,9 @@ export async function fetchSheetData(
 			}, 3000);
 		}
 
-		// values + merges 조회
+		// values + merges 조회 (gridData 포함, 넉넉한 범위)
 		const response = await fetch(
-			`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}?ranges=${encodeURIComponent(`${sheetName}!A:Z`)}&fields=sheets.merges,sheets.data.rowData.values.formattedValue,sheets.data.rowData.values.note`,
+			`https://sheets.googleapis.com/v4/spreadsheets/${actualSpreadsheetId}?includeGridData=true&ranges=${encodeURIComponent(`${sheetName}!A:AZ`)}&fields=sheets.merges,sheets.data.rowData.values.formattedValue,sheets.data.rowData.values.note`,
 			{
 				headers: { Authorization: `Bearer ${accessToken}` },
 			},

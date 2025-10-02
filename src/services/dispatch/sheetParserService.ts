@@ -48,9 +48,12 @@ function extractCellMemo(
 		}
 		const currentCell = rowData[rowIndex]?.values?.[colIndex];
 		if (currentCell?.note) return currentCell.note;
-		for (let i = rowIndex - 1; i >= 0; i--) {
-			const cell = rowData[i]?.values?.[colIndex];
-			if (cell?.formattedValue) return cell.note;
+		// 메모 상향 스캔은 현재 셀이 비어있는 경우(시각적 병합 등)로 한정
+		if (!currentCell?.formattedValue) {
+			for (let i = rowIndex - 1; i >= 0; i--) {
+				const cell = rowData[i]?.values?.[colIndex];
+				if (cell?.formattedValue) return cell?.note;
+			}
 		}
 		return undefined;
 	} catch (error) {
@@ -128,35 +131,84 @@ export const parseSheetToDispatchData = (
 		if (currentWarning) warnings.push(currentWarning);
 	}
 
-	// 헤더 경계: 4행(G~) 마지막 유효 열
+	// 헤더 경계 및 매입처 추출: originalData.merges + rowData 기반(시트데이터 의존 제거)
 	const suppliers: string[] = [];
 	let lastHeaderCol = 5;
-	if (sheetData.length > 3) {
-		const row4 = sheetData[3];
-		for (let i = row4.length - 1; i >= 6; i--) {
-			const v = row4[i];
-			if (typeof v === "string" && v.trim().length > 0) {
-				lastHeaderCol = i;
+	{
+		const sheet = originalData.sheets?.[0];
+		const merges = sheet?.merges ?? [];
+		const rowData = sheet?.data?.[0]?.rowData ?? [];
+		const row4Values = rowData[3]?.values ?? [];
+		const row5Values = rowData[4]?.values ?? [];
+
+		// 1) 4행과 교차하는 병합의 끝 열을 최대값으로 채택
+		for (const merge of merges) {
+			const sr = merge.startRowIndex ?? 0;
+			const er = merge.endRowIndex ?? 0;
+			const ec = merge.endColumnIndex ?? 0;
+			if (3 >= sr && 3 < er && ec - 1 > lastHeaderCol) {
+				lastHeaderCol = ec - 1;
+			}
+		}
+
+		// 2) 4행/5행의 비어있지 않은 셀을 보조 신호로 사용해 범위를 확장
+		for (let i = row4Values.length - 1; i >= 6; i--) {
+			const fv = row4Values[i]?.formattedValue;
+			if (fv && String(fv).trim().length > 0) {
+				lastHeaderCol = Math.max(lastHeaderCol, i);
 				break;
 			}
 		}
-		for (let i = 6; i <= lastHeaderCol; i++) {
-			const supplier = row4[i];
-			suppliers.push(typeof supplier === "string" ? supplier.trim() : "");
+		for (let i = row5Values.length - 1; i >= 6; i--) {
+			const fv = row5Values[i]?.formattedValue;
+			if (fv && String(fv).trim().length > 0) {
+				lastHeaderCol = Math.max(lastHeaderCol, i);
+				break;
+			}
+		}
+
+		// 3) 각 열의 매입처명: 병합에 걸리면 앵커 formattedValue, 아니면 4행 formattedValue
+		for (let col = 6; col <= lastHeaderCol; col++) {
+			let headerValue = "";
+			let fromMerge = false;
+			for (const merge of merges) {
+				const sr = merge.startRowIndex ?? 0;
+				const er = merge.endRowIndex ?? 0;
+				const sc = merge.startColumnIndex ?? 0;
+				const ec = merge.endColumnIndex ?? 0;
+				if (3 >= sr && 3 < er && col >= sc && col < ec) {
+					const anchor = rowData[sr]?.values?.[sc];
+					const text = anchor?.formattedValue;
+					headerValue = text ? String(text).trim() : "";
+					fromMerge = true;
+					break;
+				}
+			}
+			if (!fromMerge) {
+				const cell = row4Values[col];
+				headerValue = cell?.formattedValue
+					? String(cell.formattedValue).trim()
+					: "";
+			}
+			suppliers.push(headerValue);
 		}
 	}
 
 	// 5행: 차량번호 (G..lastHeaderCol)
 	const vehicleNumbers: string[] = [];
 	if (sheetData.length > 4) {
-		const row5 = sheetData[4];
-		for (let i = 6; i <= lastHeaderCol && i < row5.length; i++) {
-			const vehicleNumber = row5[i];
+		const row5 = sheetData[4] as unknown[] | undefined;
+		for (let i = 6; i <= lastHeaderCol; i++) {
+			const vehicleNumber = row5?.[i];
 			vehicleNumbers.push(
-				vehicleNumber && typeof vehicleNumber === "string"
-					? vehicleNumber.trim()
+				vehicleNumber !== undefined && vehicleNumber !== null
+					? String(vehicleNumber).trim()
 					: "",
 			);
+		}
+	} else {
+		for (let i = 6; i <= lastHeaderCol; i++) {
+			vehicleNumbers.push("");
 		}
 	}
 
